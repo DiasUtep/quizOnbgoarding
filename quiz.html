@@ -1982,8 +1982,7 @@ function renderQuiz() {
         <div style="margin-bottom:20px">
           <label style="font-size:13px;color:var(--text-muted);margin-bottom:8px;display:block">Номер телефона</label>
           <div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0 16px;transition:border-color 0.2s" id="phoneWrap">
-            <span style="color:var(--text-muted);font-size:18px;margin-right:6px">+</span>
-            <input type="tel" id="inputPhone" placeholder="7 777 777 77 77" value="${ph}"
+            <input type="tel" id="inputPhone" placeholder="8 777 777 77 77" value="${ph}"
                    oninput="answers.qPhone = this.value.trim(); document.getElementById('phoneWrap').style.borderColor='var(--border)'"
                    style="flex:1;background:transparent;border:none;color:var(--text);font-size:20px;font-weight:600;padding:14px 0;outline:none">
           </div>
@@ -2110,6 +2109,7 @@ function nextStep() {
 }
 function submitPhone() {
   const phone = (answers.qPhone || '').trim();
+  const digits = phone.replace(/\D/g, '');
   if (!phone || phone.replace(/\D/g, '').length < 7) {
     const wrap = document.getElementById('phoneWrap');
     if (wrap) wrap.style.borderColor = 'var(--red)';
