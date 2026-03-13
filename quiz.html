@@ -1,0 +1,2923 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HJ Trial Quiz — Подберём тебе программу</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #1a1a1a;
+    --surface2: #252525;
+    --border: #333;
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --accent: #7B3DFF;
+    --accent-glow: rgba(123, 61, 255, 0.15);
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #9D6FFF;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+  .header-logo span { color: var(--accent); }
+  .header-actions { display: flex; gap: 8px; }
+  .btn-small {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-small:hover { border-color: var(--accent); color: var(--text); }
+  .btn-small.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  /* Layout */
+  .layout { display: flex; min-height: calc(100vh - 57px); }
+  .main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+  .debug-panel {
+    width: 380px;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    padding: 24px;
+    overflow-y: auto;
+    display: none;
+    max-height: calc(100vh - 57px);
+  }
+  .debug-panel.visible { display: block; }
+
+  /* Progress */
+  .progress-wrap { width: 100%; max-width: 520px; margin-bottom: 32px; }
+  .progress-label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* Quiz Card */
+  .quiz-card {
+    width: 100%;
+    max-width: 520px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .quiz-question {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 12px; }
+  .quiz-option {
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 15px;
+  }
+  .quiz-option:hover { border-color: var(--accent); background: var(--accent-glow); }
+  .quiz-option.selected { border-color: var(--accent); background: var(--accent-glow); }
+
+  /* Navigation */
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+    max-width: 520px;
+    width: 100%;
+  }
+  .btn-back {
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { color: var(--text); border-color: var(--text-muted); }
+  .btn-back.hidden { visibility: hidden; }
+
+  /* Result */
+  .result-card {
+    width: 100%;
+    max-width: 560px;
+    animation: fadeIn 0.4s ease;
+  }
+  .result-header { text-align: center; margin-bottom: 32px; }
+  .result-header h2 { font-size: 16px; color: var(--text-muted); font-weight: 400; margin-bottom: 8px; }
+  .result-basis {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .result-duration {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
+  .result-program-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .result-tagline { color: var(--text-muted); font-size: 15px; }
+  .result-price {
+    text-align: center;
+    padding: 20px;
+    margin-top: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .result-price-amount {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .result-price-detail {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .result-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .result-section h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .result-section ul { list-style: none; }
+  .result-section li {
+    padding: 6px 0;
+    padding-left: 20px;
+    position: relative;
+    font-size: 15px;
+  }
+  .result-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 13px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .result-modifier {
+    background: var(--accent-glow);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .result-cta {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: opacity 0.2s;
+  }
+  .result-cta:hover { background: #5A1FD6; }
+  .btn-restart {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-restart:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* Alt programs */
+  .alt-programs { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .alt-programs-title { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; text-align: center; }
+  .alt-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s; }
+  .alt-card:hover { border-color: var(--accent); }
+  .alt-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .alt-card-name { font-weight: 600; font-size: 16px; }
+  .alt-card-price { color: var(--accent); font-weight: 600; }
+  .alt-card-details { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+  .alt-card-diff { font-size: 13px; color: var(--text); }
+  .alt-card-toggle { font-size: 13px; color: var(--accent); margin-top: 10px; text-align: center; }
+  .alt-card.expanded .alt-card-toggle { display: none; }
+  .alt-card-expand { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .alt-card.expanded .alt-card-expand { max-height: 500px; }
+  .alt-tl { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .alt-tl-step { display: flex; gap: 10px; font-size: 13px; }
+  .alt-tl-label { color: var(--accent); font-weight: 600; white-space: nowrap; min-width: 90px; }
+  .alt-tl-text { color: var(--text-muted); }
+  .alt-features { margin: 14px 0; padding-left: 18px; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; }
+  .alt-card-cta { display: block; width: 100%; padding: 12px; border: 1px solid var(--accent); border-radius: var(--radius); background: transparent; color: var(--accent); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .alt-card-cta:hover { background: var(--accent); color: white; }
+
+  /* AI mode */
+  .ai-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .ai-toggle:hover { border-color: var(--accent); }
+  .ai-toggle.active { border-color: var(--green); color: var(--green); background: rgba(34, 197, 94, 0.1); }
+  .ai-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); transition: background 0.2s; }
+  .ai-toggle.active .dot { background: var(--green); box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
+  .ai-config {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 320px;
+    z-index: 200;
+    display: none;
+  }
+  .ai-config.visible { display: block; }
+  .ai-config label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; }
+  .ai-config input {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .ai-config input:focus { outline: none; border-color: var(--accent); }
+  .ai-config .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+  /* Body input (height/weight) */
+  /* Assessment blocks */
+  .assessment-blocks { display: flex; gap: 12px; }
+  .assessment-block { flex: 1; background: var(--surface2); border-radius: var(--radius); padding: 14px; }
+  .assessment-block-title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+  .assessment-block-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Club selection */
+  .club-city-group { margin-bottom: 20px; }
+  .club-city-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .club-option { cursor: pointer; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); transition: all 0.2s; }
+  .club-option:hover { border-color: var(--accent); }
+  .club-option.selected { border-color: var(--accent); background: var(--accent-glow); }
+  .club-name { font-weight: 600; font-size: 15px; }
+  .club-address { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  .body-inputs { display: flex; gap: 16px; margin-bottom: 20px; }
+  .body-field { flex: 1; }
+  .body-field label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .body-field .input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 14px;
+    transition: border-color 0.2s;
+  }
+  .body-field .input-wrap:focus-within { border-color: var(--accent); }
+  .body-field input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    font-weight: 600;
+    padding: 14px 0;
+    width: 100%;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .body-field input::-webkit-outer-spin-button,
+  .body-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .body-field .suffix { color: var(--text-muted); font-size: 15px; margin-left: 4px; }
+
+  .ai-fallback {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .ai-fallback p { color: var(--text-muted); font-size: 14px; margin-bottom: 12px; }
+  .ai-fallback button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ai-fallback button:hover { background: var(--accent); color: white; }
+  .ai-loading {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-style: italic;
+  }
+  .ai-loading::after {
+    content: '';
+    animation: dots 1.5s steps(4) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+  @media (max-width: 768px) {
+    .ai-config { width: calc(100vw - 48px); right: -60px; }
+  }
+
+  /* Debug Panel */
+  .debug-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .debug-section { margin-bottom: 20px; }
+  .debug-section h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+  .debug-score {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .debug-score .label { color: var(--text-muted); }
+  .debug-score .value { font-weight: 600; }
+
+  .debug-matrix { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  .debug-matrix th, .debug-matrix td {
+    padding: 8px 6px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .debug-matrix th { background: var(--surface2); color: var(--text-muted); font-weight: 500; }
+  .debug-matrix td { background: var(--surface); }
+  .debug-matrix td.highlight {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .debug-answers { margin-top: 12px; }
+  .debug-answer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .debug-answer .q { color: var(--text-muted); }
+  .debug-answer select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .debug-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-fs { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+  .tag-bc { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+  .tag-hw { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+
+  .debug-modifier-info {
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .debug-modifier-info .before { color: var(--text-muted); text-decoration: line-through; }
+  .debug-modifier-info .after { color: var(--accent); font-weight: 600; }
+  .debug-modifier-info .arrow { color: var(--text-muted); margin: 0 6px; }
+  .debug-modifier-info.no-change { color: var(--text-muted); }
+
+  /* Scenarios tab */
+  .scenarios-panel {
+    width: 100%;
+    max-width: 900px;
+    padding: 24px;
+    display: none;
+  }
+  .scenarios-panel.visible { display: block; }
+  .scenarios-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent); }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  .scenarios-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .scenarios-table th, .scenarios-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  .scenarios-table th {
+    background: var(--surface);
+    color: var(--text-muted);
+    font-weight: 500;
+    position: sticky;
+    top: 56px;
+  }
+  .scenarios-table tr:hover td { background: var(--surface2); }
+  .scenarios-table td { background: var(--surface); }
+  .scenarios-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 13px;
+  }
+  .stat-card .stat-value { font-size: 24px; font-weight: 700; }
+
+  /* Fear tags */
+  .fear-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .fear-chip {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .fear-chip:hover { border-color: var(--accent); }
+  .fear-chip.selected { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+  .fear-custom-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 16px;
+    resize: none;
+    height: 48px;
+    font-family: inherit;
+  }
+  .fear-custom-input::placeholder { color: var(--text-muted); }
+  .fear-custom-input:focus { outline: none; border-color: var(--accent); }
+  .btn-continue {
+    padding: 14px 32px;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-continue:hover { opacity: 0.9; }
+  .btn-skip {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .btn-skip:hover { color: var(--text); }
+
+  .fear-answer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .fear-answer .fear-q {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .fear-answer .fear-a {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  /* Icons in options */
+  .quiz-option-icon {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .quiz-option-icon .opt-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--surface2);
+    font-size: 18px;
+  }
+  .quiz-option.selected .opt-icon { background: var(--accent-glow); }
+
+  /* Interstitial screens */
+  .interstitial {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+  }
+  .interstitial-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 20px;
+  }
+  .interstitial-text {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .interstitial-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .btn-interstitial {
+    padding: 14px 40px;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-interstitial:hover { background: #5A1FD6; }
+
+  /* Prediction screen */
+  .prediction {
+    width: 100%;
+    max-width: 520px;
+    animation: fadeIn 0.4s ease;
+  }
+  .prediction-title {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .prediction-timeline {
+    position: relative;
+    padding-left: 32px;
+    margin-bottom: 32px;
+  }
+  .prediction-timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--green));
+  }
+  .prediction-step {
+    position: relative;
+    padding: 12px 0;
+  }
+  .prediction-step::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 18px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+  .prediction-step.final::before { background: var(--green); width: 12px; height: 12px; left: -26px; top: 17px; }
+  .prediction-step .ps-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .prediction-step .ps-text {
+    font-size: 15px;
+    margin-top: 2px;
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .debug-panel { display: none !important; position: fixed; top: 57px; right: 0; width: 100%; height: calc(100vh - 57px); z-index: 99; }
+    .debug-panel.visible.mobile-show { display: block !important; }
+    .quiz-question { font-size: 20px; }
+    .result-program { font-size: 26px; }
+    .scenarios-panel { padding: 16px; }
+    .scenarios-table { font-size: 11px; }
+    .scenarios-table th, .scenarios-table td { padding: 6px; }
+    .interstitial-text { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">HERO'S <span>JOURNEY</span> — Trial Quiz</div>
+
+</div>
+
+<div class="layout">
+  <div class="main" id="mainArea">
+    <!-- Quiz content rendered by JS -->
+  </div>
+  <div class="debug-panel" id="debugPanel">
+    <div class="debug-title">Debug Panel</div>
+    <div id="debugContent"></div>
+  </div>
+</div>
+
+<div class="scenarios-panel" id="scenariosPanel">
+  <!-- Scenarios rendered by JS -->
+</div>
+
+<script>
+// ========== DATA ==========
+const questions = [
+  {
+    id: 'qPhone',
+    question: 'Введи свой номер телефона',
+    inputType: 'phone'
+  },
+  {
+    id: 'qCity',
+    question: 'В каком городе хочешь тренироваться?',
+    options: [
+      { label: 'Алматы', key: 'almaty', icon: '🏙️' },
+      { label: 'Астана', key: 'astana', icon: '🏙️' }
+    ]
+  },
+  {
+    id: 'qClub',
+    question: 'В какой студии хочешь тренироваться?',
+    inputType: 'club'
+  },
+  {
+    id: 'qGender',
+    question: 'Ты...',
+    options: [
+      { label: 'Женщина', key: 'F' },
+      { label: 'Мужчина', key: 'M' },
+      { label: 'Не хочу указывать', key: 'X' }
+    ]
+  },
+  {
+    id: 'qAge',
+    question: 'Сколько тебе лет?',
+    options: [
+      { label: '18–24', key: '18-24' },
+      { label: '25–34', key: '25-34' },
+      { label: '35–44', key: '35-44' },
+      { label: '45+', key: '45+' }
+    ]
+  },
+  {
+    id: 'q1',
+    question: 'Что для тебя сейчас важнее всего?',
+    options: [
+      { label: 'Сбросить вес и подтянуть тело', tag: 'трансформация', key: 'A' },
+      { label: 'Стать выносливее и сильнее', tag: 'performance', key: 'B' },
+      { label: 'Наконец начать тренироваться регулярно', tag: 'привычка', key: 'C' },
+      { label: 'Просто попробовать — интересно, что это', tag: 'exploration', key: 'D' }
+    ]
+  },
+  {
+    id: 'q2',
+    question: 'Как у тебя сейчас со спортом?',
+    options: [
+      { label: 'Пока никак — только планирую начать', tag: 'newbie', key: 'A' },
+      { label: 'Раньше тренировался, но забросил', tag: 'lapsed', key: 'B' },
+      { label: 'Тренируюсь сейчас — но хочу попробовать другое', tag: 'switcher', key: 'C' },
+      { label: 'Занимаюсь сам — дома, на улице, без тренера', tag: 'self-trained', key: 'D' }
+    ]
+  },
+  {
+    id: 'q2details',
+    question: 'Чем ты занимаешься?',
+    multiSelect: true,
+    skipLabel: 'Не хочу уточнять — пропустить',
+    customPlaceholder: 'Или напиши своё...',
+    options: [
+      { label: 'Тренажёрный зал', key: 'gym' },
+      { label: 'Кроссфит', key: 'crossfit' },
+      { label: 'Единоборства', key: 'martial' },
+      { label: 'Бег', key: 'running' },
+      { label: 'Плавание', key: 'swimming' },
+      { label: 'Йога / растяжка', key: 'yoga' },
+      { label: 'Командные виды спорта', key: 'team' },
+      { label: 'Домашние тренировки', key: 'home' },
+      { label: 'Танцы', key: 'dance' },
+      { label: 'Велосипед', key: 'cycling' }
+    ]
+  },
+  {
+    id: 'q3',
+    question: 'Что для тебя важно в первых тренировках?',
+    options: [
+      { label: 'Чтобы всё объяснили и помогли', tag: 'онбординг', key: 'A' },
+      { label: 'Чтобы был понятный план и структура', tag: 'структура', key: 'B' },
+      { label: 'Чтобы было удобно по времени и локации', tag: 'логистика', key: 'C' },
+      { label: 'Просто хочу потренироваться — разберусь сам(а)', tag: 'самостоятельный', key: 'D' }
+    ]
+  },
+  {
+    id: 'q4',
+    question: 'Есть ли ограничения по здоровью?',
+    options: [
+      { label: 'Нет', tag: 'none', key: 'A' },
+      { label: 'Да, но тренироваться могу', tag: 'moderate', key: 'B' },
+      { label: 'Серьёзные — нужен щадящий режим', tag: 'high', key: 'C' }
+    ]
+  },
+  {
+    id: 'q4details',
+    question: 'Уточни, что именно беспокоит',
+    multiSelect: true,
+    skipLabel: 'Не хочу уточнять — пропустить',
+    customPlaceholder: 'Или опиши своё ограничение...',
+    options: [
+      { label: 'Спина / поясница', key: 'back' },
+      { label: 'Колени', key: 'knees' },
+      { label: 'Плечи', key: 'shoulders' },
+      { label: 'Шея', key: 'neck' },
+      { label: 'Сердце / давление', key: 'heart' },
+      { label: 'Астма / дыхание', key: 'breathing' },
+      { label: 'Варикоз', key: 'varicose' },
+      { label: 'Послеоперационный период', key: 'post-surgery' }
+    ]
+  },
+  {
+    id: 'qOccupation',
+    question: 'Чем ты занимаешься большую часть дня?',
+    options: [
+      { label: 'Сижу за компьютером / в офисе', key: 'office' },
+      { label: 'На ногах весь день', key: 'standing' },
+      { label: 'Работаю из дома / фриланс', key: 'remote' },
+      { label: 'Учусь', key: 'student' },
+      { label: 'Забочусь о детях / семье', key: 'parent' },
+      { label: 'Физическая работа', key: 'physical' }
+    ]
+  },
+  {
+    id: 'qBody',
+    question: 'Укажи рост и вес — поможет подобрать нагрузку',
+    inputType: 'body',
+    skipLabel: 'Не хочу указывать — пропустить'
+  },
+  {
+    id: 'q5',
+    question: 'Есть ли что-то, что тебя беспокоит?',
+    multiSelect: true,
+    skipLabel: 'У меня нет сомнений — пропустить',
+    customPlaceholder: 'Или напиши своё сомнение...',
+    options: [
+      { label: 'Будет слишком сложно', key: 'overload' },
+      { label: 'Попаду не на ту тренировку', key: 'wrong-workout' },
+      { label: 'Не знаю как работает оборудование', key: 'equipment' },
+      { label: 'Боюсь получить травму', key: 'injury' },
+      { label: 'Начну и снова брошу', key: 'quit' },
+      { label: 'Дорого — вдруг не моё', key: 'expensive' },
+      { label: 'Не увижу результат', key: 'no-result' },
+      { label: 'Не впишусь в расписание', key: 'schedule' },
+      { label: 'Придётся разбираться одному', key: 'alone' }
+    ]
+  }
+];
+
+// Club data from Business & Product Rules
+const clubInfo = {
+  'nurly-orda': { name: 'HJ Nurly Orda', city: 'Астана', address: 'Кабанбай батыра, 11/5', zones: ['legs', 'upperbody', 'bootcamp'], hasReshape: false, hasMetcon: false, hasMindBody: false, hasAssessmentCenter: false },
+  'europe-city': { name: 'HJ Europe City', city: 'Астана', address: 'Акмешит, 1, блок 5', zones: ['legs', 'upperbody', 'bootcamp', 'metcon', 'mindbody'], hasReshape: false, hasMetcon: true, hasMindBody: true, hasAssessmentCenter: false },
+  'colibri': { name: 'HJ Colibri', city: 'Алматы', address: 'Уалиханова, 170/1', zones: ['legs', 'upperbody', 'bootcamp', 'metcon'], hasReshape: false, hasMetcon: true, hasMindBody: false, hasAssessmentCenter: false },
+  'promenade': { name: 'HJ Promenade', city: 'Алматы', address: 'Абая, 44а', zones: ['legs', 'upperbody', 'bootcamp', 'metcon'], hasReshape: false, hasMetcon: true, hasMindBody: false, hasAssessmentCenter: false },
+  'villa': { name: 'HJ Villa', city: 'Алматы', address: 'Аль-Фараби, 140а', zones: ['fullbody', 'bootcamp', 'reshape'], hasReshape: true, hasMetcon: false, hasMindBody: false, hasAssessmentCenter: false },
+  '4you': { name: 'HJ 4YOU', city: 'Алматы', address: 'Ескараева, 3', zones: ['upperbody', 'legs', 'metcon', 'bootcamp', 'reshape', 'assessment'], hasReshape: true, hasMetcon: true, hasMindBody: false, hasAssessmentCenter: true }
+};
+
+// Scoring tables
+// Fitness Level from Q2: A(newbie)=0, B(lapsed)=1, D(self-trained)=2, C(switcher)=2
+const fitnessScores = { A: 0, B: 1, C: 2, D: 2 };
+
+// Motivation from Q1 + Q3 (average, 0-2 scale)
+const motivationScores = {
+  q1: { A: 2, B: 2, C: 1, D: 0 },
+  q3: { A: 1, B: 1, C: 1, D: 2 }
+};
+
+// Routing matrix [fitnessCategory][motivationCategory]
+// fitness: 0-1 = beginner, 2 = active, 3 = advanced (not reachable with current Q2 max=2)
+// motivation: 0-0.75 = low, 0.75-1.5 = medium, 1.5-2 = high
+const routingMatrix = {
+  beginner:  { low: 'heros-week', medium: 'first-step', high: 'basecamp' },
+  active:    { low: 'heros-week', medium: 'basecamp',   high: 'basecamp' },
+  advanced:  { low: 'heros-week', medium: 'heros-week', high: 'heros-week' }
+};
+
+const programInfo = {
+  'first-step': {
+    name: 'Первый Шаг',
+    trainings: 12,
+    duration: '~4 недели',
+    durationShort: 'месяц',
+    price: '59 990',
+    tagline: 'Плавный старт без стресса — ты привыкнешь к залу, тренеру и своему телу',
+    hasAssessment: true,
+    assessmentAtEnd: true,
+    features: [
+      '12 тренировок за 4 недели с плавным ростом нагрузки',
+      'Знакомство со всеми форматами: силовые (работа с весами), жиросжигающее кардио (HIIT), гибкость на реформерах (Reshape)',
+      'Assessment в конце программы — когда тело привыкло к нагрузке, тренер оценит реальный уровень'
+    ]
+  },
+  'basecamp': {
+    name: 'Basecamp',
+    trainings: 6,
+    duration: '~2 недели',
+    durationShort: '2 недели',
+    price: '19 990',
+    tagline: 'Структурированный старт — за 6 тренировок поймёшь систему и почувствуешь прогресс',
+    hasAssessment: true,
+    assessmentAtEnd: true,
+    features: [
+      '6 тренировок за 2 недели — активно, но управляемо',
+      'Разные форматы: силовые (работа с весами), жиросжигающее кардио (HIIT), гибкость на реформерах (Reshape)',
+      'Assessment в конце программы — когда ты уже знаешь оборудование и технику, тренер оценит реальный уровень'
+    ]
+  },
+  'heros-week': {
+    name: "Hero's Week",
+    trainings: 3,
+    duration: '1 неделя',
+    durationShort: 'неделю',
+    price: '9 990',
+    tagline: 'Быстрый тест-драйв — 3 тренировки, чтобы понять, твоё это или нет',
+    hasAssessment: false,
+    features: [
+      '3 тренировки за неделю — силовая (работа с весами), жиросжигающее кардио (HIIT), гибкость на реформерах (Reshape)',
+      'Полный доступ к залам и приложению',
+      'Без привязки — после пробной недели решишь сам'
+    ]
+  }
+};
+
+// AI-generated personalized texts keyed by q1+q2+q3
+// For risk=C (high), all routes go to first-step — separate texts with '_risk' suffix
+const aiTexts = {
+  // ===== BASECAMP (44 profiles) =====
+  // Q1=A (трансформация)
+  'AAA': 'Ты хочешь сбросить вес, но ни разу не был в зале — и это нормально. Basecamp построен так, чтобы ты не чувствовал себя потерянным: тренер объяснит каждое движение, покажет оборудование и будет рядом все 6 тренировок. На assessmentе определим твою точку старта, а через 2 недели ты увидишь первые результаты и поймёшь, что тренировки — это не страшно, а захватывающе.',
+  'AAB': 'Ты хочешь привести тело в форму и тебе нужна структура, чтобы не сдуться — Basecamp именно про это. За 6 тренировок ты получишь чёткий план: какие тренировки, в каком порядке, с какой нагрузкой. Assessment покажет, откуда стартуешь, а система прогрессии не даст тебе остановиться на полпути.',
+  'AAC': 'Ты хочешь похудеть и тебе важно, чтобы тренировки вписывались в расписание — понимаем. В Basecamp всего 6 тренировок за 2 недели, ты сам выбираешь удобные дни и время. Тренер проведёт assessment, подберёт нагрузку, а дальше — просто приходи, когда удобно, и тело начнёт меняться.',
+  'AAD': 'Ты хочешь сбросить вес и готов разбираться сам — отлично, Basecamp даст тебе систему, в которой это работает. За 6 тренировок ты попробуешь силовые (работа с весами), HIIT (кардио) и Reshape (гибкость), поймёшь, что сжигает жир эффективнее, и получишь assessment — объективную оценку своего уровня.',
+  'ABA': 'Ты уже был в зале, но бросил — знакомо. Basecamp поможет вернуться без стресса: тренер объяснит, что изменилось, покажет форматы и адаптирует нагрузку. Тело помнит больше, чем ты думаешь, а 6 тренировок за 2 недели — достаточно, чтобы снова почувствовать прогресс и увидеть первые изменения.',
+  'ABB': 'Ты знаешь, что такое зал, но в прошлый раз не хватило структуры — Basecamp это исправит. Чёткий план на 6 тренировок, assessment для определения уровня и система прогрессии, которая не даст тебе снова соскочить. Через 2 недели ты почувствуешь, что тело откликается и процесс пошёл.',
+  'ABC': 'Ты хочешь вернуться к тренировкам и привести тело в форму, но важно, чтобы расписание не мешало. Basecamp — 6 тренировок за 2 недели, в удобное тебе время. Тело вспомнит быстрее, чем ты ожидаешь, а assessment покажет реальную точку старта.',
+  'ABD': 'Ты уже знаешь, что такое зал, и хочешь вернуться к цели — Basecamp идеален для перезапуска. Шесть тренировок, разные форматы, assessment на старте. Без лишнего онбординга — ты уже знаешь основы, просто нужна система, которая даст результат.',
+  'ACA': 'Ты ходишь в другой зал, но хочешь большего — знакомая история. Basecamp покажет, чем HJ отличается: персональный assessment, система прогрессии по уровням и тренировки, которые адаптируются под тебя. Тренер объяснит все форматы, а за 6 тренировок ты поймёшь, почему люди переходят в HJ и остаются.',
+  'ACB': 'Ты уже тренируешься, но чувствуешь, что нужна система — Basecamp покажет, как это работает в HJ. Чёткий план на 2 недели, assessment, прогрессия по уровням. Это не просто другой зал — это структура, которая ведёт к результату, а не просто к «пот потёк».',
+  'ACC': 'Ты ходишь в зал и хочешь попробовать HJ — логичный шаг. Basecamp за 2 недели покажет разницу: система прогрессии, assessment, разные форматы. Тренируйся в удобное время, а через 6 занятий реши — стоит ли менять свой текущий зал.',
+  'ACD': 'Ты уже тренируешься и хочешь сбросить вес эффективнее — Basecamp покажет, как HJ подходит к этому системно. Силовые ускоряют метаболизм, HIIT (жиросжигающее кардио) сжигает жир, Reshape (гибкость на реформерах) улучшает подвижность. Assessment определит, что работает лучше конкретно для тебя.',
+  'ADA': 'Ты тренируешься сам и хочешь привести тело в форму — но дома сложно получить тот же результат. Basecamp покажет, что даёт тренер, оборудование и система: assessment определит твой уровень, а за 6 тренировок ты поймёшь, какие форматы эффективнее для похудения.',
+  'ADB': 'Ты занимаешься самостоятельно, но хочешь структуру для результата — Basecamp даст именно это. Чёткий план, assessment, прогрессия. Ты уже дисциплинирован, осталось добавить систему — и тело начнёт меняться быстрее.',
+  'ADC': 'Ты тренируешься сам и хочешь сбросить вес — но важно, чтобы зал не ломал расписание. Basecamp — 6 тренировок в удобное время. Assessment покажет, где ты сейчас, а разные форматы тренировок дадут то, чего не хватает дома.',
+  'ADD': 'Ты уже активен и хочешь результат — Basecamp добавит к твоей дисциплине систему и профессиональный взгляд. Assessment покажет зоны роста, а 6 тренировок в разных форматах дадут нагрузку, которую сложно организовать самостоятельно.',
+  // Q1=B (performance)
+  'BAA': 'Ты хочешь стать сильнее, но никогда не был в зале — и это отличный момент для старта. Basecamp за 6 тренировок заложит фундамент: тренер покажет технику, объяснит оборудование, а assessment определит твой уровень. Через 2 недели ты будешь уверенно работать с весами и чувствовать, как тело становится сильнее.',
+  'BAB': 'Ты хочешь стать выносливее и тебе нужна чёткая программа — Basecamp построен именно так. 6 тренировок с assessmentом на старте, разные форматы нагрузки и система прогрессии. Тебе не придётся думать «что делать дальше» — план уже есть, просто следуй ему.',
+  'BAC': 'Ты хочешь стать сильнее и тебе важна гибкость расписания — Basecamp это учитывает. 6 тренировок за 2 недели, ты выбираешь время. Assessment покажет стартовый уровень, а силовые тренировки с тренером дадут базу, которая останется с тобой.',
+  'BAD': 'Ты хочешь стать сильнее и готов работать самостоятельно — Basecamp даст тебе систему, которая ускорит рост. Assessment определит текущий уровень, 6 тренировок в разных форматах покажут, как работать с прогрессией. Без лишних объяснений — сразу к делу.',
+  'BBA': 'Ты уже был в зале и хочешь стать выносливее — отлично, Basecamp поможет вернуться с правильной техникой. Тренер объяснит форматы HJ, проведёт assessment и покажет, как система прогрессии работает на силу и выносливость. Тело быстро вспомнит, а правильная нагрузка ускорит результат.',
+  'BBB': 'Ты знаешь, что такое зал, но бросил — скорее всего, не хватало системы. Basecamp это исправит: чёткий план, assessment, прогрессия по уровням. За 6 тренировок ты не просто вернёшься в форму — ты получишь структуру, которая не даст бросить снова.',
+  'BBC': 'Ты хочешь стать сильнее и вернуться к тренировкам — Basecamp сделает это удобно. 6 тренировок в своём темпе, assessment для объективной оценки уровня. Тело помнит, нужно только вернуть ритм — а расписание подстроится под тебя.',
+  'BBD': 'Ты уже тренировался и знаешь, чего хочешь — Basecamp даст перезапуск без лишнего. Assessment покажет, где ты сейчас, а 6 тренировок в разных форматах проверят силу, выносливость и подвижность. Без долгого онбординга — ты уже понимаешь основы.',
+  'BCA': 'Ты ходишь в другой зал и хочешь стать сильнее — попробуй систему HJ. Basecamp за 6 тренировок покажет, как работает прогрессия по уровням: assessment, адаптивная нагрузка, разные форматы. Тренер объяснит методологию — и ты поймёшь, почему здесь результат приходит быстрее.',
+  'BCB': 'Ты уже тренируешься, но хочешь систему, которая ведёт к результату — Basecamp покажет подход HJ. Assessment, прогрессия по уровням, чёткий план на 2 недели. Это не просто тренировки — это программа, в которой каждое занятие двигает тебя вперёд.',
+  'BCC': 'Ты ходишь в зал и хочешь попробовать что-то другое — Basecamp покажет формат HJ без обязательств. 6 тренировок в удобное время, assessment, прогрессия. Сравни со своим текущим залом и реши, где ты растёшь быстрее.',
+  'BCD': 'Ты тренируешься и хочешь стать сильнее — Basecamp покажет, как HJ работает с прогрессией. Assessment оценит текущий уровень, а 6 тренировок в разных форматах дадут нагрузку, которой может не хватать в обычном зале. Сразу к делу, без лишнего.',
+  'BDA': 'Ты занимаешься сам и хочешь стать сильнее — но без оборудования и тренера есть потолок. Basecamp покажет, что даёт зал: assessment определит реальный уровень, а тренер объяснит технику работы с весами и оборудованием. За 6 тренировок ты почувствуешь разницу.',
+  'BDB': 'Ты тренируешься самостоятельно и хочешь систему — Basecamp добавит структуру к твоей дисциплине. Assessment, план на 2 недели, прогрессия по уровням. Ты уже делаешь главное — тренируешься регулярно. Осталось добавить правильную программу.',
+  'BDC': 'Ты занимаешься сам и хочешь стать выносливее — Basecamp даст то, чего нет дома: разные форматы, оборудование, тренер. 6 тренировок в удобное время, без привязки к конкретным дням. Assessment покажет, в чём ты уже силён, а где есть потенциал для роста.',
+  'BDD': 'Ты активен, дисциплинирован и хочешь расти — Basecamp даст систему и профессиональную оценку. Assessment покажет реальный уровень силы и выносливости, а 6 тренировок в разных форматах выявят зоны роста, которые ты мог не замечать.',
+  // Q1=C (привычка) — в Basecamp попадают: CD, CA/CB/CC/CD с Q2=C/D
+  'CAD': 'Ты хочешь начать тренироваться регулярно и готов разбираться сам — Basecamp даст тебе рамку, внутри которой привычка сформируется. 6 тренировок за 2 недели создают ритм: assessment на старте, разные форматы каждый раз, ощутимый прогресс. Ты не просто начнёшь — ты втянешься.',
+  'CBD': 'Ты хочешь начать регулярно тренироваться и уже знаешь, каково это в зале. Basecamp перезапустит привычку за 2 недели — без лишних объяснений, сразу к тренировкам. Assessment покажет, с чего начать, а система прогрессии поможет не соскочить на этот раз.',
+  'CCA': 'Ты ходишь в зал, но хочешь регулярности — знакомо. В HJ система прогрессии и геймификация делают пропуск тренировки заметным. Basecamp за 6 тренировок покажет, как это работает: assessment, уровни, достижения. Тренер объяснит, как устроена система.',
+  'CCB': 'Ты тренируешься, но без структуры сложно ходить регулярно — Basecamp даст чёткий план. 6 тренировок, assessment, прогрессия по уровням. Система HJ построена так, чтобы каждая тренировка была частью большей цели — и это мотивирует возвращаться.',
+  'CCC': 'Ты ходишь в зал и хочешь сделать тренировки регулярными — Basecamp поможет. 6 тренировок в удобное время, система прогрессии, которая создаёт ритм. Assessment покажет твой уровень, а геймификация HJ сделает пропуск тренировки ощутимым.',
+  'CCD': 'Ты тренируешься, но хочешь перейти к регулярному ритму — Basecamp покажет систему HJ за 6 тренировок. Прогрессия по уровням, assessment, разные форматы. Ты уже знаешь основы — осталось добавить структуру, которая превратит тренировки в привычку.',
+  'CDA': 'Ты занимаешься сам и хочешь сделать тренировки регулярными — но дома сложно себя заставить. Basecamp добавит то, чего не хватает: тренер, который ждёт тебя, программа, в которой каждое занятие на счету, и зал, в который хочется вернуться. За 6 тренировок привычка начнёт формироваться.',
+  'CDB': 'Ты занимаешься сам, но нерегулярно — знакомо. Basecamp даст структуру: план на 2 недели, assessment, прогрессия. Когда есть система и видимый прогресс — пропускать не хочется. Через 6 тренировок ритм закрепится.',
+  'CDC': 'Ты тренируешься сам и хочешь ходить регулярно, но расписание мешает. Basecamp — 6 тренировок в удобное тебе время, без привязки к дням. Система прогрессии HJ создаёт ритм даже для тех, у кого каждая неделя разная.',
+  'CDD': 'Ты активен и хочешь сделать тренировки привычкой — Basecamp добавит систему к твоей самостоятельности. 6 тренировок, assessment, разные форматы. Ты уже умеешь тренироваться — осталось попасть в систему, где прогресс виден и мотивирует.',
+  // Q1=D (exploration) — в Basecamp попадают: DCD, DDD
+  'DCD': 'Тебе интересно попробовать HJ, и ты уже знаешь, что такое зал — Basecamp покажет формат за 6 тренировок. Без долгого онбординга, разные форматы, assessment на старте. Попробуй и сравни — а после решишь, стоит ли переходить.',
+  'DDD': 'Тебе интересно попробовать, и ты уже тренируешься сам — Basecamp за 6 тренировок покажет, что даёт система: assessment, прогрессия, разные форматы нагрузки. Без обязательств — просто проверь, добавит ли зал что-то к твоим тренировкам.',
+
+  // ===== FIRST STEP (8 profiles) =====
+  'CAA': 'Ты хочешь начать тренироваться регулярно, но никогда не был в зале и не знаешь, с чего начать — Первый Шаг создан именно для этого. 12 тренировок за 4 недели с плавным ростом нагрузки: тренер встретит тебя, объяснит каждое движение и будет рядом. Assessment определит твой уровень, а к концу программы тренировки станут привычной частью недели.',
+  'CAB': 'Ты хочешь начать регулярно тренироваться и тебе нужна структура — Первый Шаг даст её на 4 недели вперёд. 12 тренировок с понятным планом: какие форматы, в каком порядке, с какой нагрузкой. Assessment на старте, система уровней и достижений — каждая тренировка ощущается как шаг вперёд.',
+  'CAC': 'Ты хочешь начать тренироваться, но важно, чтобы зал не ломал расписание. Первый Шаг — 12 тренировок за 4 недели, ты сам выбираешь время. Плавный старт, assessment, знакомство со всеми форматами — без давления и в своём темпе.',
+  'CBA': 'Ты уже был в зале, но бросил — и хочешь попробовать снова. Первый Шаг поможет вернуться мягко: 12 тренировок с плавным ростом нагрузки, тренер рядом, assessment на старте. Тело вспомнит быстрее, чем ты думаешь, а за 4 недели тренировки снова станут привычкой.',
+  'CBB': 'Ты знаешь, что такое зал, но в прошлый раз не хватило системы — Первый Шаг даст 4 недели структуры. 12 тренировок с чётким планом, assessment, прогрессия по уровням. Система построена так, чтобы ты не бросил на второй неделе — каждая тренировка на счету.',
+  'CBC': 'Ты хочешь вернуться к тренировкам и сделать их регулярными. Первый Шаг — 12 тренировок за 4 недели в удобное время. Плавный старт, assessment для определения уровня и достаточно времени, чтобы привычка закрепилась.',
+  'DAD': 'Тебе просто интересно попробовать, и ты никогда не был в зале — Первый Шаг идеален для знакомства. 12 тренировок за 4 недели — без спешки попробуешь все форматы: силовые (работа с весами), HIIT (кардио), Reshape (гибкость). Assessment покажет, на что способно тело, а тренер будет рядом, если понадобится.',
+  'DBD': 'Тебе интересно попробовать, и ты уже бывал в зале — Первый Шаг даст время распробовать формат HJ. 12 тренировок, разные форматы, assessment. Без давления — просто тренируйся и к концу программы решишь, твоё это или нет.',
+
+  // ===== HERO'S WEEK (12 profiles) =====
+  'DAA': 'Тебе интересно попробовать, и ты никогда не был в зале — Hero\'s Week создан для первого знакомства. Три тренировки за неделю: силовая (работа с весами), HIIT (кардио), Reshape (гибкость). Тренер покажет всё с нуля, а ты за три дня поймёшь, нравится ли тебе этот формат — без обязательств и долгих программ.',
+  'DAB': 'Тебе интересно попробовать, но без структуры ты вряд ли пойдёшь — Hero\'s Week решает это. Всего 3 тренировки за неделю с чётким планом: силовая (работа с весами), HIIT (кардио), Reshape (гибкость). Минимум обязательств, максимум впечатлений. После недели решишь, хочешь ли продолжить.',
+  'DAC': 'Тебе интересно попробовать, и главное — чтобы было удобно. Hero\'s Week — 3 тренировки за неделю, ты выбираешь время. Попробуешь три разных формата и поймёшь, вписывается ли HJ в твою жизнь.',
+  'DBA': 'Ты уже бывал в зале и хочешь просто попробовать HJ — Hero\'s Week покажет формат за 3 тренировки. Тренер объяснит особенности системы, ты попробуешь силовые (работа с весами), HIIT (кардио) и Reshape (гибкость). Одна неделя — и станет понятно, стоит ли возвращаться.',
+  'DBB': 'Ты знаешь, что такое зал, и хочешь посмотреть, чем HJ отличается. Hero\'s Week — 3 тренировки с чётким планом: попробуешь все форматы за одну неделю. Если понравится — продолжишь. Если нет — потратишь всего неделю.',
+  'DBC': 'Тебе интересно попробовать HJ, и ты уже бывал в зале. Hero\'s Week — 3 тренировки в удобное время за одну неделю. Минимум обязательств, максимум информации. Попробуй и реши.',
+  'DCA': 'Ты ходишь в другой зал и хочешь посмотреть, что такое HJ — Hero\'s Week покажет за 3 тренировки. Тренер объяснит систему прогрессии, геймификацию и форматы. Одна неделя — достаточно, чтобы сравнить и решить.',
+  'DCB': 'Ты тренируешься в другом зале и хочешь попробовать HJ — Hero\'s Week идеален для сравнения. 3 тренировки за неделю, разные форматы. Попробуй систему прогрессии HJ и реши, стоит ли менять свой зал.',
+  'DCC': 'Ты ходишь в зал и хочешь глянуть на HJ — Hero\'s Week за одну неделю покажет разницу. 3 тренировки в удобное время, разные форматы. Без обязательств — просто попробуй и сравни.',
+  'DDA': 'Ты занимаешься сам и хочешь попробовать зал — Hero\'s Week покажет, что это такое, за 3 тренировки. Тренер объяснит всё с нуля: оборудование, форматы, как работает система. Одна неделя, три тренировки — и ты поймёшь, добавляет ли зал что-то к твоим домашним тренировкам.',
+  'DDB': 'Ты тренируешься сам и хочешь попробовать, что даёт зал с тренером и системой. Hero\'s Week — 3 тренировки за неделю с чётким планом. Попробуешь силовые (работа с весами), HIIT (кардио) и Reshape (гибкость) — и решишь, нужна ли тебе эта система.',
+  'DDC': 'Ты занимаешься сам и хочешь глянуть, что такое HJ — Hero\'s Week за одну неделю покажет. 3 тренировки в удобное время, без обязательств. Попробуй и реши, стоит ли добавить зал в свою программу.'
+};
+
+// Texts for risk=C override (all go to Первый Шаг regardless of base program)
+const aiTextsRisk = {
+  // Q1=A (трансформация)
+  'AA': 'Ты хочешь привести тело в форму, и у тебя есть ограничения по здоровью — Первый Шаг создан именно для такого старта. 12 тренировок за 4 недели с плавной нагрузкой: тренер получит информацию о твоих ограничениях до первого занятия и адаптирует каждое упражнение. Assessment покажет, что тебе подходит, а что лучше заменить.',
+  'AB': 'Ты хочешь вернуться к тренировкам и похудеть, но здоровье требует осторожности — Первый Шаг учтёт всё. Тренер свяжется с тобой до первой тренировки, узнает об ограничениях и составит безопасный план. 12 тренировок с плавным ростом нагрузки — тело вспомнит, и ты увидишь первые результаты без риска.',
+  'AC': 'Ты ходишь в зал и хочешь сбросить вес, но ограничения по здоровью требуют особого подхода. Первый Шаг — 12 тренировок с assessmentом и адаптированной нагрузкой. Тренер составит безопасный план, и ты сможешь тренироваться без тревоги.',
+  'AD': 'Ты тренируешься сам и хочешь привести тело в форму, но здоровье требует внимания. Первый Шаг за 12 тренировок даст тебе профессиональный контроль: assessment, адаптированная нагрузка, тренер, который знает о твоих ограничениях.',
+  // Q1=B (performance)
+  'BA': 'Ты хочешь стать сильнее, но есть ограничения по здоровью — Первый Шаг позволит расти безопасно. Тренер свяжется до первой тренировки, проведёт assessment и адаптирует нагрузку. 12 тренировок за 4 недели — достаточно, чтобы заложить базу силы, не рискуя здоровьем.',
+  'BB': 'Ты знаешь, что такое зал, и хочешь стать выносливее — но ограничения требуют осторожного старта. Первый Шаг за 12 тренировок вернёт тебя в форму безопасно: assessment, адаптированная нагрузка, тренер рядом.',
+  'BC': 'Ты тренируешься в другом зале, но ограничения по здоровью требуют более внимательного подхода. Первый Шаг в HJ — это assessment, адаптированная программа и тренер, который знает о твоих особенностях с первого дня.',
+  'BD': 'Ты активен и хочешь расти — но здоровье требует профессионального контроля. Первый Шаг за 12 тренировок даст assessment и адаптированную нагрузку. Тренер составит план, который учтёт ограничения и позволит прогрессировать безопасно.',
+  // Q1=C (привычка)
+  'CA': 'Ты хочешь начать тренироваться, но есть ограничения — Первый Шаг построен для безопасного старта. Тренер узнает о твоём здоровье до первого занятия, проведёт assessment и адаптирует каждую тренировку. 12 занятий за 4 недели — плавно и без тревоги.',
+  'CB': 'Ты хочешь вернуться к тренировкам, но ограничения по здоровью — Первый Шаг учтёт это. Плавный старт за 12 тренировок, assessment, адаптированная нагрузка. Тренер составит безопасный план, чтобы привычка формировалась без риска.',
+  'CC': 'Ты ходишь в зал и хочешь регулярности, но ограничения требуют особого подхода. Первый Шаг — 12 тренировок с assessmentом и индивидуальной адаптацией. Тренер учтёт всё с первого дня.',
+  'CD': 'Ты тренируешься сам, но со здоровьем нужна осторожность. Первый Шаг даст профессиональный контроль: assessment, адаптированная нагрузка, тренер рядом все 12 тренировок. Безопасный способ сделать тренировки привычкой.',
+  // Q1=D (exploration)
+  'DA': 'Тебе интересно попробовать, но есть ограничения по здоровью — Первый Шаг позволит познакомиться с тренировками безопасно. 12 тренировок за 4 недели, плавная нагрузка, тренер, который знает о твоих особенностях. Без спешки и без риска.',
+  'DB': 'Тебе интересно попробовать, и здоровье требует осторожности — Первый Шаг идеален для этого. Тренер свяжется до первого занятия, адаптирует нагрузку, а 12 тренировок дадут время спокойно познакомиться с форматом.',
+  'DC': 'Тебе интересно попробовать HJ, но ограничения по здоровью — Первый Шаг учтёт это. Assessment, адаптированная нагрузка, тренер рядом. 12 тренировок в удобное время — попробуй без тревоги.',
+  'DD': 'Ты занимаешься сам и хочешь попробовать зал, но здоровье требует внимания. Первый Шаг — 12 тренировок с assessmentом и профессиональным контролем. Тренер адаптирует нагрузку под твои ограничения с первого дня.'
+};
+
+// Dynamic modifiers
+const modifiers = {
+  risk_moderate: 'Тренер адаптирует нагрузку с учётом твоих ограничений.',
+  risk_high: 'Перед первой тренировкой тренер свяжется с тобой, чтобы учесть ограничения и составить безопасный план.',
+  need_onboarding: 'В первый день тебя встретят у входа, покажут зал и всё объяснят — не нужно ничего знать заранее.',
+  need_structure: 'Система уровней и достижений поможет не пропускать — каждая тренировка на счету.',
+  need_logistics: 'Ты сам выбираешь дни и время — тренировки доступны каждый день с утра до вечера.',
+  assessment: 'На assessmentе тренер оценит твои текущие показатели — это точка отсчёта для прогресса.',
+  switcher: 'У нас не просто зал — это система тренировок с прогрессией, геймификацией и персональным треком.'
+};
+
+// Fear responses — short reassurance phrases that combine into a flowing paragraph
+const fearResponses = {
+  'overload': { label: '«Будет слишком сложно»', text: 'нагрузка растёт плавно — тренер не даст больше, чем ты готов' },
+  'wrong-workout': { label: '«Попаду не на ту тренировку»', text: 'программа сама ведёт тебя по нужным форматам в правильном порядке — не нужно выбирать' },
+  'equipment': { label: '«Не знаю как работает оборудование»', text: 'тренер покажет каждое движение и оборудование — не нужно ничего знать заранее' },
+  'injury': { label: '«Боюсь получить травму»', text: 'тренер следит за техникой и корректирует в процессе — безопасность здесь на первом месте' },
+  'quit': { label: '«Начну и снова брошу»', text: 'система прогрессии и геймификация помогают не пропускать — ты сам увидишь, как ритм затягивает' },
+  'expensive': { label: '«Дорого — вдруг не моё»', text: 'пробная программа для того и существует — ты пробуешь и решаешь после, а не до' },
+  'no-result': { label: '«Не увижу результат»', text: 'assessment зафиксирует твой старт, и через несколько недель ты увидишь прогресс в цифрах' },
+  'schedule': { label: '«Не впишусь в расписание»', text: 'тренировки идут каждый день с утра до вечера — ты сам выбираешь удобное время' },
+  'alone': { label: '«Придётся разбираться одному»', text: 'тренер рядом на каждой тренировке, а в первый день тебя встретят и всё покажут' }
+};
+
+// Icons for Q1 options
+const q1Icons = {
+  A: '🔥', // трансформация
+  B: '💪', // performance
+  C: '📅', // привычка
+  D: '🔍'  // exploration
+};
+
+// Icons for gender options
+const genderIcons = { F: '👩', M: '👨', X: '🙂' };
+
+// Icons for age options
+const ageIcons = { '18-24': '⚡', '25-34': '🎯', '35-44': '💎', '45+': '🌟' };
+
+// Icons for occupation options
+const occupationIcons = { office: '💻', standing: '🏃', remote: '🏠', student: '📚', parent: '👶', physical: '🔧' };
+
+// Gender labels for AI
+const genderLabels = { F: 'Женщина', M: 'Мужчина', X: 'Не указано' };
+const ageLabels = { '18-24': '18–24 года', '25-34': '25–34 года', '35-44': '35–44 года', '45+': '45+ лет' };
+const occupationLabels = { office: 'Офис / за компьютером', standing: 'На ногах весь день', remote: 'Удалённая работа / фриланс', student: 'Учёба', parent: 'Забота о детях / семье', physical: 'Физическая работа' };
+
+// Activity detail labels
+const activityDetailLabels = {
+  gym: 'тренажёрный зал', crossfit: 'кроссфит', martial: 'единоборства',
+  running: 'бег', swimming: 'плавание', yoga: 'йога/растяжка',
+  team: 'командные виды спорта', home: 'домашние тренировки',
+  dance: 'танцы', cycling: 'велосипед'
+};
+
+function getActivityDetailsPrompt(ans) {
+  const details = ans.q2details || [];
+  const custom = ans.q2detailscustom || '';
+  if (details.length === 0 && !custom) return '';
+  const parts = details.map(k => activityDetailLabels[k]).filter(Boolean);
+  if (custom) parts.push(custom);
+  return '\n- Предыдущий/текущий опыт: ' + parts.join(', ');
+}
+
+// BMI calculation (hidden from user)
+function calcBMI(ans) {
+  if (!ans.qHeight || !ans.qWeight) return null;
+  const h = ans.qHeight / 100;
+  return Math.round(ans.qWeight / (h * h) * 10) / 10;
+}
+
+function getBmiCategory(bmi) {
+  if (bmi === null) return null;
+  if (bmi < 18.5) return 'underweight';
+  if (bmi < 25) return 'normal';
+  if (bmi < 30) return 'overweight';
+  return 'obese';
+}
+
+function getBmiLabel(bmi) {
+  if (bmi === null) return 'не указано';
+  const cat = getBmiCategory(bmi);
+  const labels = { underweight: 'дефицит веса', normal: 'норма', overweight: 'избыточный вес', obese: 'ожирение' };
+  return `${bmi} (${labels[cat]})`;
+}
+
+// BMI modifier — soft nudge toward longer programs
+function applyBmiModifier(program, bmi, goal) {
+  if (bmi === null) return program;
+  if (bmi >= 35) {
+    // Very high BMI — Первый Шаг regardless (gentle start critical)
+    if (program === 'heros-week' || program === 'basecamp') return 'first-step';
+  }
+  if (bmi >= 30 && goal === 'A') {
+    // High BMI + transformation goal — upgrade from short to medium
+    if (program === 'heros-week') return 'basecamp';
+  }
+  return program;
+}
+
+// Steps: interleave questions with interstitial screens and prediction
+// type: 'question' | 'interstitial' | 'prediction'
+const steps = [
+  { type: 'question', questionIndex: 0 }, // Phone
+  { type: 'question', questionIndex: 1 }, // City
+  { type: 'question', questionIndex: 2 }, // Club
+  { type: 'question', questionIndex: 3 }, // Gender
+  { type: 'question', questionIndex: 4 }, // Age
+  { type: 'interstitial', id: 'after-profile' },
+  { type: 'question', questionIndex: 5 }, // Q1 — цель
+  { type: 'question', questionIndex: 6 }, // Q2 — опыт
+  { type: 'question', questionIndex: 7, condition: () => answers.q2 && answers.q2 !== 'A' }, // Q2 details — уточнение активности
+  { type: 'interstitial', id: 'after-q2' },
+  { type: 'question', questionIndex: 8 }, // Q3 — потребности
+  { type: 'question', questionIndex: 9 }, // Q4 — здоровье
+  { type: 'question', questionIndex: 10, condition: () => answers.q4 && answers.q4 !== 'A' }, // Q4.1 — уточнение здоровья
+  { type: 'interstitial', id: 'after-q4' },
+  { type: 'question', questionIndex: 11 }, // Род деятельности
+  { type: 'interstitial', id: 'after-occupation' },
+  { type: 'question', questionIndex: 12 }, // Рост/вес
+  { type: 'interstitial', id: 'after-body' },
+  { type: 'question', questionIndex: 13 } // Q5 — страхи
+];
+
+function getVisibleStepCount() {
+  return steps.filter(s => !s.condition || s.condition()).length;
+}
+function getVisibleStepIndex() {
+  let idx = 0;
+  for (let i = 0; i < currentStep; i++) {
+    const s = steps[i];
+    if (!s.condition || s.condition()) idx++;
+  }
+  return idx;
+}
+
+// ========== INTERSTITIAL FACT POOLS (15 per variant, random pick) ==========
+function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// --- Profile facts (by age, gender adjusts phrasing) ---
+const profileFacts = {
+  '18-24': [
+    { text: 'В 18–24 тело адаптируется к нагрузке быстрее всего', sub: 'Мышечная память, которую ты заложишь сейчас, останется на десятилетия' },
+    { text: 'Это лучший возраст для старта — восстановление после тренировок максимально быстрое', sub: 'То, что в 35 потребует недели, сейчас занимает пару дней. Используй это окно' },
+    { text: 'В твоём возрасте результат приходит быстрее, чем ты думаешь', sub: 'Первые изменения в теле — уже через 2–3 недели регулярных тренировок' },
+    { text: 'Привычка тренироваться, заложенная в 20+, остаётся на всю жизнь', sub: 'Это не просто фитнес — это инвестиция в здоровье на десятилетия вперёд' },
+    { text: 'Сейчас организм на пике способности строить мышечную ткань', sub: 'Правильная система тренировок даст заметный результат уже через месяц' },
+    { text: 'В 18–24 уровень тестостерона и гормона роста на максимуме', sub: 'Это значит: быстрее набор силы, быстрее восстановление, быстрее прогресс' },
+    { text: 'Ты закладываешь фундамент — и от него зависит форма в 30, 40, 50', sub: 'Те, кто начал тренироваться в 20+, сохраняют результат значительно дольше' },
+    { text: 'Регулярные тренировки в молодом возрасте укрепляют кости на всю жизнь', sub: 'Плотность костной ткани набирается до 30 лет — потом только сохраняется' },
+    { text: '3 тренировки в неделю — и через месяц ты не узнаешь свою выносливость', sub: 'В твоём возрасте VO2 Max растёт быстро, а это главный маркер здоровья' },
+    { text: 'Большинство людей в 20+ недооценивают свой потенциал', sub: 'Пока ты сомневаешься — тело готово к нагрузке и ждёт сигнала начать' },
+    { text: 'В 18–24 метаболизм работает на максимуме', sub: 'Добавь к этому систему тренировок — и тело начнёт меняться быстрее, чем ты ожидаешь' },
+    { text: 'Твоё тело создано для движения — а сидячий образ жизни тормозит его', sub: 'Тренировки вернут ту энергию, которую забирает экран и офис' },
+    { text: 'Ты в возрасте, когда можно начать с нуля и через 3 месяца быть в форме', sub: 'Не через год, не через два — через 12 недель систематических тренировок' },
+    { text: 'В 20+ тело прощает ошибки в технике быстрее', sub: 'Но с тренером ты их просто не допустишь — и прогресс будет ещё быстрее' },
+    { text: 'Каждая тренировка сейчас — это вклад в качество жизни через 20 лет', sub: 'Те, кто тренируется регулярно с молодости, стареют медленнее — это доказанный факт' }
+  ],
+  '25-34': [
+    { text: 'Большинство атлетов HJ — в возрасте 25–34', sub: 'Ты в хорошей компании. Силовые тренировки в этом возрасте — лучшая инвестиция в тело' },
+    { text: 'В 25–34 организм ещё на пике, но без нагрузки форма уходит быстро', sub: 'Систематические тренировки — способ сохранить и приумножить то, что дала природа' },
+    { text: 'После 25 тело теряет примерно 1% мышечной массы в год — если не тренироваться', sub: 'Силовые полностью останавливают этот процесс и разворачивают его вспять' },
+    { text: '25–34 — самый продуктивный возраст для набора силы', sub: 'Гормональный фон ещё высокий, восстановление быстрое. Не упусти это окно' },
+    { text: 'В этом возрасте 3 тренировки в неделю дают видимый результат за 4 недели', sub: 'Тело откликается быстро — особенно если есть система и прогрессия' },
+    { text: 'Большинство наших атлетов совмещают тренировки с плотным графиком работы', sub: 'Гибкое расписание тренировок с утра до вечера — найдёшь время, которое подходит' },
+    { text: 'Метаболизм в 25–34 ещё быстрый, но уже начинает замедляться', sub: 'Силовые тренировки — самый эффективный способ поддержать его на высоком уровне' },
+    { text: 'Инвестиция в здоровье сейчас окупается десятикратно к 40', sub: 'Те, кто начал систематически тренироваться в 25–30, к 40 чувствуют себя лучше ровесников' },
+    { text: 'Регулярные тренировки снижают уровень стресса и тревоги', sub: 'В 25–34 стресс от карьеры и жизни на пике — тренировки работают как натуральный антидепрессант' },
+    { text: 'Большинство людей переоценивают необходимый объём тренировок', sub: '3 раза в неделю по 50 минут — достаточно для заметного результата. Это меньше 3 часов в неделю' },
+    { text: 'В этом возрасте особенно важен баланс: силовые + кардио + подвижность', sub: 'Именно так построена система HJ — три формата тренировок для комплексного результата' },
+    { text: 'После 30 восстановление занимает чуть больше времени', sub: 'Программа учитывает это — нагрузка растёт плавно, без перетренированности' },
+    { text: 'Ты в возрасте, когда тело ещё легко трансформируется', sub: 'Через 4–6 недель тренировок разница будет заметна не только тебе, но и окружающим' },
+    { text: 'Сидячий образ жизни в 25–34 закладывает проблемы со спиной к 40', sub: 'Силовые тренировки укрепляют мышечный корсет и убирают боли в спине' },
+    { text: '85% атлетов HJ — девушки и женщины 20–35 лет', sub: 'Они приходят с разным уровнем — от полного нуля до опытных спортсменок' }
+  ],
+  '35-44': [
+    { text: 'После 35 силовые тренировки — не опция, а необходимость', sub: 'Они замедляют потерю мышечной массы, укрепляют кости и поддерживают метаболизм' },
+    { text: 'В 35–44 тело теряет мышцы и набирает жир — если не тренироваться', sub: 'Но этот процесс полностью обратим. Силовые возвращают мышечную массу в любом возрасте' },
+    { text: 'Начать в 35+ — не поздно. Это самый ответственный возраст для старта', sub: 'Каждый год без тренировок усложняет возврат. Но каждая тренировка отматывает часы назад' },
+    { text: 'После 35 метаболизм замедляется на 2–4% за десятилетие', sub: 'Силовые тренировки — единственный доказанный способ разогнать его обратно' },
+    { text: 'Плотность костной ткани начинает снижаться после 35', sub: 'Силовые тренировки — рекомендация ВОЗ для поддержания костей. Это работает в любом возрасте' },
+    { text: 'В 35–44 восстановление требует больше внимания', sub: 'Программа учитывает это: плавный рост нагрузки, чередование форматов, дни отдыха' },
+    { text: 'Регулярные тренировки после 35 улучшают сон и снижают тревожность', sub: 'Это не побочный эффект — это один из главных результатов, который атлеты замечают первым' },
+    { text: 'В 35+ тренировки — это про качество жизни, а не про цифры на весах', sub: 'Энергия, подвижность, сон, настроение — всё это меняется уже через 2–3 недели' },
+    { text: 'Гормональные изменения после 35 делают силовые ещё важнее', sub: 'Тренировки поддерживают уровень гормонов и замедляют возрастные изменения' },
+    { text: 'Боль в спине, коленях, шее — часто результат слабых мышц, а не возраста', sub: 'Правильные силовые тренировки укрепляют суставы и убирают хронические боли' },
+    { text: 'В 35+ каждая тренировка даёт больше, чем кажется', sub: 'Снижение сахара в крови, улучшение давления, крепкий сон — бонусы, которые ты почувствуешь быстро' },
+    { text: 'Большинство проблем со здоровьем после 40 — от недостатка движения', sub: 'Тренировки сейчас — это профилактика, которая работает лучше любых таблеток' },
+    { text: 'После 35 мышцы восстанавливаются медленнее — но они так же хорошо растут', sub: 'Просто нужна правильная программа с учётом возраста. Именно так построена система HJ' },
+    { text: 'Люди, которые начали тренироваться после 35, часто говорят одно:', sub: '«Жалею только о том, что не начал раньше». Но лучшее время — сейчас' },
+    { text: 'В 35–44 ты можешь быть в лучшей форме, чем в 25 — это реально', sub: 'Дисциплина и система дают результат, который молодость без тренировок не даёт' }
+  ],
+  '45+': [
+    { text: 'Тренировки после 45 — лучшая инвестиция в здоровье на ближайшие 20 лет', sub: 'Правильная нагрузка улучшает сон, подвижность, настроение и общее самочувствие' },
+    { text: 'В 45+ силовые тренировки замедляют старение на клеточном уровне', sub: 'Это не метафора — исследования показывают замедление укорочения теломер при регулярных нагрузках' },
+    { text: 'После 45 мышцы теряются быстрее — но так же быстро возвращаются при тренировках', sub: 'Тело в любом возрасте отвечает на нагрузку. Нужна только правильная программа' },
+    { text: 'Регулярные тренировки в 45+ снижают риск падений и переломов', sub: 'Сильные мышцы и хороший баланс — это безопасность на каждый день' },
+    { text: 'Многие атлеты HJ пришли после 45 и говорят: «Это лучшее решение в жизни»', sub: 'Программа полностью адаптируется под твой уровень — начинаем с того, что комфортно' },
+    { text: 'Сон, давление, сахар, холестерин — тренировки улучшают все показатели', sub: 'Это не замена лечению, но мощное дополнение, которое работает уже через пару недель' },
+    { text: 'В 45+ важно не количество, а качество тренировок', sub: '2–3 раза в неделю с правильной техникой дают больше, чем ежедневные хаотичные занятия' },
+    { text: 'Боль в суставах — не повод отказываться от тренировок', sub: 'Чаще всего правильная нагрузка убирает боль, а не усиливает. Тренер адаптирует программу' },
+    { text: 'После 45 тренировки — это про независимость и качество жизни', sub: 'Подняться по лестнице без одышки, носить сумки без боли, играть с внуками' },
+    { text: 'Начать никогда не поздно — есть исследования, где люди начинали в 70 и набирали мышцы', sub: 'В 45 организм ещё очень хорошо отвечает на нагрузку. Результат будет заметным' },
+    { text: 'Регулярные тренировки в 45+ улучшают память и когнитивные функции', sub: 'Физическая нагрузка увеличивает приток крови к мозгу — это доказано нейронаукой' },
+    { text: 'В 45+ важна не нагрузка, а регулярность', sub: 'Три тренировки в неделю в комфортном темпе дают стабильный результат без перегрузки' },
+    { text: 'Подвижность суставов после 45 зависит от тренировок', sub: 'Тренировки Reshape (гибкость и восстановление) в HJ специально разработаны для улучшения подвижности и гибкости' },
+    { text: 'Тренировки после 45 — не подвиг, а забота о себе', sub: 'Программа начинается с комфортного уровня и растёт плавно — без стресса и боли' },
+    { text: 'Каждая тренировка в 45+ делает тебя моложе — буквально', sub: 'Улучшается осанка, походка, энергия. Окружающие замечают это раньше, чем ты' }
+  ]
+};
+
+// Gender-specific icon for profile interstitial
+const profileIcons = { '18-24': '⚡', '25-34': '🎯', '35-44': '💎', '45+': '🌟' };
+
+// --- Occupation facts (15 per type) ---
+const occupationFacts = {
+  office: [
+    { text: '85% наших атлетов — офисные работники', sub: '30 минут тренировки компенсируют негативный эффект от 6 часов сидения' },
+    { text: 'Сидячая работа — главная причина болей в спине и шее', sub: 'Силовые тренировки укрепляют мышечный корсет и убирают хронические боли' },
+    { text: '8 часов за компьютером замедляют метаболизм на 90%', sub: 'Даже одна тренировка разгоняет обмен веществ на следующие 24–48 часов' },
+    { text: 'Офисная работа сжигает всего 300–400 ккал за рабочий день', sub: 'Одна тренировка в HJ — от 400 до 700 ккал за 50 минут' },
+    { text: 'Большинство атлетов HJ тренируются до или после работы', sub: 'Гибкое расписание с утра до вечера — всегда найдётся окно между задачами' },
+    { text: 'После рабочего дня за компьютером тренировка — лучший способ перезагрузить голову', sub: 'Физическая нагрузка снижает кортизол и повышает эндорфины — ты уйдёшь из зала с ясной головой' },
+    { text: 'Синдром «компьютерной шеи» есть у 70% офисных работников', sub: 'Силовые и Reshape (гибкость на реформерах) в HJ прицельно работают с осанкой и мобильностью' },
+    { text: 'Сидячий образ жизни увеличивает риск сердечно-сосудистых заболеваний', sub: 'Регулярные тренировки снижают этот риск — даже 3 раза в неделю уже работают' },
+    { text: 'Офисные работники, которые тренируются, продуктивнее коллег', sub: 'Исследования показывают: физическая активность улучшает фокус и креативность на 20%' },
+    { text: 'Ты проводишь 2000+ часов в год сидя на работе', sub: '150 часов тренировок (3 раза в неделю) компенсируют этот дисбаланс' },
+    { text: 'Тугие плечи, зажатая поясница, слабый пресс — знакомо?', sub: 'Это типичный «офисный набор». За 4 недели тренировок большинство этих проблем уходит' },
+    { text: 'Долгое сидение ослабляет ягодичные мышцы — отсюда проблемы с поясницей', sub: 'Силовые тренировки восстанавливают мышечный баланс и убирают причину боли' },
+    { text: 'Энергия к концу рабочего дня падает — и это нормально для сидячей работы', sub: 'Парадокс: тренировка не забирает энергию, а добавляет. После зала ты бодрее, чем утром' },
+    { text: 'Зрение, осанка, сон — всё страдает от сидячей работы', sub: 'Тренировки не починят монитор, но улучшат осанку и качество сна уже за 2 недели' },
+    { text: 'Многие наши атлеты приходят после работы — и говорят, что это лучшее время', sub: 'Тренировка становится границей между рабочим и личным — помогает «выключить» голову' }
+  ],
+  remote: [
+    { text: 'Удалённая работа = ещё меньше движения, чем в офисе', sub: 'Без дороги до работы тело весь день в одной позе. Тренировки — лучший способ это компенсировать' },
+    { text: 'На удалёнке среднее количество шагов — всего 2000–3000 в день', sub: 'Это в 3 раза меньше нормы. Одна тренировка компенсирует дефицит движения' },
+    { text: 'Работа из дома стирает границу между делом и отдыхом', sub: 'Тренировка в зале — это физический переключатель: вышел из дома → другой режим' },
+    { text: 'Без коллег рядом легко засидеться по 5–6 часов не вставая', sub: 'Тренировка 3 раза в неделю — минимум, чтобы тело не «затекало» от сидячего режима' },
+    { text: 'Фрилансеры и удалёнщики чаще страдают от болей в спине', sub: 'Домашнее рабочее место редко эргономичное — силовые тренировки компенсируют этот дисбаланс' },
+    { text: 'На удалёнке гибкий график — и это преимущество для тренировок', sub: 'Можно тренироваться утром, в обед или вечером — расписание HJ позволяет' },
+    { text: 'Изоляция на удалёнке — скрытый стресс', sub: 'Тренировка в зале — это социальный контакт, энергия группы и смена обстановки' },
+    { text: 'Удалённая работа экономит время на дорогу — потрать его на себя', sub: '50 минут тренировки 3 раза в неделю — меньше, чем средняя дорога до офиса' },
+    { text: 'На удалёнке легко забыть про тело — пока оно не напомнит о себе болью', sub: 'Тренировки — это профилактика, а не лечение. Начни до того, как спина скажет «хватит»' },
+    { text: 'Энергия на удалёнке падает к обеду — это нормально для сидячего режима', sub: 'Утренняя тренировка разгоняет метаболизм и даёт бодрость на весь рабочий день' },
+    { text: 'Домашний «рабочий стул» + диван = рецепт для слабой спины', sub: 'Силовые тренировки укрепляют мышечный корсет за 3–4 недели' },
+    { text: 'Удалёнщики чаще набирают вес — холодильник слишком близко', sub: 'Регулярные тренировки нормализуют аппетит и ускоряют метаболизм' },
+    { text: 'Без поездки в офис тело получает на 40% меньше движения', sub: 'Три тренировки в неделю полностью закрывают этот дефицит' },
+    { text: 'Многие фрилансеры тренируются утром — и говорят, что это меняет весь день', sub: 'После тренировки фокус и креативность на максимуме — как раз для глубокой работы' },
+    { text: 'Удалёнка — это свобода графика. Тренировки — это структура, которой не хватает', sub: 'Фиксированное время в зале помогает организовать весь день вокруг него' }
+  ],
+  standing: [
+    { text: 'Ты уже активнее 85% наших атлетов — они весь день сидят', sub: 'Но ноги устают от однотипной нагрузки. Силовые тренировки укрепят мышцы и снимут усталость' },
+    { text: 'Работа на ногах нагружает ноги, но не укрепляет верхнюю часть тела', sub: 'Силовые тренировки дадут баланс, которого не хватает — спина, руки, кор' },
+    { text: 'Стоячая работа — это нагрузка, но не тренировка', sub: 'Тело привыкает к однообразному движению. Зал даёт другие углы, мышцы и прогресс' },
+    { text: 'Боль в стопах, коленях и пояснице — частый спутник стоячей работы', sub: 'Правильные силовые тренировки укрепляют суставы и снимают напряжение' },
+    { text: 'Варикоз — частая проблема при долгом стоянии', sub: 'Силовые и Reshape (гибкость на реформерах) улучшают кровообращение в ногах' },
+    { text: 'После рабочего дня на ногах хочется лечь — но тренировка даст больше энергии', sub: 'Парадокс: правильная нагрузка снимает усталость от стоячей работы лучше, чем отдых на диване' },
+    { text: 'Работа на ногах укрепляет выносливость, но не силу', sub: 'Силовые тренировки добавят мышечную массу, которая защитит суставы от износа' },
+    { text: 'Ты привыкла к нагрузке — значит, тренировки покажутся легче, чем новичку', sub: 'Тело уже подготовлено, осталось дать ему правильную программу' },
+    { text: 'Тренировки Reshape (гибкость и восстановление) в HJ — идеальное дополнение к стоячей работе', sub: 'Растяжка, подвижность, расслабление — именно то, чего не хватает в конце дня' },
+    { text: 'При стоячей работе особенно важна сильная спина', sub: 'Силовые тренировки укрепляют мышечный корсет и убирают хроническое напряжение' },
+    { text: 'Ноги работают весь день, но однотипно — им не хватает разнообразия', sub: 'Приседания, выпады, разные углы — зал даёт то, что стоячая работа не может' },
+    { text: 'Стоячая работа сжигает больше калорий, чем сидячая — но этого мало', sub: 'Тренировки добавят мышечную массу, которая ускорит метаболизм 24/7' },
+    { text: 'Усталость после стоячей работы — от слабых мышц, а не от нагрузки', sub: 'Сильные мышцы устают медленнее. Через месяц тренировок ты это почувствуешь' },
+    { text: 'Многие врачи и продавцы приходят тренироваться в HJ', sub: 'Они знают: тело на ногах весь день, но это не заменяет тренировки — а дополняет' },
+    { text: 'Правильная тренировка после стоячего дня = глубокий сон и свежие ноги утром', sub: 'Это не нагрузка сверху — это восстановление через правильное движение' }
+  ],
+  student: [
+    { text: 'Регулярные тренировки улучшают концентрацию и память', sub: 'Физическая нагрузка увеличивает приток крови к мозгу — учёба идёт легче' },
+    { text: 'Многие студенты говорят: после зала сессия сдаётся легче', sub: 'Тренировки снижают тревогу и улучшают сон — два главных врага успеваемости' },
+    { text: 'Лекции, библиотека, экран — студенческая жизнь тоже сидячая', sub: 'Три тренировки в неделю компенсируют часы за партой и ноутбуком' },
+    { text: 'В студенческом возрасте тело адаптируется к нагрузке быстрее всего', sub: 'Привычка тренироваться, заложенная сейчас, останется на всю жизнь' },
+    { text: 'Тренировки — лучший антистресс перед экзаменами', sub: 'Физическая нагрузка снижает кортизол и повышает эндорфины — натуральный антидепрессант' },
+    { text: 'Студенческий бюджет — понимаем. Поэтому пробная программа доступна', sub: 'Проверь, подходит ли тебе формат HJ — без долгосрочных обязательств' },
+    { text: '20 минут кардио перед учёбой улучшают усвоение материала', sub: 'Кардио-тренировки (HIIT) в HJ дают этот эффект — и ещё добавляют силу и выносливость' },
+    { text: 'Плохой сон — главная проблема студентов. Тренировки решают её', sub: 'Регулярная физическая нагрузка улучшает качество сна уже через неделю' },
+    { text: 'Энергия для учёбы — это не кофе, а тренировки', sub: 'После зала уровень энергии выше на 4–6 часов. Хватит на пары и подготовку' },
+    { text: 'Тренировки — это не «трата времени», а инвестиция в продуктивность', sub: '50 минут в зале дают больше фокуса, чем 3 чашки кофе' },
+    { text: 'Осанка от учёбы за столом портится быстро', sub: 'Силовые тренировки укрепляют спину и плечи — исправление заметно уже через 3 недели' },
+    { text: 'Студенты, которые тренируются, меньше болеют в сезон простуд', sub: 'Регулярная нагрузка укрепляет иммунитет — меньше пропусков, меньше хвостов' },
+    { text: 'Зал — это не только тело, но и социальная среда', sub: 'Многие студенты находят друзей и знакомых среди атлетов HJ' },
+    { text: 'Гибкое расписание тренировок подстраивается под пары', sub: 'Утро, обед, вечер — выбирай время, которое не конфликтует с учёбой' },
+    { text: 'Физическая активность повышает уровень BDNF — белка, который помогает учиться', sub: 'Это не бро-наука, а нейробиология. Тренировки буквально делают мозг эффективнее' }
+  ],
+  parent: [
+    { text: 'Забота о себе — не эгоизм, а ресурс для семьи', sub: '30 минут в зале дают энергию на весь день с детьми' },
+    { text: 'Дети забирают 100% энергии — тренировки возвращают её обратно', sub: 'Парадокс: после зала сил больше, чем если просто отдыхать' },
+    { text: 'Родителям особенно важна сильная спина', sub: 'Поднимать ребёнка, носить коляску, сидеть на полу — всё это нагрузка на поясницу' },
+    { text: 'У нас гибкое расписание — найдёшь окно, даже с детьми', sub: 'Многие родители тренируются рано утром или когда дети в саду/школе' },
+    { text: 'Тренировки — это единственное время, которое на 100% твоё', sub: 'Без звонков, без «мама», без задач — 50 минут только для себя' },
+    { text: 'Дети копируют поведение родителей — покажи, что тренировки важны', sub: 'Активные родители воспитывают активных детей. Это лучший пример' },
+    { text: 'После родов тело требует восстановления — и тренировки помогают', sub: 'Программа адаптируется под твой уровень. Тренер учтёт все особенности' },
+    { text: 'Хронический недосып + забота о детях = истощение. Тренировки разрывают этот цикл', sub: 'Регулярная нагрузка улучшает качество сна — ты высыпаешься за меньшее время' },
+    { text: 'Многие мамы в HJ говорят: «Зал — это мой островок нормальности»', sub: 'Место, где ты — не «мама», а человек, который делает что-то для себя' },
+    { text: 'Сильное тело = меньше усталости от ежедневных задач с детьми', sub: 'Поднять, уложить, побежать за ним в парке — всё это легче, когда мышцы в тонусе' },
+    { text: 'Ты заслуживаешь 50 минут в день для себя — и это не много', sub: 'Это 3% от суток. Остальные 97% — для семьи. Но эти 3% меняют всё' },
+    { text: 'Стресс от родительства — реален. Тренировки — доказанный способ его снизить', sub: 'Физическая нагрузка снижает кортизол и повышает серотонин' },
+    { text: 'Многие родители начинают тренироваться «ради примера детям»', sub: 'А потом понимают, что делают это для себя — и это правильно' },
+    { text: 'Ночные кормления, ранние подъёмы — знакомо. Но 3 раза в неделю возможно', sub: 'Начни с того, что реально. Даже 2 тренировки в неделю дают заметный результат' },
+    { text: 'Тренировки улучшают настроение — а от настроения мамы зависит вся семья', sub: 'Счастливый родитель = счастливые дети. Это не теория, а факт' }
+  ],
+  physical: [
+    { text: 'Физическая работа нагружает тело неравномерно', sub: 'Тренировки компенсируют дисбаланс — укрепляют слабые зоны и защищают суставы' },
+    { text: 'Таскать тяжести на работе — это не тренировка', sub: 'Рабочая нагрузка изнашивает суставы, а правильная тренировка укрепляет их' },
+    { text: 'Боль в пояснице — профессиональная проблема физических работников', sub: 'Силовые тренировки укрепляют мышечный корсет и убирают хроническое напряжение' },
+    { text: 'Физическая работа не даёт прогрессии — тело привыкает и стагнирует', sub: 'В зале нагрузка растёт системно — это развитие, а не износ' },
+    { text: 'Твоё тело — рабочий инструмент. Тренировки — его обслуживание', sub: 'Как машину нужно регулярно обслуживать, так и тело нуждается в правильной нагрузке' },
+    { text: 'На работе ты нагружаешь одни и те же мышцы каждый день', sub: 'Тренировки прорабатывают всё тело — баланс, который защищает от травм' },
+    { text: 'Растяжка и подвижность особенно важны при физической работе', sub: 'Тренировки Reshape (гибкость и восстановление) в HJ — это восстановление, которого не хватает после рабочего дня' },
+    { text: 'Сильные мышцы устают медленнее — даже на тяжёлой работе', sub: 'Через месяц тренировок ты заметишь: рабочий день даётся легче' },
+    { text: 'Профессиональный износ суставов — не приговор, а повод тренироваться', sub: 'Правильная нагрузка укрепляет связки и хрящи, замедляя дегенерацию' },
+    { text: 'Физработники часто думают: «Мне и так хватает нагрузки»', sub: 'Но рабочая нагрузка разрушает, а тренировочная — строит. Разница принципиальная' },
+    { text: 'Тренировки не добавляют усталость — они меняют её качество', sub: 'После зала усталость приятная и даёт глубокий сон, а не ноющую боль' },
+    { text: 'На работе ты двигаешь тяжести без техники — и спина это чувствует', sub: 'В зале тренер поставит технику, которая защитит тебя и на работе тоже' },
+    { text: 'Выносливость — это не только кардио. Сильные мышцы тоже дают выносливость', sub: 'Силовые тренировки помогут меньше уставать к концу смены' },
+    { text: 'Многие строители, курьеры и работники сервиса тренируются в HJ', sub: 'Они знают: без тренировок тело изнашивается. С тренировками — становится сильнее' },
+    { text: 'Работа нагружает, тренировка восстанавливает — если она правильная', sub: 'Программа HJ учитывает твою рабочую нагрузку и дополняет её, а не дублирует' }
+  ]
+};
+
+// --- Q2 experience facts (15 per type) ---
+const experienceFacts = {
+  A: [ // newbie
+    { text: 'Большинство наших атлетов тоже начинали с нуля', sub: 'Тренер будет рядом с первого шага — не нужно ничего знать заранее' },
+    { text: '72% атлетов HJ никогда раньше не были в зале', sub: 'Система построена для новичков — от первого шага до уверенных тренировок' },
+    { text: 'Не знать, с чего начать — нормально. Для этого есть программа', sub: 'Она ведёт тебя шаг за шагом: от простого к сложному, без стресса' },
+    { text: 'Первый раз в зале — это волнительно. Мы это знаем и учитываем', sub: 'Тренер знает, что ты новичок, и адаптирует тренировку под твой уровень' },
+    { text: 'Ноль опыта — это не минус, а чистый старт без вредных привычек', sub: 'Тренер сразу поставит правильную технику — это лучше, чем переучиваться' },
+    { text: 'Все, кто сейчас уверенно тренируется в HJ, когда-то пришли впервые', sub: 'Через месяц ты удивишься, как быстро тело учится и адаптируется' },
+    { text: 'Новичкам результат виден быстрее, чем опытным', sub: 'Тело, которое никогда не тренировалось, откликается на нагрузку максимально быстро' },
+    { text: 'Тебе не нужно быть в форме, чтобы начать тренироваться', sub: 'Для этого и существует программа — она приведёт тебя в форму, а не требует её заранее' },
+    { text: 'Страх выглядеть нелепо в зале — самый распространённый барьер', sub: 'Но все заняты своей тренировкой, а тренер следит только за тобой' },
+    { text: 'В HJ новичков не бросают — от входа до раздевалки и обратно', sub: 'Первый визит: тебя встретят, покажут зал, объяснят формат и будут рядом' },
+    { text: 'Начинать с нуля = максимальный потенциал для прогресса', sub: 'В первый месяц прогресс будет заметен каждую неделю — это мотивирует' },
+    { text: 'Ты не единственный новичок в зале — просто остальные пришли чуть раньше', sub: 'Каждый день в HJ кто-то начинает свою первую программу' },
+    { text: 'Первая тренировка — самая сложная. Не физически, а морально', sub: 'Но после неё 90% людей говорят: «Зря я так долго откладывал»' },
+    { text: 'Программа для новичков построена так, чтобы ты не перегрузился', sub: 'Плавный старт, понятные движения, тренер рядом — никаких сюрпризов' },
+    { text: 'Не нужно покупать форму, изучать упражнения или качать мышцы заранее', sub: 'Приходи как есть — программа и тренер сделают остальное' }
+  ],
+  B: [ // lapsed
+    { text: 'Возвращаться всегда сложнее, чем начинать — но у тебя уже есть база', sub: 'Тело помнит больше, чем ты думаешь. Мышечная память — реальная вещь' },
+    { text: 'Перерыв в тренировках — не приговор. Тело восстанавливается быстро', sub: 'Те, кто когда-то тренировался, возвращают форму в 2–3 раза быстрее новичков' },
+    { text: 'В прошлый раз не хватило системы? Система HJ не даст бросить', sub: 'Прогрессия по уровням, геймификация, тренер — структура, которая держит' },
+    { text: 'Большинство людей бросает зал не из-за лени, а из-за отсутствия плана', sub: 'В HJ план есть с первого дня — и он адаптируется под твой прогресс' },
+    { text: 'Ты уже знаешь, каково это — чувствовать себя в форме', sub: 'Вернуть это ощущение проще, чем создать с нуля. Тело вспомнит' },
+    { text: 'Первая тренировка после перерыва — самая сложная. Дальше легче', sub: 'Через 2 недели ты удивишься, как быстро вернулась сила и выносливость' },
+    { text: 'Не сравнивай себя с тем, кем был раньше — сравнивай с тем, кем будешь', sub: 'Программа начнёт с текущего уровня и поведёт вперёд' },
+    { text: 'Самая частая причина «бросил зал» — скучно и нет результата', sub: 'Система уровней HJ делает каждую тренировку шагом вперёд. Скучать не получится' },
+    { text: 'Тело после перерыва — как мотор, который давно не заводили', sub: 'Первые дни — непривычно. Через неделю — уже ритм. Через месяц — привычка' },
+    { text: 'У тебя преимущество перед новичками — ты знаешь, что такое зал', sub: 'Не нужно объяснять базовые вещи. Можно сразу к делу — с правильной программой' },
+    { text: 'В прошлый раз не сработало. В этот раз будет система, а не хаос', sub: 'HJ построен так, чтобы человек не бросал — каждая тренировка имеет смысл' },
+    { text: 'Перерыв мог быть по любой причине — жизнь, работа, мотивация', sub: 'Программа учитывает это. Плавный возврат, без давления, в своём темпе' },
+    { text: 'Ты уже сделал самое сложное — решил вернуться', sub: 'Теперь осталось просто прийти. Программа и тренер сделают остальное' },
+    { text: 'Мышечная память — научный факт. Твоё тело помнит тренировки', sub: 'Мышечные ядра сохраняются годами — набрать форму повторно значительно проще' },
+    { text: 'Те, кто возвращается в зал после перерыва, часто тренируются стабильнее', sub: 'Потому что знают, как плохо без тренировок — и ценят результат больше' }
+  ],
+  C: [ // switcher
+    { text: 'Ты уже тренируешься — это главное', sub: 'Осталось попробовать систему, где прогресс виден и мотивирует возвращаться' },
+    { text: 'Ты знаешь, что такое зал — теперь узнай, что такое система', sub: 'Прогрессия по уровням, assessment, персональный трек — HJ это не просто зал' },
+    { text: 'Многие атлеты HJ пришли из других залов — и остались', sub: 'Потому что разница между «просто зал» и «система тренировок» — огромная' },
+    { text: 'Тебе не нужно объяснять, зачем тренироваться — ты это уже знаешь', sub: 'Вопрос только в том, даёт ли твой текущий зал видимый прогресс' },
+    { text: 'Если ты ищешь что-то новое — значит, текущий формат не даёт достаточно', sub: 'HJ построен на системе прогрессии: каждая тренировка — шаг вперёд, а не повторение' },
+    { text: 'Попробовать HJ — это не обязательство, а эксперимент', sub: 'Сравни со своим текущим залом и реши. Никакого давления' },
+    { text: 'Ты уже в форме — HJ покажет, как двигаться дальше системно', sub: 'Assessment определит реальный уровень, а программа выстроит путь к следующему' },
+    { text: 'В обычном зале ты сам решаешь, что делать. В HJ — система решает за тебя', sub: 'Это не ограничение, а поддержка. Правильная программа = быстрый результат' },
+    { text: 'Геймификация — звучит несерьёзно, но работает серьёзно', sub: 'Уровни, достижения, прогресс — это то, что заставляет не пропускать тренировки' },
+    { text: 'Твой опыт в зале — это преимущество. HJ добавит к нему систему', sub: 'Техника у тебя уже есть. Осталось добавить прогрессию и видимый рост' },
+    { text: 'Многие, кто приходил из других залов, говорят: «Я не знал, что зал может быть таким»', sub: 'Формат HJ отличается от обычного зала — это система, а не набор тренажёров' },
+    { text: 'Ты тренируешься, но чувствуешь плато? Это нормально — нужна новая система', sub: 'HJ строит нагрузку по-другому: силовые (работа с весами), HIIT (кардио), Reshape (гибкость) — три вектора прогресса' },
+    { text: 'Пробная программа — идеальный способ сравнить HJ с твоим текущим залом', sub: 'Без отказа от абонемента — просто попробуй параллельно и реши' },
+    { text: 'Смена зала — не предательство. Это рост', sub: 'Если текущий зал не даёт прогресса — логично искать то, что работает' },
+    { text: 'У тебя есть дисциплина ходить в зал. HJ даст направление этой дисциплине', sub: 'Когда система ведёт тебя — каждая тренировка двигает к конкретной цели' }
+  ],
+  D: [ // self-trained
+    { text: 'Самостоятельные тренировки — это дисциплина. А зал добавит систему', sub: 'Assessment покажет реальный уровень, а тренер — как расти быстрее' },
+    { text: 'Тренировки дома или на улице — это отлично. Но у зала есть то, чего нет дома', sub: 'Оборудование, прогрессия нагрузки, тренер, который видит то, что ты не замечаешь' },
+    { text: 'Ты уже активен — это больше, чем у 80% людей', sub: 'Зал не заменит твои тренировки, а дополнит их. Результат будет быстрее' },
+    { text: 'Дома сложно увеличивать нагрузку — а без этого прогресс останавливается', sub: 'В зале прогрессия встроена в систему: веса, форматы, уровни' },
+    { text: 'Без обратной связи легко закрепить неправильную технику', sub: 'Тренер скорректирует то, что ты не видишь — и прогресс ускорится' },
+    { text: 'Ты тренируешься сам — значит, у тебя есть главное: дисциплина', sub: 'Добавь к ней систему и оборудование — разница будет заметна через 2 недели' },
+    { text: 'Многие self-trained атлеты приходят в HJ и удивляются assessmentу', sub: 'Оказывается, реальный уровень силы и подвижности — не то, что казалось' },
+    { text: 'Домашние тренировки прокачивают отдельные мышцы, а зал — всё тело', sub: 'Силовые + HIIT (кардио) + Reshape (гибкость) = комплексное развитие, которое сложно организовать дома' },
+    { text: 'Тренироваться в группе — другой уровень мотивации', sub: 'Энергия зала подталкивает делать на 10–15% больше, чем в одиночку дома' },
+    { text: 'Ты уже знаешь, что тренировки — это важно', sub: 'Теперь узнай, как система может ускорить результат в разы' },
+    { text: 'Дома ты ограничен весом тела и парой гантелей', sub: 'В зале — кабельные машины, штанги, TRX и десятки форматов нагрузки' },
+    { text: 'Плато — главная проблема самостоятельных тренировок', sub: 'Тело адаптируется к домашним нагрузкам за 6–8 недель. Зал постоянно даёт новые стимулы' },
+    { text: 'Ты уже тренируешься — зал не будет шоком для тела', sub: 'Адаптация пройдёт быстро, а тренер сразу даст нагрузку под твой уровень' },
+    { text: 'YouTube-тренировки не видят твою технику', sub: 'Живой тренер заметит компенсации и слабые звенья — и поможет их исправить' },
+    { text: 'Самостоятельность — суперсила. Зал даст ей инструменты', sub: 'Ты уже умеешь заставить себя тренироваться. Теперь нужна система, которая направит усилия' }
+  ]
+};
+
+// --- Q4 health facts (15 per risk level) ---
+const healthFacts = {
+  A: [ // none
+    { text: 'Отлично — осталось совсем немного', sub: 'Мы уже почти подобрали тебе программу' },
+    { text: 'Без ограничений — значит, можно сразу к делу', sub: 'Программа раскроет твой потенциал на максимум' },
+    { text: 'Здоровье в порядке — это лучшая стартовая точка', sub: 'Ещё пара вопросов — и программа будет готова' },
+    { text: 'Тело готово к нагрузке — осталось дать ему систему', sub: 'Мы подбираем программу, которая подходит именно тебе' },
+    { text: 'Без ограничений = полный доступ ко всем форматам тренировок', sub: 'Силовые (работа с весами), HIIT (кардио), Reshape (гибкость) — попробуешь всё и поймёшь, что тебе ближе' },
+    { text: 'Отлично — мы почти у цели', sub: 'Финальные штрихи — и ты получишь персональную рекомендацию' },
+    { text: 'Нет ограничений — значит, нагрузка может расти быстрее', sub: 'Программа адаптируется под твой темп прогресса' },
+    { text: 'Здоровое тело + правильная программа = быстрый результат', sub: 'Мы подбираем оптимальный вариант для тебя' },
+    { text: 'Всё в порядке — мы уже формируем твою рекомендацию', sub: 'Осталось буквально пара шагов' },
+    { text: 'Без ограничений — можно тренироваться на полную', sub: 'Тренер подберёт нагрузку, которая даст максимальный результат' },
+    { text: 'Тело здорово — самое время его развивать', sub: 'Персональная программа будет готова через минуту' },
+    { text: 'Нет противопоказаний — отличный старт для любой программы', sub: 'Мы подберём формат, который подходит под твои цели' },
+    { text: 'Здоровый фундамент — значит, можно строить быстро', sub: 'Программа будет учитывать твои цели и уровень подготовки' },
+    { text: 'Без ограничений — это свобода выбирать любой формат', sub: 'От жиросжигающего кардио (HIIT) до восстановительного Reshape (гибкость на реформерах) — всё доступно' },
+    { text: 'Отлично! Последние вопросы — и программа готова', sub: 'Твоя рекомендация будет максимально персональной' }
+  ],
+  B: [ // moderate
+    { text: 'Учтём это — тренер адаптирует нагрузку', sub: 'Ограничения не помеха, а информация для лучшей программы' },
+    { text: 'Ограничения — не повод отказываться от тренировок', sub: 'Это повод тренироваться правильно. Тренер знает, как адаптировать программу' },
+    { text: 'Многие атлеты HJ тренируются с ограничениями — и прогрессируют', sub: 'Правильная техника и адаптированная нагрузка — ключ к безопасному результату' },
+    { text: 'Тренер получит информацию заранее и подготовит программу', sub: 'На первой тренировке всё будет адаптировано — никаких сюрпризов' },
+    { text: 'Ограничения часто уходят с правильными тренировками', sub: 'Многие атлеты с болями в спине/коленях через 2–3 месяца забывают о них' },
+    { text: 'Спасибо, что сказал — это поможет подобрать правильную нагрузку', sub: 'Лучше знать заранее, чем столкнуться на тренировке' },
+    { text: 'Тренер HJ обучен работать с ограничениями', sub: 'Замена упражнений, контроль техники, адаптация нагрузки — всё это стандартная практика' },
+    { text: 'Ограничения по здоровью — это просто вводные для программы', sub: 'Как рост или вес — тренер учитывает их при составлении нагрузки' },
+    { text: 'Многие начинают тренироваться именно чтобы решить проблему со здоровьем', sub: 'Правильная нагрузка — часто лучшее дополнение к лечению' },
+    { text: 'Тренировки с ограничениями — это не «тренировки вполсилы»', sub: 'Это тренировки с умом. Результат тот же, просто путь немного другой' },
+    { text: 'Программа адаптируется под тебя, а не наоборот', sub: 'Если что-то не подходит — тренер заменит упражнение, а не заставит терпеть' },
+    { text: 'Хорошо, что ты знаешь своё тело — это поможет тренироваться эффективнее', sub: 'Тренер учтёт ограничения и построит безопасный план' },
+    { text: 'Ограничения не отменяют прогресс — они корректируют маршрут', sub: 'Конечная точка та же, просто отдельные упражнения будут заменены' },
+    { text: 'Безопасность — приоритет в каждой тренировке HJ', sub: 'Тренер контролирует технику и нагрузку, особенно если есть ограничения' },
+    { text: 'Принял к сведению — программа будет учитывать это', sub: 'Ещё пара вопросов — и рекомендация готова' }
+  ],
+  C: [ // high
+    { text: 'Спасибо, что поделился — это важный шаг', sub: 'Тренер получит информацию до первой тренировки и адаптирует программу' },
+    { text: 'Серьёзные ограничения — не значит, что тренироваться нельзя', sub: 'Значит, что нужна особая программа. И у нас она есть' },
+    { text: 'Тренер свяжется с тобой до первого визита', sub: 'Обсудит ограничения и подготовит полностью адаптированный план' },
+    { text: 'Программа будет максимально щадящей — но всё равно эффективной', sub: 'Плавный старт, минимальная нагрузка, постоянный контроль тренера' },
+    { text: 'Ты сделал правильно, что рассказал заранее', sub: 'Это позволит тренеру подготовиться и сделать первую тренировку комфортной' },
+    { text: 'Безопасность — абсолютный приоритет в HJ', sub: 'Тренер не допустит ни одного упражнения, которое может навредить' },
+    { text: 'Многие начинают с серьёзными ограничениями — и постепенно их уменьшают', sub: 'Правильная нагрузка под контролем часто улучшает состояние, а не ухудшает' },
+    { text: 'Тренер HJ обучен работать с серьёзными ограничениями', sub: 'Модификация каждого упражнения, контроль пульса, адаптация темпа' },
+    { text: 'Программа начнётся с самого базового уровня', sub: 'Никакого давления, никаких «через не могу». Только то, что комфортно и безопасно' },
+    { text: 'Щадящий режим — это не про «слабую» тренировку', sub: 'Это про умную тренировку, которая даёт результат без риска' },
+    { text: 'Тренер будет рядом на каждой тренировке', sub: 'Контроль техники, темпа и самочувствия — ты не останешься один на один с нагрузкой' },
+    { text: 'Мы подберём самую мягкую программу для старта', sub: 'Плавный вход, тренер на связи, полная адаптация под твои особенности' },
+    { text: 'Ограничения — это не стоп-сигнал, а дорожная карта', sub: 'Она показывает тренеру, как вести тебя к результату безопасным путём' },
+    { text: 'Первая тренировка будет ознакомительной — без серьёзной нагрузки', sub: 'Тренер посмотрит, как тело реагирует, и скорректирует план' },
+    { text: 'Твоё здоровье — на первом месте. Результат — на втором', sub: 'Программа выстроена так, чтобы оба шли параллельно, без компромиссов' }
+  ]
+};
+
+const bodyFacts = {
+  underweight: [
+    { text: 'Силовые тренировки — лучший способ набрать здоровую массу', sub: 'Мышцы растут, тело становится крепче — и это происходит быстрее, чем кажется' },
+    { text: 'При дефиците веса особенно важен правильный подход к нагрузке', sub: 'Тренер HJ адаптирует нагрузку, чтобы тело получало стимул к росту без перегрузки' },
+    { text: 'Тренировки помогают набрать мышечную массу — не просто вес', sub: 'Силовые + восстановление = качественный набор, а не «просто есть больше»' },
+    { text: 'Многие атлеты HJ начинали с недобором массы', sub: 'Системный подход — тренировки + прогрессия — дал им от 3 до 7 кг мышц за первые 3 месяца' },
+    { text: 'Плавный старт в силовых — именно то, что нужно для набора', sub: 'Прогрессия нагрузки даёт мышцам сигнал расти, а тело — адаптироваться постепенно' },
+    { text: 'Тренер выстроит программу под набор мышечной массы', sub: 'Правильные упражнения, правильный объём — и результат не заставит себя ждать' },
+    { text: 'Силовые тренировки увеличивают плотность костей и мышечную массу', sub: 'Это важно в любом возрасте, а при дефиците массы — особенно' },
+    { text: 'HJ строит базу — силовые фундамент для здорового тела', sub: 'Мышечная масса улучшает метаболизм, осанку и общее самочувствие' },
+    { text: 'Каждая тренировка — шаг к более крепкому телу', sub: 'Система прогрессии HJ гарантирует постепенный, но стабильный рост' },
+    { text: 'Тренировки в зале дают лучший набор массы, чем самостоятельные', sub: 'Контролируемая нагрузка, правильная техника — мышцы получают максимальный стимул' },
+    { text: 'Первые результаты в наборе массы видны уже через 3-4 недели', sub: 'Тело быстро реагирует на правильную силовую нагрузку — особенно если раньше не тренировался' },
+    { text: 'Программа HJ включает и силовые, и функциональные тренировки', sub: 'Комбинация даёт не просто массу, а функциональное, красивое тело' },
+    { text: 'Набор массы — это марафон, а не спринт', sub: 'Программы HJ рассчитаны на устойчивый прогресс — без травм и перегрузок' },
+    { text: 'Тренер учтёт, что твоя задача — набрать, а не сбросить', sub: 'Подход к тренировке кардинально отличается — и это важно учитывать с первого дня' },
+    { text: 'Регулярные силовые + адекватное восстановление = результат', sub: 'HJ выстраивает баланс нагрузки и отдыха для оптимального роста' }
+  ],
+  normal: [
+    { text: 'Твоя база — отличная стартовая позиция', sub: 'Сбалансированное тело быстрее адаптируется к нагрузке и показывает результат' },
+    { text: 'При нормальном весе тренировки дают самый быстрый видимый эффект', sub: 'Мышцы подтягиваются, рельеф проявляется — и это мотивирует продолжать' },
+    { text: 'Хорошие исходные данные — не повод расслабляться', sub: 'Тренировки добавят силу, выносливость и энергию, которую ты почувствуешь каждый день' },
+    { text: 'Силовые тренировки трансформируют тело даже без потери веса', sub: 'Рекомпозиция — мышцы растут, жир уходит, вес может не меняться, а тело — да' },
+    { text: 'Фитнес — это не только про вес, это про функциональность', sub: 'Сила, гибкость, выносливость — HJ развивает все компоненты' },
+    { text: 'Тренировки в HJ построены на прогрессии — каждая следующая чуть сложнее', sub: 'Это гарантирует, что тело не привыкает, а постоянно улучшается' },
+    { text: 'Атлеты с нормальным весом быстрее всего видят прогресс в силовых', sub: 'Нервно-мышечная адаптация происходит за первые 2-3 недели — станешь сильнее ещё до видимых изменений' },
+    { text: 'Комбинация силовых, кардио (HIIT) и Reshape (гибкость) — то, что нужно для всестороннего развития', sub: 'HJ сбалансированно развивает силу, выносливость и гибкость' },
+    { text: 'Регулярные тренировки повышают энергию и настроение', sub: 'Исследования показывают: 3 тренировки в неделю на 40% снижают уровень стресса' },
+    { text: 'Даже при хорошей форме всегда есть куда расти', sub: 'HJ покажет, на что способно тело — когда тренировки выстроены в систему' },
+    { text: 'Системный подход HJ даёт результат, которого сложно добиться одному', sub: 'Тренер, план, прогрессия — три компонента, которые работают лучше, чем хаотичные тренировки' },
+    { text: 'Первый месяц тренировок — время нервно-мышечной адаптации', sub: 'Тело учится активировать мышцы эффективнее — ты станешь сильнее раньше, чем думаешь' },
+    { text: 'HJ — это не «качалка». Это система', sub: 'Силовые + кардио + восстановление = максимальный результат за минимальное время' },
+    { text: 'Тренировки 3 раза в неделю — оптимальный ритм для начала', sub: 'Достаточно для прогресса, достаточно для восстановления' },
+    { text: 'Тело запоминает нагрузку и адаптируется', sub: 'Поэтому в HJ каждая тренировка немного сложнее предыдущей — мышцы не привыкают' }
+  ],
+  overweight: [
+    { text: 'Комбинация силовых и кардио (HIIT) — самый эффективный путь к снижению веса', sub: 'Силовые ускоряют метаболизм, кардио сжигает калории — вместе работают мощнее' },
+    { text: 'Небольшой избыток веса — не помеха для активных тренировок', sub: 'Важнее правильная техника и постепенный рост нагрузки — тренер это обеспечит' },
+    { text: 'Мышцы под слоем жира уже есть — их нужно активировать', sub: 'Первые 4 недели тренировок запускают рекомпозицию: жир уходит, мышцы проявляются' },
+    { text: 'Силовые тренировки ускоряют базовый метаболизм', sub: 'Каждый килограмм мышц сжигает больше калорий даже в покое — тело начинает работать на тебя' },
+    { text: 'Тренировки в HJ построены так, чтобы давать результат без перегрузки', sub: 'Плавная прогрессия — ты чувствуешь, что становишься сильнее, не надрываясь' },
+    { text: 'Потеря 1-2% жира в месяц — реалистичный и устойчивый темп', sub: 'HJ выстраивает программу на длинную дистанцию, а не на «быстрый результат» с откатом' },
+    { text: 'Первые изменения ты почувствуешь раньше, чем увидишь', sub: 'Больше энергии, лучше сон, легче подъём по лестнице — это первые 2 недели' },
+    { text: 'Кардио-тренировки (HIIT) в HJ сжигают от 400 до 700 ккал за сессию', sub: 'А эффект дожигания (EPOC) продолжает работать ещё 24-48 часов' },
+    { text: 'Тренер HJ подберёт оптимальную нагрузку с первого дня', sub: 'Не слишком легко (чтобы был результат), не слишком тяжело (чтобы вернулся завтра)' },
+    { text: 'Регулярные тренировки улучшают чувствительность к инсулину', sub: 'Это значит — тело лучше распоряжается энергией, легче контролировать вес' },
+    { text: 'Мышцы — твой союзник в снижении веса', sub: 'Чем больше мышечная масса, тем больше калорий тело сжигает каждый день' },
+    { text: 'Тренировки Reshape (гибкость и восстановление) в HJ улучшают подвижность и гибкость', sub: 'Это помогает выполнять силовые и кардио-тренировки с правильной техникой и без травм' },
+    { text: 'Каждая тренировка — это инвестиция в метаболизм', sub: 'Силовые тренировки повышают расход калорий на 5-10% в покое' },
+    { text: 'В HJ нет «групп для полных» — все тренируются вместе', sub: 'Каждый работает в своём темпе, с нагрузкой под свой уровень' },
+    { text: 'Потеря веса начинается с привычки тренироваться', sub: 'Программы HJ выстроены так, чтобы привычка сформировалась за первые 3-4 недели' }
+  ],
+  obese: [
+    { text: 'Плавный старт — ключ к устойчивому результату', sub: 'Программы HJ начинаются с базовых упражнений и растут постепенно — без стресса для тела' },
+    { text: 'Безопасность на первом месте — тренер адаптирует каждое упражнение', sub: 'Модификации под твои возможности, контроль техники и самочувствия на каждой тренировке' },
+    { text: 'Тело способно на больше, чем кажется — важно начать правильно', sub: 'С тренером и системой прогрессии первые результаты приходят уже через 2-3 недели' },
+    { text: 'Силовые тренировки безопасны и эффективны при любом весе', sub: 'Исследования подтверждают: контролируемая нагрузка улучшает здоровье вне зависимости от BMI' },
+    { text: 'Первая тренировка — самая важная. И самая простая', sub: 'Тренер не будет давить. Задача — познакомиться с залом, попробовать базовые движения' },
+    { text: 'Длинная программа — не про «долго», а про «без спешки»', sub: 'Больше времени = больше адаптации, лучше техника, устойчивее привычка' },
+    { text: 'Многие атлеты HJ начинали со значительным лишним весом', sub: 'Системный подход — тренировки + прогрессия + поддержка — дал реальные результаты' },
+    { text: 'Каждое движение в тренировке можно адаптировать', sub: 'Нет упражнений, которые «нельзя» — есть модификации, которые тренер подберёт' },
+    { text: 'Регулярность важнее нагрузки', sub: '3 лёгкие тренировки в неделю дают больше результата, чем 1 тяжёлая' },
+    { text: 'Первый месяц — про привычку, не про результат на весах', sub: 'Когда привычка есть — результат приходит неизбежно' },
+    { text: 'Суставы и спина — под контролем тренера', sub: 'Правильная техника и адаптированная нагрузка защищают от проблем, а не создают их' },
+    { text: 'Тренировки улучшают здоровье задолго до изменений на весах', sub: 'Давление, сон, энергия, настроение — улучшения заметны уже через 10-14 дней' },
+    { text: 'В HJ нет осуждения — только поддержка', sub: 'Каждый атлет работает со своей нагрузкой, в своём темпе' },
+    { text: 'Программа Первый Шаг рассчитана именно на мягкий вход', sub: '12 тренировок за 4 недели — тело привыкает, а ты набираешь уверенность' },
+    { text: 'Устойчивый результат строится постепенно', sub: 'HJ — это система, а не «ударный курс». Тело меняется, привычка остаётся' }
+  ],
+  skipped: [
+    { text: 'Осталось совсем немного — мы почти подобрали программу', sub: 'Последний вопрос — и ты получишь персональную рекомендацию' },
+    { text: 'Тренировки в HJ адаптируются под каждого атлета', sub: 'Тренер видит, как тело реагирует, и корректирует нагрузку в реальном времени' },
+    { text: 'Первая тренировка — всегда ознакомительная', sub: 'Знакомство с форматом, техникой и оборудованием — без давления' },
+    { text: 'В HJ тренер рядом на каждой тренировке', sub: 'Контроль техники, подсказки по нагрузке — ты никогда не останешься один' },
+    { text: 'Система прогрессии HJ выстраивает рост от тренировки к тренировке', sub: 'Каждая следующая чуть сложнее — тело адаптируется, а ты чувствуешь прогресс' },
+    { text: '3 формата тренировок — силовые, кардио и гибкость', sub: 'Силовые (работа с весами), HIIT (жиросжигающее кардио), Reshape (гибкость на реформерах)' },
+    { text: 'Геймификация HJ помогает не пропускать тренировки', sub: 'Уровни, достижения, прогресс — мозг получает награду за каждый визит' },
+    { text: 'Пробная программа — это полноценное знакомство с HJ', sub: 'Не демо-версия, а настоящие тренировки с тренером и системой' },
+    { text: 'Мы подбираем программу под твой уровень и цели', sub: 'Не слишком просто, не слишком сложно — именно то, что нужно для старта' },
+    { text: 'Атлеты HJ тренируются в среднем 3.2 раза в неделю', sub: 'Система мотивации работает — люди приходят снова и снова' },
+    { text: 'Результат тренировок виден уже через 2-3 недели', sub: 'Больше энергии, лучше сон, тело начинает меняться' },
+    { text: 'HJ — это не просто зал, это система тренировок', sub: 'Прогрессия, тренер, форматы, геймификация — всё работает вместе' },
+    { text: 'Каждая тренировка — шаг к лучшей версии себя', sub: 'Звучит как клише, но в HJ это буквально: прогрессия считает каждый шаг' },
+    { text: 'Ты не один — в HJ тренируются тысячи атлетов', sub: 'Сообщество поддерживает, тренеры ведут, система мотивирует' },
+    { text: 'Финишная прямая — осталось указать, что тебя беспокоит', sub: 'И мы подберём программу, которая учтёт всё' }
+  ]
+};
+
+// Interstitial content — dynamic based on answers, random fact from pool
+function getInterstitialContent(id) {
+  if (id === 'after-profile') {
+    const a = answers.qAge || '25-34';
+    const pool = profileFacts[a] || profileFacts['25-34'];
+    const fact = pickRandom(pool);
+    return { icon: profileIcons[a] || '🎯', text: fact.text, sub: fact.sub };
+  }
+
+  if (id === 'after-occupation') {
+    const occ = answers.qOccupation;
+    const pool = occupationFacts[occ];
+    if (pool) {
+      const fact = pickRandom(pool);
+      const icons = { office: '💻', remote: '🏠', standing: '🏃', student: '📚', parent: '👶', physical: '🔧' };
+      return { icon: icons[occ] || '💪', text: fact.text, sub: fact.sub };
+    }
+    return { icon: '💪', text: 'Осталось совсем немного', sub: 'Мы уже почти подобрали тебе программу' };
+  }
+
+  if (id === 'after-q2') {
+    const q2 = answers.q2;
+    const pool = experienceFacts[q2];
+    if (pool) {
+      const fact = pickRandom(pool);
+      const icons = { A: '🎯', B: '🔄', C: '⚡', D: '🏋️' };
+      return { icon: icons[q2] || '💪', text: fact.text, sub: fact.sub };
+    }
+    return { icon: '💪', text: 'Мы подбираем программу под тебя', sub: '' };
+  }
+
+  if (id === 'after-q4') {
+    const risk = answers.q4;
+    const pool = healthFacts[risk];
+    if (pool) {
+      const fact = pickRandom(pool);
+      const icons = { A: '✅', B: '✅', C: '🛡️' };
+      return { icon: icons[risk] || '✅', text: fact.text, sub: fact.sub };
+    }
+    return {
+      icon: '✅',
+      text: 'Отлично — осталось совсем немного',
+      sub: 'Мы уже почти подобрали тебе программу'
+    };
+  }
+
+  if (id === 'after-body') {
+    const bmi = calcBMI(answers);
+    const cat = bmi ? getBmiCategory(bmi) : 'skipped';
+    const pool = bodyFacts[cat] || bodyFacts['skipped'];
+    const fact = pickRandom(pool);
+    const icons = { underweight: '🏗️', normal: '✅', overweight: '⚡', obese: '🛡️', skipped: '💪' };
+    return { icon: icons[cat] || '💪', text: fact.text, sub: fact.sub };
+  }
+
+  return { icon: '💪', text: '', sub: '' };
+}
+
+// Personalized question text based on previous answers
+function getPersonalizedQuestion(q) {
+  if (q.id === 'q2details') {
+    const phrases = { B: 'Чем ты занимался раньше?', C: 'Чем ты занимаешься сейчас?', D: 'Какие тренировки ты делаешь?' };
+    return phrases[answers.q2] || q.question;
+  }
+  if (q.id === 'q4details') {
+    return answers.q4 === 'C'
+      ? 'Расскажи подробнее — что именно нужно учесть?'
+      : 'Уточни, что именно беспокоит — тренер учтёт это';
+  }
+  if (q.id === 'qAge') {
+    return 'Сколько тебе лет?';
+  }
+  if (q.id === 'q1') {
+    const age = answers.qAge;
+    if (age === '18-24') return 'Что для тебя сейчас важнее всего?';
+    if (age === '45+') return 'Какая цель для тебя на первом месте?';
+    return q.question;
+  }
+  if (q.id === 'q3') {
+    const goalPhrases = {
+      A: 'Ты хочешь привести тело в форму',
+      B: 'Ты хочешь стать сильнее',
+      C: 'Ты хочешь начать тренироваться регулярно',
+      D: 'Ты хочешь попробовать'
+    };
+    const phrase = goalPhrases[answers.q1];
+    return phrase ? `${phrase} — что важно для старта?` : q.question;
+  }
+  if (q.id === 'q5') {
+    const expPhrases = {
+      A: 'Для новичка нормально сомневаться',
+      B: 'Возвращаться бывает непросто',
+      C: 'Менять привычное — это смелый шаг',
+      D: 'Зал — это новый формат для тебя'
+    };
+    const phrase = expPhrases[answers.q2];
+    return phrase ? `${phrase}. Есть ли что-то, что тебя беспокоит?` : q.question;
+  }
+  return q.question;
+}
+
+// Prediction screen content
+function getClubFormats(ans) {
+  const club = ans.qClub ? clubInfo[ans.qClub] : null;
+  const hasReshape = club ? club.hasReshape : true;
+  const hasMetcon = club ? club.hasMetcon : true;
+  const isVilla = ans.qClub === 'villa';
+  const strengthLabel = isVilla ? 'силовая на всё тело (работа с весами на тренажёрах)' : 'силовые тренировки (работа с весами на тренажёрах)';
+  const hiitLabel = hasMetcon ? 'жиросжигающее кардио (HIIT и Metcon — короткие интервалы с максимальной отдачей)' : 'жиросжигающее кардио (HIIT — короткие интервалы с максимальной отдачей)';
+  const reshapeLabel = 'тренировки на гибкость и восстановление (Reshape — занятия на реформерах, похожи на пилатес)';
+  const allFormats = hasReshape ? `${strengthLabel}, ${hiitLabel}, ${reshapeLabel}` : `${strengthLabel} и ${hiitLabel}`;
+  return { hasReshape, hasMetcon, isVilla, strengthLabel, hiitLabel, reshapeLabel, allFormats };
+}
+
+function getPredictionContent() {
+  const rec = getRecommendation(answers);
+  if (!rec) return null;
+  const info = programInfo[rec.finalProgram];
+  const timeline = [];
+  let subtitle = '';
+  const fmt = getClubFormats(answers);
+
+  const audienceMap = {
+    A: 'для тех, кто впервые в зале',
+    B: 'для тех, кто хочет вернуться',
+    C: 'для тех, кто хочет сменить зал',
+    D: 'для тех, кто тренируется самостоятельно'
+  };
+  const expLabel = audienceMap[answers.q2] || '';
+
+  if (rec.finalProgram === 'first-step') {
+    subtitle = `Плавный вход в тренировки — ${expLabel}`;
+    timeline.push({ label: 'Неделя 1-2', text: `Знакомство с форматами: ${fmt.allFormats} — тренер рядом` });
+    timeline.push({ label: 'Неделя 3-4', text: 'Рост нагрузки — тело адаптируется, ты чувствуешь прогресс' });
+    timeline.push({ label: 'Assessment', text: 'Анализ состава тела и замер силовых показателей — объективная точка отсчёта для отслеживания прогресса' });
+    timeline.push({ label: 'После программы', text: 'У тебя есть объективная картина старта — и ты можешь подобрать максимально эффективную программу дальше', final: true });
+  } else if (rec.finalProgram === 'basecamp') {
+    subtitle = `Активный старт с системой — ${expLabel}`;
+    timeline.push({ label: 'Неделя 1', text: `Первые 3 тренировки — знакомство с ${fmt.allFormats}` });
+    timeline.push({ label: 'Неделя 2', text: 'Рост нагрузки — тело адаптируется, ты чувствуешь систему' });
+    timeline.push({ label: 'Assessment', text: 'Анализ состава тела и замер силовых показателей — объективная точка отсчёта для отслеживания прогресса' });
+    timeline.push({ label: 'После программы', text: 'У тебя есть объективная картина старта — и ты можешь подобрать максимально эффективную программу дальше', final: true });
+  } else {
+    subtitle = `Быстрый тест-драйв без обязательств — ${expLabel}`;
+    timeline.push({ label: 'День 1', text: `${fmt.isVilla ? 'Силовая на всё тело' : 'Силовая тренировка'} — знакомство с оборудованием и работой с весами` });
+    timeline.push({ label: 'День 2', text: `Жиросжигающее кардио (${fmt.hasMetcon ? 'Metcon' : 'Bootcamp'}) — короткие интервалы, проверишь выносливость` });
+    timeline.push({ label: 'День 3', text: fmt.hasReshape ? 'Гибкость и восстановление на реформерах (Reshape) — похоже на пилатес, но с тренажёрами' : 'Ещё один формат — попробуешь и сравнишь' });
+    timeline.push({ label: 'После недели', text: 'Ты знаешь, твоё это или нет — и решаешь сам', final: true });
+  }
+
+  return { program: info, rec, timeline, subtitle };
+}
+
+// ========== STATE ==========
+let currentStep = 0;
+let answers = {};
+let showDebug = false;
+let showScenarios = false;
+let aiMode = true;
+const CLAUDE_PROXY_URL = 'https://herosjourney.kz/pay/api/claude/messages';
+
+
+let aiCache = {};
+
+// ========== SCORING ==========
+function calcFitnessLevel(ans) {
+  if (!ans.q2) return null;
+  return fitnessScores[ans.q2];
+}
+
+function calcMotivation(ans) {
+  const vals = [];
+  if (ans.q1) vals.push(motivationScores.q1[ans.q1]);
+  if (ans.q3) vals.push(motivationScores.q3[ans.q3]);
+  if (vals.length === 0) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function getFitnessCategory(level) {
+  if (level === null) return null;
+  if (level <= 1) return 'beginner';
+  if (level === 2) return 'active';
+  return 'advanced';
+}
+
+function getMotivationCategory(score) {
+  if (score === null) return null;
+  if (score < 1) return 'low';
+  if (score <= 1) return 'medium';
+  return 'high';
+}
+
+function getRiskLevel(ans) {
+  if (!ans.q4) return null;
+  const map = { A: 'none', B: 'moderate', C: 'high' };
+  return map[ans.q4];
+}
+
+function isSwitcher(ans) {
+  return ans.q2 === 'C';
+}
+
+function applyRiskModifier(program, risk) {
+  if (risk === 'high') return 'first-step';
+  // moderate: тренер адаптирует нагрузку в рамках любой программы, не понижаем
+  return program;
+}
+
+function getRecommendation(ans) {
+  const fitness = calcFitnessLevel(ans);
+  const motivation = calcMotivation(ans);
+  const fitCat = getFitnessCategory(fitness);
+  const motCat = getMotivationCategory(motivation);
+  if (!fitCat || !motCat) return null;
+
+  const baseProgram = routingMatrix[fitCat][motCat];
+  const risk = getRiskLevel(ans);
+  const afterRisk = applyRiskModifier(baseProgram, risk);
+  const bmi = calcBMI(ans);
+  const finalProgram = applyBmiModifier(afterRisk, bmi, ans.q1);
+  const switcher = isSwitcher(ans);
+  const bmiModified = afterRisk !== finalProgram;
+
+  return { fitness, motivation, fitCat, motCat, risk, baseProgram, afterRisk, finalProgram, switcher, bmi, bmiModified };
+}
+
+function getAiText(ans) {
+  const risk = getRiskLevel(ans);
+  if (risk === 'high' && ans.q1 && ans.q2) {
+    return aiTextsRisk[ans.q1 + ans.q2] || null;
+  }
+  if (ans.q1 && ans.q2 && ans.q3) {
+    return aiTexts[ans.q1 + ans.q2 + ans.q3] || null;
+  }
+  return null;
+}
+
+function getModifiers(program, ans) {
+  const mods = [];
+  const risk = getRiskLevel(ans);
+  if (risk === 'moderate') mods.push(modifiers.risk_moderate);
+  if (risk === 'high') mods.push(modifiers.risk_high);
+
+  const need = ans.q3;
+  if (need === 'A') mods.push(modifiers.need_onboarding);
+  if (need === 'B') mods.push(modifiers.need_structure);
+  if (need === 'C') mods.push(modifiers.need_logistics);
+
+  const info = programInfo[program];
+  if (info && info.hasAssessment) mods.push(modifiers.assessment);
+
+  if (isSwitcher(ans)) mods.push(modifiers.switcher);
+
+  return mods;
+}
+
+// ========== RENDERING ==========
+function renderProgressBar() {
+  const total = getVisibleStepCount();
+  const current = getVisibleStepIndex() + 1;
+  return `
+    <div class="progress-wrap">
+      <div class="progress-label">Шаг ${current} из ${total}</div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${(current / total) * 100}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderQuiz() {
+  const main = document.getElementById('mainArea');
+  if (currentStep >= steps.length) {
+    renderResult();
+    return;
+  }
+
+  const step = steps[currentStep];
+
+  // Skip conditional steps whose condition is not met
+  if (step.condition && !step.condition()) {
+    currentStep++;
+    renderQuiz();
+    return;
+  }
+
+  // ---- INTERSTITIAL ----
+  if (step.type === 'interstitial') {
+    const content = getInterstitialContent(step.id);
+    main.innerHTML = `
+      ${renderProgressBar()}
+      <div class="interstitial">
+        <div class="interstitial-icon">${content.icon}</div>
+        <div class="interstitial-text">${content.text}</div>
+        <div class="interstitial-sub">${content.sub}</div>
+        <div><button class="btn-interstitial" onclick="nextStep()">Продолжить</button></div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back" onclick="goBack()">Назад</button>
+        <div></div>
+      </div>
+    `;
+    renderDebug();
+    return;
+  }
+
+  // ---- QUESTION ----
+  const q = questions[step.questionIndex];
+  const questionText = getPersonalizedQuestion(q);
+
+  // ---- CLUB SELECTION ----
+  if (q.inputType === 'club') {
+    const selected = answers.qClub || '';
+    const cityMap = { almaty: 'Алматы', astana: 'Астана' };
+    const selectedCity = cityMap[answers.qCity] || null;
+    const filteredClubs = [];
+    Object.entries(clubInfo).forEach(([key, club]) => {
+      if (selectedCity && club.city !== selectedCity) return;
+      filteredClubs.push({ key, ...club });
+    });
+
+    main.innerHTML = `
+      ${renderProgressBar()}
+      <div class="quiz-card" key="${currentStep}">
+        <div class="quiz-question">${questionText}</div>
+        <div class="quiz-options">
+          ${filteredClubs.map(c => `
+            <div class="club-option ${selected === c.key ? 'selected' : ''}"
+                 onclick="selectOption('qClub', '${c.key}')">
+              <div class="club-name">📍 ${c.name}</div>
+              <div class="club-address">${c.address}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back ${currentStep === 0 ? 'hidden' : ''}" onclick="goBack()">Назад</button>
+        <div></div>
+      </div>
+    `;
+    renderDebug();
+    return;
+  }
+
+  // ---- PHONE INPUT ----
+  if (q.inputType === 'phone') {
+    const ph = answers.qPhone || '';
+    main.innerHTML = `
+      ${renderProgressBar()}
+      <div class="quiz-card" key="${currentStep}">
+        <div class="quiz-question">${questionText}</div>
+        <div style="margin-bottom:20px">
+          <label style="font-size:13px;color:var(--text-muted);margin-bottom:8px;display:block">Номер телефона</label>
+          <div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0 16px;transition:border-color 0.2s" id="phoneWrap">
+            <span style="color:var(--text-muted);font-size:18px;margin-right:6px">+</span>
+            <input type="tel" id="inputPhone" placeholder="7 777 777 77 77" value="${ph}"
+                   oninput="answers.qPhone = this.value.trim(); document.getElementById('phoneWrap').style.borderColor='var(--border)'"
+                   style="flex:1;background:transparent;border:none;color:var(--text);font-size:20px;font-weight:600;padding:14px 0;outline:none">
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px">Мы свяжемся с тобой для записи на первую тренировку</div>
+        </div>
+        <button class="btn-continue" onclick="submitPhone()">Продолжить</button>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back hidden" onclick="goBack()">Назад</button>
+        <div></div>
+      </div>
+    `;
+    renderDebug();
+    setTimeout(() => { const el = document.getElementById('inputPhone'); if(el) el.focus(); }, 50);
+    return;
+  }
+
+  // ---- BODY INPUT (height/weight) ----
+  if (q.inputType === 'body') {
+    const h = answers.qHeight || '';
+    const w = answers.qWeight || '';
+    const skipText = q.skipLabel || 'Пропустить';
+
+    main.innerHTML = `
+      ${renderProgressBar()}
+      <div class="quiz-card" key="${currentStep}">
+        <div class="quiz-question">${questionText}</div>
+        <div class="body-inputs">
+          <div class="body-field">
+            <label style="font-size:13px;color:var(--text-muted);margin-bottom:6px;display:block">Рост</label>
+            <div style="position:relative">
+              <input type="number" id="inputHeight" placeholder="170" min="140" max="210" value="${h}"
+                     oninput="answers.qHeight = this.value ? parseInt(this.value) : null"
+                     style="width:100%;padding-right:36px">
+              <span class="suffix">см</span>
+            </div>
+          </div>
+          <div class="body-field">
+            <label style="font-size:13px;color:var(--text-muted);margin-bottom:6px;display:block">Вес</label>
+            <div style="position:relative">
+              <input type="number" id="inputWeight" placeholder="65" min="40" max="150" value="${w}"
+                     oninput="answers.qWeight = this.value ? parseInt(this.value) : null"
+                     style="width:100%;padding-right:36px">
+              <span class="suffix">кг</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+          <button class="btn-continue" onclick="nextStep()">Продолжить</button>
+          <button class="btn-skip" onclick="answers.qHeight=null;answers.qWeight=null;nextStep()">${skipText}</button>
+        </div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back" onclick="goBack()">Назад</button>
+        <div></div>
+      </div>
+    `;
+    renderDebug();
+    return;
+  }
+
+  if (q.multiSelect) {
+    const selected = answers[q.id] || [];
+    const customText = answers[q.id + 'custom'] || '';
+    const placeholder = q.customPlaceholder || 'Напиши своё...';
+    const skipText = q.skipLabel || 'Пропустить';
+
+    main.innerHTML = `
+      ${renderProgressBar()}
+      <div class="quiz-card" key="${currentStep}">
+        <div class="quiz-question">${questionText}</div>
+        <div class="fear-chips">
+          ${q.options.map(opt => `
+            <div class="fear-chip ${selected.includes(opt.key) ? 'selected' : ''}"
+                 onclick="toggleMultiSelect('${q.id}', '${opt.key}')">
+              ${opt.label}
+            </div>
+          `).join('')}
+        </div>
+        <textarea class="fear-custom-input"
+                  placeholder="${placeholder}"
+                  oninput="answers['${q.id}custom'] = this.value">${customText}</textarea>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+          <button class="btn-continue" onclick="nextStep()">Продолжить</button>
+          <button class="btn-skip" onclick="skipMultiSelect('${q.id}')">${skipText}</button>
+        </div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back" onclick="goBack()">Назад</button>
+        <div></div>
+      </div>
+    `;
+  } else {
+    const selectedKey = answers[q.id];
+    const hasIcons = q.id === 'q1' || q.id === 'qGender' || q.id === 'qAge' || q.id === 'qOccupation';
+    const iconMap = q.id === 'qGender' ? genderIcons : q.id === 'qAge' ? ageIcons : q.id === 'qOccupation' ? occupationIcons : q1Icons;
+
+    main.innerHTML = `
+      ${renderProgressBar()}
+      <div class="quiz-card" key="${currentStep}">
+        <div class="quiz-question">${questionText}</div>
+        <div class="quiz-options">
+          ${q.options.map(opt => `
+            <div class="quiz-option ${selectedKey === opt.key ? 'selected' : ''}"
+                 onclick="selectOption('${q.id}', '${opt.key}')">
+              ${hasIcons ? `<div class="quiz-option-icon"><span class="opt-icon">${iconMap[opt.key]}</span><span>${opt.label}</span></div>` : opt.label}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back ${currentStep === 0 ? 'hidden' : ''}" onclick="goBack()">Назад</button>
+        <div></div>
+      </div>
+    `;
+  }
+
+  renderDebug();
+}
+
+function nextStep() {
+  currentStep++;
+  renderQuiz();
+}
+function submitPhone() {
+  const phone = (answers.qPhone || '').trim();
+  if (!phone || phone.replace(/\D/g, '').length < 7) {
+    const wrap = document.getElementById('phoneWrap');
+    if (wrap) wrap.style.borderColor = 'var(--red)';
+    const el = document.getElementById('inputPhone');
+    if (el) el.focus();
+    return;
+  }
+  localStorage.setItem('hj_phone', phone);
+  nextStep();
+}
+
+
+
+function toggleMultiSelect(qId, key) {
+  if (!answers[qId]) answers[qId] = [];
+  const idx = answers[qId].indexOf(key);
+  if (idx >= 0) {
+    answers[qId].splice(idx, 1);
+  } else {
+    answers[qId].push(key);
+  }
+  renderQuiz();
+}
+
+function skipMultiSelect(qId) {
+  answers[qId] = [];
+  answers[qId + 'custom'] = '';
+  nextStep();
+}
+
+function selectOption(qId, key) {
+  // Сброс клуба при смене города
+  if (qId === 'qCity' && answers.qClub) {
+    const club = clubInfo[answers.qClub];
+    const cityMap = { almaty: 'Алматы', astana: 'Астана' };
+    if (club && club.city !== cityMap[key]) {
+      delete answers.qClub;
+    }
+  }
+  answers[qId] = key;
+  if (qId === 'qClub') {
+    localStorage.setItem('hj_club', key);
+  }
+  setTimeout(() => {
+    nextStep();
+  }, 200);
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    currentStep--;
+    // Skip conditional steps going backwards
+    while (currentStep > 0 && steps[currentStep].condition && !steps[currentStep].condition()) {
+      currentStep--;
+    }
+    renderQuiz();
+  }
+}
+
+function renderHealthDetailsBlock() {
+  const details = answers.q4details || [];
+  const custom = answers.q4detailscustom || '';
+  if (details.length === 0 && !custom) return '';
+
+  const parts = details.map(k => healthDetailLabels[k]).filter(Boolean);
+  if (custom) parts.push(custom);
+
+  return `
+    <div class="result-modifier" style="border-color: rgba(255,107,53,0.3)">
+      <p style="font-size:15px;line-height:1.7;margin:0">
+        <strong>Тренер учтёт:</strong> ${parts.join(', ')}. Нагрузка будет адаптирована с первой тренировки.
+      </p>
+    </div>
+  `;
+}
+
+function renderFearAnswersBlock() {
+  const fears = answers.q5 || [];
+  const custom = answers.q5custom || '';
+  if (fears.length === 0 && !custom) return '';
+
+  // Build a single flowing paragraph
+  const phrases = fears
+    .filter(key => fearResponses[key])
+    .map(key => fearResponses[key].text);
+
+  let paragraph = 'Мы понимаем твои сомнения — и они абсолютно нормальны. ';
+  if (phrases.length === 1) {
+    paragraph += phrases[0].charAt(0).toUpperCase() + phrases[0].slice(1) + '.';
+  } else if (phrases.length > 1) {
+    paragraph += phrases.slice(0, -1).join(', ') + ' и ' + phrases[phrases.length - 1] + '.';
+  }
+
+  if (custom) {
+    paragraph += ` Насчёт «${custom}» — тренер ответит на этот вопрос лично перед первой тренировкой.`;
+  }
+
+  return `
+    <div class="result-modifier" style="border-color: rgba(255,107,53,0.2)">
+      <p style="font-size:15px;line-height:1.7;margin:0">${paragraph}</p>
+    </div>
+  `;
+}
+
+function renderResult() {
+  const main = document.getElementById('mainArea');
+  const rec = getRecommendation(answers);
+  if (!rec) { renderQuiz(); return; }
+
+  const info = programInfo[rec.finalProgram];
+  const pred = getPredictionContent();
+  const healthBlock = renderHealthDetailsBlock();
+  const hasKey = aiMode;
+
+  const recBlock = hasKey
+    ? `<div class="result-section">
+        <h3>Почему именно эта программа</h3>
+        <div id="aiLiveText"><span class="ai-loading">Генерирую персональную рекомендацию</span></div>
+      </div>`
+    : `<div class="ai-fallback">
+        <p>Укажи API-ключ Claude — и мы сгенерируем персональную рекомендацию на основе твоих ответов</p>
+        <button onclick="toggleAiConfig()">Настроить AI</button>
+      </div>`;
+
+  const timelineHtml = pred ? `
+    <div class="result-section">
+      <h3>Как это будет</h3>
+      <div class="prediction-timeline">
+        ${pred.timeline.map(t => `
+          <div class="prediction-step ${t.final ? 'final' : ''}">
+            <div class="ps-label">${t.label}</div>
+            <div class="ps-text">${t.text}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : '';
+
+  let assessmentHtml = '';
+  if (info.hasAssessment) {
+    const club = answers.qClub ? clubInfo[answers.qClub] : null;
+    const hasAC = club ? club.hasAssessmentCenter : false;
+    const assessmentNote = rec.finalProgram === 'first-step'
+      ? 'Assessment проводится в конце программы — когда тело уже привыкло к нагрузке, и результаты будут точнее.'
+      : 'Assessment проводится в конце программы — когда ты уже освоил оборудование и технику.';
+    const locationNote = hasAC
+      ? 'Assessment проводится прямо в твоей студии — в Assessment Center.'
+      : `Assessment проводится в твоей студии${club ? ' — ' + club.name : ''}.`;
+    assessmentHtml = `
+      <div class="result-section assessment-detail">
+        <h3>Что такое assessment</h3>
+        <p style="margin-bottom:16px">Объективная точка отсчёта для твоей физической формы. Комплексный анализ работы мышц и состава тела — чтобы ты получил точную картину своих возможностей.</p>
+        <div class="assessment-blocks">
+          <div class="assessment-block">
+            <div class="assessment-block-title">📊 Анализ состава тела</div>
+            <div class="assessment-block-text">Профессиональное сканирование на аппарате InBody: процент жира, уровень воды, метаболический возраст, мышечная масса по каждому сегменту тела.</div>
+          </div>
+          <div class="assessment-block">
+            <div class="assessment-block-title">💪 Замер кардио-силовых показателей</div>
+            <div class="assessment-block-text">Определение твоего максимального рабочего веса и выносливости — объективные показатели силы и кардио для отслеживания прогресса.</div>
+          </div>
+        </div>
+        <p style="margin-top:14px;color:var(--text-muted);font-size:14px">${assessmentNote}</p>
+        <p style="margin-top:4px;color:var(--text-muted);font-size:14px">${locationNote}</p>
+        <p style="margin-top:8px;font-size:14px">Через месяц ты пройдёшь assessment снова — и увидишь прогресс в цифрах.</p>
+      </div>`;
+  }
+
+  // Альтернативные программы
+  const altDiffs = {
+    'first-step': {
+      'basecamp': 'Короче и активнее — 6 тренировок за 2 недели. Подойдёт, если хочешь быстрее войти в ритм',
+      'heros-week': 'Быстрый тест-драйв — 3 тренировки за неделю. Без assessment — минимум обязательств, максимум впечатлений'
+    },
+    'basecamp': {
+      'first-step': 'Больше времени на адаптацию — 12 тренировок за месяц. Плавный старт без спешки',
+      'heros-week': 'Ещё короче — 3 тренировки за неделю. Без assessment — попробуй формат и реши потом'
+    },
+    'heros-week': {
+      'first-step': 'Полное погружение — 12 тренировок за месяц с assessment. Для тех, кто хочет основательный старт',
+      'basecamp': 'Структурированный старт — 6 тренировок за 2 недели с assessment. Золотая середина'
+    }
+  };
+
+  const fmt = getClubFormats(answers);
+
+  function getAltTimeline(key) {
+    if (key === 'first-step') return [
+      { label: 'Неделя 1-2', text: `Знакомство с форматами: ${fmt.allFormats}` },
+      { label: 'Неделя 3-4', text: 'Рост нагрузки — тело адаптируется, ты чувствуешь прогресс' },
+      { label: 'Assessment', text: 'Анализ состава тела и замер силовых показателей' },
+    ];
+    if (key === 'basecamp') return [
+      { label: 'Неделя 1', text: `3 тренировки — знакомство с ${fmt.allFormats}` },
+      { label: 'Неделя 2', text: 'Рост нагрузки — тело адаптируется' },
+      { label: 'Assessment', text: 'Анализ состава тела и замер силовых показателей' },
+    ];
+    return [
+      { label: 'День 1', text: `${fmt.isVilla ? 'Силовая на всё тело' : 'Силовая тренировка'} — знакомство с оборудованием` },
+      { label: 'День 2', text: `Жиросжигающее кардио (${fmt.hasMetcon ? 'Metcon' : 'Bootcamp'})` },
+      { label: 'День 3', text: fmt.hasReshape ? 'Гибкость и восстановление (Reshape)' : 'Ещё один формат на выбор' },
+    ];
+  }
+
+  const altPrograms = Object.keys(programInfo).filter(k => k !== rec.finalProgram);
+  const altCardsHtml = altPrograms.map((key, i) => {
+    const alt = programInfo[key];
+    const diff = altDiffs[rec.finalProgram]?.[key] || '';
+    const tl = getAltTimeline(key);
+    const tlHtml = tl.map(t => `<div class="alt-tl-step"><span class="alt-tl-label">${t.label}</span><span class="alt-tl-text">${t.text}</span></div>`).join('');
+    return `
+      <div class="alt-card" onclick="toggleAltCard(this)">
+        <div class="alt-card-header">
+          <div class="alt-card-name">${alt.name}</div>
+          <div class="alt-card-price">${alt.price} ₸</div>
+        </div>
+        <div class="alt-card-details">${alt.trainings} тренировок за ${alt.durationShort}</div>
+        <div class="alt-card-diff">${diff}</div>
+        <div class="alt-card-expand">
+          <div class="alt-tl">${tlHtml}</div>
+          <ul class="alt-features">${alt.features.map(f => `<li>${f}</li>`).join('')}</ul>
+          <button class="alt-card-cta" onclick="event.stopPropagation()">Выбрать ${alt.name}</button>
+        </div>
+        <div class="alt-card-toggle">Подробнее ▾</div>
+      </div>`;
+  }).join('');
+
+  main.innerHTML = `
+    <div class="result-card">
+      <div class="result-header">
+        <h2>Мы подобрали программу для тебя</h2>
+        <p class="result-basis">На основе опыта атлетов, которые начали с пробной программы и достигли своих целей</p>
+        <div class="result-duration">${info.trainings} тренировок за ${info.durationShort}</div>
+        <div class="result-program-sub">${info.name}${answers.qClub ? ' в ' + clubInfo[answers.qClub].name : ''}</div>
+        <div class="result-tagline">${pred ? pred.subtitle : info.tagline}</div>
+      </div>
+
+      ${timelineHtml}
+
+      ${recBlock}
+
+      ${assessmentHtml}
+
+      ${healthBlock}
+
+      <div class="result-price">
+        <div class="result-price-amount">${info.price} ₸</div>
+        <div class="result-price-detail">${info.trainings} тренировок за ${info.durationShort}</div>
+      </div>
+      <button class="result-cta" onclick="goToPayment('${rec.finalProgram}', '${info.name}')">Начать программу</button>
+
+      <div class="alt-programs">
+        <p class="alt-programs-title">Мы подобрали для тебя оптимальную программу для старта, но у тебя есть выбор</p>
+        ${altCardsHtml}
+      </div>
+
+      <button class="btn-restart" onclick="restart()">Пройти заново</button>
+    </div>
+  `;
+
+  if (hasKey) {
+    generateAiText(answers, rec);
+  }
+
+  renderDebug();
+}
+
+function toggleAltCard(el) {
+  el.classList.toggle('expanded');
+}
+
+function restart() {
+  currentStep = 0;
+  answers = {};
+  aiCache = {};
+  renderQuiz();
+}
+
+function goToPayment(programKey, programName) {
+  const params = new URLSearchParams({
+    program: programKey,
+    program_name: programName,
+    phone: answers.qPhone || localStorage.getItem('hj_phone') || '',
+    club: answers.qClub || localStorage.getItem('hj_club') || ''
+  });
+  window.location.href = 'https://herosjourney.kz/payment?' + params.toString();
+}
+
+// ========== DEBUG ==========
+function toggleDebug() {
+  showDebug = !showDebug;
+  const panel = document.getElementById('debugPanel');
+  const btn = document.getElementById('btnDebug');
+  panel.classList.toggle('visible', showDebug);
+  panel.classList.toggle('mobile-show', showDebug);
+  btn.classList.toggle('active', showDebug);
+  if (showDebug) {
+    showScenarios = false;
+    document.getElementById('scenariosPanel').classList.remove('visible');
+    document.getElementById('btnScenarios').classList.remove('active');
+    document.querySelector('.layout').style.display = '';
+    renderDebug();
+  }
+}
+
+function renderDebug() {
+  if (!showDebug) return;
+  const el = document.getElementById('debugContent');
+  const fitness = calcFitnessLevel(answers);
+  const motivation = calcMotivation(answers);
+  const fitCat = getFitnessCategory(fitness);
+  const motCat = getMotivationCategory(motivation);
+  const risk = getRiskLevel(answers);
+  const switcher = isSwitcher(answers);
+  const rec = getRecommendation(answers);
+
+  const tagClass = (prog) => {
+    if (prog === 'first-step') return 'tag-fs';
+    if (prog === 'basecamp') return 'tag-bc';
+    return 'tag-hw';
+  };
+  const tagName = (prog) => programInfo[prog]?.name || '—';
+
+  // Answers editor
+  let answersHtml = '<div class="debug-answers">';
+  questions.forEach((q, i) => {
+    if (q.multiSelect || q.inputType) return; // skip multi-select and body inputs in debug dropdowns
+    answersHtml += `
+      <div class="debug-answer">
+        <span class="q">${q.id}</span>
+        <select onchange="debugSetAnswer('${q.id}', this.value)">
+          <option value="" ${!answers[q.id] ? 'selected' : ''}>—</option>
+          ${q.options.map(o => `<option value="${o.key}" ${answers[q.id] === o.key ? 'selected' : ''}>${o.key}: ${o.tag || o.label}</option>`).join('')}
+        </select>
+      </div>
+    `;
+  });
+  answersHtml += '</div>';
+
+  // Matrix
+  const cats = ['beginner', 'active', 'advanced'];
+  const mots = ['low', 'medium', 'high'];
+  const catLabels = { beginner: 'Beginner (0-1)', active: 'Active (2)', advanced: 'Advanced (3)' };
+  const motLabels = { low: 'Low (<1)', medium: 'Med (=1)', high: 'High (>1)' };
+
+  let matrixHtml = `<table class="debug-matrix">
+    <tr><th></th>${mots.map(m => `<th>${motLabels[m]}</th>`).join('')}</tr>
+    ${cats.map(c => `<tr>
+      <th>${catLabels[c]}</th>
+      ${mots.map(m => {
+        const prog = routingMatrix[c][m];
+        const isHighlight = c === fitCat && m === motCat;
+        return `<td class="${isHighlight ? 'highlight' : ''}"><span class="debug-tag ${tagClass(prog)}">${tagName(prog)}</span></td>`;
+      }).join('')}
+    </tr>`).join('')}
+  </table>`;
+
+  // Modifier info
+  const bmi = calcBMI(answers);
+  let modifierHtml = '';
+  if (rec) {
+    let modDetails = [];
+    if (rec.baseProgram !== rec.afterRisk) {
+      modDetails.push(`Risk: ${risk} — ${tagName(rec.baseProgram)} → ${tagName(rec.afterRisk)}`);
+    }
+    if (rec.bmiModified) {
+      modDetails.push(`BMI: ${getBmiLabel(bmi)} — ${tagName(rec.afterRisk)} → ${tagName(rec.finalProgram)}`);
+    }
+    if (rec.baseProgram !== rec.finalProgram) {
+      modifierHtml = `<div class="debug-modifier-info">
+        <span class="before">${tagName(rec.baseProgram)}</span>
+        <span class="arrow">&rarr;</span>
+        <span class="after">${tagName(rec.finalProgram)}</span>
+        <div style="margin-top:4px;font-size:12px;color:var(--text-muted)">${modDetails.join('<br>')}</div>
+      </div>`;
+    } else {
+      modifierHtml = `<div class="debug-modifier-info no-change">Без изменений (risk: ${risk || '—'}${bmi ? ', BMI: ' + getBmiLabel(bmi) : ''})</div>`;
+    }
+  }
+
+  el.innerHTML = `
+    <div class="debug-section">
+      <h4>Ответы</h4>
+      ${answersHtml}
+    </div>
+    <div class="debug-section">
+      <h4>Скоринг</h4>
+      <div class="debug-score"><span class="label">Fitness Level</span><span class="value">${fitness !== null ? fitness + ' (' + (fitCat || '') + ')' : '—'}</span></div>
+      <div class="debug-score"><span class="label">Motivation</span><span class="value">${motivation !== null ? motivation.toFixed(2) + ' (' + (motCat || '') + ')' : '—'}</span></div>
+      <div class="debug-score"><span class="label">Risk</span><span class="value">${risk || '—'}</span></div>
+      <div class="debug-score"><span class="label">Switcher</span><span class="value" style="color:${switcher ? 'var(--yellow)' : 'var(--text-muted)'}">${switcher ? 'ДА — есть абонемент' : 'нет'}</span></div>
+      <div class="debug-score"><span class="label">Пол</span><span class="value">${answers.qGender ? genderLabels[answers.qGender] : '—'}</span></div>
+      <div class="debug-score"><span class="label">Возраст</span><span class="value">${answers.qAge ? ageLabels[answers.qAge] : '—'}</span></div>
+      <div class="debug-score"><span class="label">Деятельность</span><span class="value">${answers.qOccupation ? occupationLabels[answers.qOccupation] : '—'}</span></div>
+      <div class="debug-score"><span class="label">Студия</span><span class="value">${answers.qClub ? clubInfo[answers.qClub].name : '—'}</span></div>
+      <div class="debug-score"><span class="label">BMI</span><span class="value">${bmi ? getBmiLabel(bmi) : '—'}</span></div>
+    </div>
+    <div class="debug-section">
+      <h4>Активность (Q2 детали)</h4>
+      <div style="font-size:13px;background:var(--surface2);padding:10px;border-radius:8px">
+        ${(() => {
+          const d = answers.q2details || [];
+          const c = answers.q2detailscustom || '';
+          if (d.length === 0 && !c) return '<span style="opacity:0.5">Не указано</span>';
+          let html = d.map(key => `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:rgba(59,130,246,0.15);color:var(--blue);font-size:11px;margin:2px">${activityDetailLabels[key] || key}</span>`).join(' ');
+          if (c) html += `<div style="margin-top:6px;color:var(--text-muted);font-size:12px">Своё: «${c}»</div>`;
+          return html;
+        })()}
+      </div>
+    </div>
+    <div class="debug-section">
+      <h4>Матрица маршрутизации</h4>
+      ${matrixHtml}
+    </div>
+    <div class="debug-section">
+      <h4>Модификаторы (Risk + BMI)</h4>
+      ${modifierHtml}
+    </div>
+    <div class="debug-section">
+      <h4>Результат</h4>
+      ${rec ? `<div class="debug-score"><span class="label">Программа</span><span class="value"><span class="debug-tag ${tagClass(rec.finalProgram)}">${tagName(rec.finalProgram)}</span></span></div>` : '<div class="debug-score"><span class="label">Программа</span><span class="value">—</span></div>'}
+    </div>
+    <div class="debug-section">
+      <h4>AI-текст (pre-generated, справочно)</h4>
+      <div style="font-size:12px;color:var(--text-muted);background:var(--surface2);padding:10px;border-radius:8px;line-height:1.6">
+        ${(() => { const t = getAiText(answers); return t || '<span style="opacity:0.5">Заполни все вопросы</span>'; })()}
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+        Key: ${answers.q1||'_'}${answers.q2||'_'}${answers.q3||'_'}${getRiskLevel(answers)==='high' ? ' (risk override: '+answers.q1+answers.q2+')' : ''}
+      </div>
+    </div>
+    <div class="debug-section">
+      <h4>Ограничения (Q4 детали)</h4>
+      <div style="font-size:13px;background:var(--surface2);padding:10px;border-radius:8px">
+        ${(() => {
+          const d = answers.q4details || [];
+          const c = answers.q4detailscustom || '';
+          if (d.length === 0 && !c) return '<span style="opacity:0.5">Не указано</span>';
+          let html = d.map(key => `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:rgba(239,68,68,0.15);color:var(--red);font-size:11px;margin:2px">${healthDetailLabels[key] || key}</span>`).join(' ');
+          if (c) html += `<div style="margin-top:6px;color:var(--text-muted);font-size:12px">Своё: «${c}»</div>`;
+          return html;
+        })()}
+      </div>
+    </div>
+    <div class="debug-section">
+      <h4>Страхи / сомнения (Q5)</h4>
+      <div style="font-size:13px;background:var(--surface2);padding:10px;border-radius:8px">
+        ${(() => {
+          const fears = answers.q5 || [];
+          const custom = answers.q5custom || '';
+          if (fears.length === 0 && !custom) return '<span style="opacity:0.5">Не выбрано</span>';
+          let html = fears.map(key => `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:var(--accent-glow);color:var(--accent);font-size:11px;margin:2px">${key}</span>`).join(' ');
+          if (custom) html += `<div style="margin-top:6px;color:var(--text-muted);font-size:12px">Своё: «${custom}»</div>`;
+          return html;
+        })()}
+      </div>
+    </div>
+  `;
+}
+
+function debugSetAnswer(qId, value) {
+  if (value) {
+    answers[qId] = value;
+  } else {
+    delete answers[qId];
+  }
+  // If gender, age, Q1-Q4 answered, show result (Q5 is optional)
+  const requiredQs = questions.filter(q => !q.multiSelect && !q.inputType);
+  const allAnswered = requiredQs.every(q => answers[q.id]);
+  if (allAnswered) {
+    currentStep = steps.length;
+  }
+  renderQuiz();
+}
+
+// ========== SCENARIOS ==========
+function toggleScenarios() {
+  showScenarios = !showScenarios;
+  const panel = document.getElementById('scenariosPanel');
+  const btn = document.getElementById('btnScenarios');
+  const layout = document.querySelector('.layout');
+
+  panel.classList.toggle('visible', showScenarios);
+  btn.classList.toggle('active', showScenarios);
+  layout.style.display = showScenarios ? 'none' : '';
+
+  if (showScenarios) {
+    showDebug = false;
+    document.getElementById('debugPanel').classList.remove('visible');
+    document.getElementById('btnDebug').classList.remove('active');
+    renderScenarios('all');
+  }
+}
+
+function renderScenarios(filter) {
+  const panel = document.getElementById('scenariosPanel');
+  const q1Keys = ['A', 'B', 'C', 'D'];
+  const q2Keys = ['A', 'B', 'C', 'D'];
+  const q3Keys = ['A', 'B', 'C', 'D'];
+  const q4Keys = ['A', 'B', 'C'];
+
+  const scenarios = [];
+  for (const q1 of q1Keys) {
+    for (const q2 of q2Keys) {
+      for (const q3 of q3Keys) {
+        for (const q4 of q4Keys) {
+          const ans = { q1, q2, q3, q4 };
+          const rec = getRecommendation(ans);
+          if (rec) {
+            scenarios.push({ ans, rec });
+          }
+        }
+      }
+    }
+  }
+
+  const filtered = filter === 'all' ? scenarios : scenarios.filter(s => s.rec.finalProgram === filter);
+
+  // Stats
+  const counts = { 'first-step': 0, 'basecamp': 0, 'heros-week': 0 };
+  const switcherCount = scenarios.filter(s => s.rec.switcher).length;
+  scenarios.forEach(s => counts[s.rec.finalProgram]++);
+  const total = scenarios.length;
+
+  const tagClass = (prog) => {
+    if (prog === 'first-step') return 'tag-fs';
+    if (prog === 'basecamp') return 'tag-bc';
+    return 'tag-hw';
+  };
+
+  panel.innerHTML = `
+    <div class="debug-title" style="margin-bottom:16px">Все сценарии (${total} комбинаций)</div>
+
+    <div class="scenarios-stats">
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--green)">${counts['first-step']}</div>
+        <div>Первый Шаг (${(counts['first-step']/total*100).toFixed(0)}%)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--blue)">${counts['basecamp']}</div>
+        <div>Basecamp (${(counts['basecamp']/total*100).toFixed(0)}%)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--purple)">${counts['heros-week']}</div>
+        <div>Hero's Week (${(counts['heros-week']/total*100).toFixed(0)}%)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--yellow)">${switcherCount}</div>
+        <div>Switchers (${(switcherCount/total*100).toFixed(0)}%)</div>
+      </div>
+    </div>
+
+    <div class="scenarios-filters">
+      <button class="filter-btn ${filter === 'all' ? 'active' : ''}" onclick="renderScenarios('all')">Все</button>
+      <button class="filter-btn ${filter === 'first-step' ? 'active' : ''}" onclick="renderScenarios('first-step')">Первый Шаг</button>
+      <button class="filter-btn ${filter === 'basecamp' ? 'active' : ''}" onclick="renderScenarios('basecamp')">Basecamp</button>
+      <button class="filter-btn ${filter === 'heros-week' ? 'active' : ''}" onclick="renderScenarios('heros-week')">Hero's Week</button>
+      <button class="filter-btn ${filter === 'switcher' ? 'active' : ''}" onclick="renderScenarios('switcher')">Switchers</button>
+    </div>
+
+    <div style="max-height:60vh;overflow-y:auto;border-radius:var(--radius)">
+      <table class="scenarios-table">
+        <thead>
+          <tr>
+            <th>Q1 Цель</th>
+            <th>Q2 Опыт</th>
+            <th>Q3 Потребность</th>
+            <th>Q4 Здоровье</th>
+            <th>Fitness</th>
+            <th>Motiv.</th>
+            <th>Switcher</th>
+            <th>Base</th>
+            <th>Final</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(filter === 'switcher' ? scenarios.filter(s => s.rec.switcher) : filtered).slice(0, 200).map(s => `
+            <tr>
+              <td>${s.ans.q1} (${questions[0].options.find(o=>o.key===s.ans.q1).tag})</td>
+              <td>${s.ans.q2} (${questions[1].options.find(o=>o.key===s.ans.q2).tag})</td>
+              <td>${s.ans.q3} (${questions[2].options.find(o=>o.key===s.ans.q3).tag})</td>
+              <td>${s.ans.q4} (${questions[3].options.find(o=>o.key===s.ans.q4).tag})</td>
+              <td>${s.rec.fitness} (${s.rec.fitCat})</td>
+              <td>${s.rec.motivation.toFixed(1)} (${s.rec.motCat})</td>
+              <td style="color:${s.rec.switcher ? 'var(--yellow)' : 'var(--text-muted)'}">${s.rec.switcher ? 'ДА' : '—'}</td>
+              <td><span class="debug-tag ${tagClass(s.rec.baseProgram)}">${programInfo[s.rec.baseProgram].name}</span></td>
+              <td><span class="debug-tag ${tagClass(s.rec.finalProgram)}">${programInfo[s.rec.finalProgram].name}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ========== AI ==========
+function toggleAiConfig() {
+  const config = document.getElementById('aiConfig');
+  const btn = document.getElementById('btnAi');
+  const visible = config.classList.toggle('visible');
+  if (visible) {
+    const input = document.getElementById('apiKeyInput');
+    input.value = apiKey;
+    input.focus();
+  }
+}
+
+function saveApiKey(value) {
+  apiKey = value.trim();
+  if (apiKey) {
+    localStorage.setItem('hj_claude_key', apiKey);
+    aiMode = true;
+    document.getElementById('btnAi').classList.add('active');
+  } else {
+    localStorage.removeItem('hj_claude_key');
+    aiMode = false;
+    document.getElementById('btnAi').classList.remove('active');
+  }
+}
+
+// Close config on click outside
+document.addEventListener('click', (e) => {
+  const config = document.getElementById('aiConfig');
+  const btn = document.getElementById('btnAi');
+  if (!config.contains(e.target) && !btn.contains(e.target)) {
+    config.classList.remove('visible');
+  }
+});
+
+const q1Labels = { A: 'Сбросить вес и подтянуть тело', B: 'Стать выносливее и сильнее', C: 'Наконец начать тренироваться регулярно', D: 'Просто попробовать — интересно, что это' };
+const q2Labels = { A: 'Никогда не ходил(а) в зал', B: 'Ходил(а) раньше, но бросил(а)', C: 'Хожу сейчас, но хочу попробовать что-то другое', D: 'Занимаюсь сам(а) — дома, на улице, без зала' };
+const q3Labels = { A: 'Чтобы всё объяснили и помогли', B: 'Чтобы был понятный план и структура', C: 'Чтобы было удобно по времени и локации', D: 'Просто хочу потренироваться — разберусь сам(а)' };
+const q4Labels = { A: 'Нет ограничений', B: 'Да, но тренироваться могу', C: 'Серьёзные — нужен щадящий режим' };
+
+const healthDetailLabels = {
+  'back': 'спина/поясница', 'knees': 'колени', 'shoulders': 'плечи', 'neck': 'шея',
+  'heart': 'сердце/давление', 'breathing': 'астма/дыхание', 'varicose': 'варикоз', 'post-surgery': 'послеоперационный период'
+};
+
+function getHealthDetailsPrompt(ans) {
+  const details = ans.q4details || [];
+  const custom = ans.q4detailscustom || '';
+  if (details.length === 0 && !custom) return '';
+  const parts = details.map(k => healthDetailLabels[k]).filter(Boolean);
+  if (custom) parts.push(custom);
+  return '\n- Конкретные ограничения: ' + parts.join(', ');
+}
+
+async function generateAiText(ans, rec) {
+  const fears = ans.q5 || [];
+  const fearsCustom = ans.q5custom || '';
+  const cacheKey = 'rec_' + (ans.qClub||'') + (ans.qGender||'X') + (ans.qAge||'') + (ans.qOccupation||'') + ans.q1 + ans.q2 + ans.q3 + ans.q4 + '_' + (ans.qHeight||'') + (ans.qWeight||'') + '_' + ((ans.q2details||[]).join(',')) + '_' + fears.join(',') + '_' + fearsCustom;
+  if (aiCache[cacheKey]) {
+    document.getElementById('aiLiveText').innerHTML = `<p style="font-size:14px;line-height:1.6">${aiCache[cacheKey]}</p>`;
+    return;
+  }
+
+  const info = programInfo[rec.finalProgram];
+
+  const genderStr = ans.qGender ? genderLabels[ans.qGender] : 'Не указано';
+  const ageStr = ans.qAge ? ageLabels[ans.qAge] : 'Не указано';
+  const occStr = ans.qOccupation ? occupationLabels[ans.qOccupation] : 'Не указано';
+  const clubData = ans.qClub ? clubInfo[ans.qClub] : null;
+  const clubStr = clubData ? `${clubData.name} (${clubData.city}), зоны: ${clubData.zones.join(', ')}` : 'Не указано';
+  const fmt = getClubFormats(ans);
+
+  let fearsPrompt = '';
+  if (fears.length > 0 || fearsCustom) {
+    let fearsList = fears.map(key => fearResponses[key]?.label).filter(Boolean).join(', ');
+    if (fearsCustom) fearsList += (fearsList ? ', ' : '') + '«' + fearsCustom + '»';
+    fearsPrompt = `\n\nЧеловека беспокоит: ${fearsList}\nВ тексте мягко сними эти сомнения — не списком, а органично вплетая в рекомендацию.`;
+  }
+
+  const prompt = `Ты — копирайтер фитнес-бренда Hero's Journey. Напиши короткий персональный текст, объясняющий почему программа «${info.name}» подходит этому человеку.
+
+Профиль из анкеты:
+- Студия: ${clubStr}
+- Пол: ${genderStr}
+- Возраст: ${ageStr}
+- Род деятельности: ${occStr}
+- Цель: ${q1Labels[ans.q1]}
+- Опыт: ${q2Labels[ans.q2]}
+- Важно в первых тренировках: ${q3Labels[ans.q3]}
+- Ограничения по здоровью: ${q4Labels[ans.q4]}${getHealthDetailsPrompt(ans)}${getActivityDetailsPrompt(ans)}
+- Рост/вес: ${ans.qHeight && ans.qWeight ? ans.qHeight + ' см, ' + ans.qWeight + ' кг (BMI: ' + getBmiLabel(calcBMI(ans)) + ')' : 'не указано'}
+- Доступные форматы тренировок: ${fmt.allFormats}${fearsPrompt}
+
+Программа: ${info.name} — ${info.trainings} тренировок, ${info.duration}. ${info.tagline}
+${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце программы — когда человек уже освоил оборудование и технику.' : 'Включает персональный assessment в начале программы.') : ''}
+
+Форматы тренировок HJ: силовые (работа с весами), HIIT/Bootcamp/Metcon (жиросжигающее кардио), Reshape (гибкость и восстановление на реформерах).
+
+Правила:
+- Обращайся на «ты»
+- Не используй эмодзи
+- Тон: уверенный, заботливый, без пафоса
+- При упоминании форматов тренировок используй названия HJ (HIIT, Reshape и т.д.), но обязательно кратко поясняй что это значит
+- Учитывай пол и возраст: используй правильные окончания (если женщина — «пришла», «начала»; если мужчина — «пришёл», «начал»), упоминай возрастные особенности если уместно
+- Начни с конкретной ситуации человека, не с описания программы
+- Если есть сомнения — сними их естественно внутри текста, не выделяя отдельным блоком
+- Закончи картинкой результата после прохождения программы
+- Только текст, без заголовков и буллетов
+- 3-5 предложений
+- Никогда не используй английские термины для сегментов: switcher, lapsed, newbie, beginner и т.д. — пиши только по-русски
+- Избегай слова «интенсивный» — используй «активный», «энергичный», «с нагрузкой»`;
+
+  try {
+    const resp = await fetch(CLAUDE_PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const text = data.content[0].text;
+    aiCache[cacheKey] = text;
+    const el = document.getElementById('aiLiveText');
+    if (el) el.innerHTML = `<p style="font-size:14px;line-height:1.6">${text}</p>`;
+  } catch (err) {
+    const el = document.getElementById('aiLiveText');
+    if (el) el.innerHTML = `<div style="color:var(--red);font-size:13px">Ошибка: ${err.message}</div>`;
+  }
+}
+
+async function generateAiFears(ans, rec) {
+  const fears = ans.q5 || [];
+  const custom = ans.q5custom || '';
+  const cacheKey = 'fears_' + ans.q1 + ans.q2 + ans.q3 + ans.q4 + '_' + fears.join(',') + '_' + custom;
+  if (aiCache[cacheKey]) {
+    document.getElementById('aiFearsText').innerHTML = `<p style="font-size:14px;line-height:1.6">${aiCache[cacheKey]}</p>`;
+    return;
+  }
+
+  const info = programInfo[rec.finalProgram];
+  let fearsList = fears.map(key => fearResponses[key]?.label).filter(Boolean).join('\n- ');
+  if (custom) fearsList += `\n- Своё: «${custom}»`;
+
+  const genderStr2 = ans.qGender ? genderLabels[ans.qGender] : 'Не указано';
+  const ageStr2 = ans.qAge ? ageLabels[ans.qAge] : 'Не указано';
+  const occStr2 = ans.qOccupation ? occupationLabels[ans.qOccupation] : 'Не указано';
+
+  const prompt = `Ты — копирайтер фитнес-бренда Hero's Journey. Человек прошёл анкету и ему подобрана программа «${info.name}».
+
+Профиль:
+- Пол: ${genderStr2}
+- Возраст: ${ageStr2}
+- Род деятельности: ${occStr2}
+- Цель: ${q1Labels[ans.q1]}
+- Опыт: ${q2Labels[ans.q2]}${getActivityDetailsPrompt(ans)}
+- Рост/вес: ${ans.qHeight && ans.qWeight ? ans.qHeight + ' см, ' + ans.qWeight + ' кг' : 'не указано'}
+
+Человека беспокоит:
+- ${fearsList}
+
+Напиши мягкий, эмпатичный абзац, который снимает эти сомнения. Не список, а связный текст. Начни с понимания («Мы понимаем...» / «Это нормально...»), затем адресно закрой каждое сомнение фактами о HJ — коротко, уверенно. На кастомный вопрос ответь особенно внимательно.
+
+Правила:
+- Обращайся на «ты»
+- Не используй эмодзи
+- Тон: тёплый, уверенный, без пафоса
+- Учитывай пол: используй правильные окончания (женщина — «пришла», мужчина — «пришёл»)
+- Только текст, без заголовков и буллетов
+- 2-4 предложения
+- Никогда не используй английские термины для сегментов: switcher, lapsed, newbie и т.д.
+- Избегай слова «интенсивный»`;
+
+  try {
+    const resp = await fetch(CLAUDE_PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const text = data.content[0].text;
+    aiCache[cacheKey] = text;
+    const el = document.getElementById('aiFearsText');
+    if (el) el.innerHTML = `<p style="font-size:14px;line-height:1.6">${text}</p>`;
+  } catch (err) {
+    const el = document.getElementById('aiFearsText');
+    if (el) el.innerHTML = `<div style="color:var(--red);font-size:13px">Ошибка: ${err.message}</div>`;
+  }
+}
+
+// ========== INIT ==========
+// aiMode is always true (key hardcoded)
+renderQuiz();
+</script>
+</body>
+</html>
