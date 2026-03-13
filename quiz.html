@@ -91,6 +91,7 @@
     animation: fadeIn 0.3s ease;
   }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .quiz-question {
     font-size: 24px;
     font-weight: 600;
@@ -2388,13 +2389,165 @@ function restart() {
 }
 
 function goToPayment(programKey, programName) {
-  const params = new URLSearchParams({
-    program: programKey,
-    program_name: programName,
-    phone: answers.qPhone || localStorage.getItem('hj_phone') || '',
-    club: answers.qClub || localStorage.getItem('hj_club') || ''
-  });
-  window.location.href = 'https://diasutep.github.io/quizOnbgoarding/payment.html?' + params.toString();
+  const phone  = answers.qPhone || localStorage.getItem('hj_phone') || '';
+  const club   = answers.qClub  || localStorage.getItem('hj_club')  || '';
+  renderPaymentScreen(programKey, programName, phone, club);
+}
+
+// ========== PAYMENT SCREEN ==========
+const CLUB_IDS = {
+  'nurly-orda':  '6351ace4d61faf000b2febc8',
+  'europe-city': '6788b54527af6c00ab78c66a',
+  'colibri':     '65e9e70cbd4814536c5e27e9',
+  'promenade':   '67d7c4cc8b5b3112cb0bcd44',
+  'villa':       '683704d8c85fb0a6b1f5a8ca',
+  '4you':        '68a45233d9ba5a6ba953e5f0',
+};
+
+const PROGRAM_PRICES = {
+  'heros-week': '19 990',
+  'basecamp':   '19 990',
+  'first-step': '59 990',
+};
+
+const PAY_API = 'https://admin.herosjourney.kz/pay/api';
+
+async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
+  const main = document.getElementById('mainArea');
+  const clubId = CLUB_IDS[clubSlug] || '';
+  const price = PROGRAM_PRICES[programKey] || '';
+
+  // Skeleton while loading
+  main.innerHTML = `
+    <div style="width:100%;max-width:480px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px">
+        <div style="background:var(--surface2);border-radius:20px;height:26px;width:100px;margin-bottom:14px;animation:fadeIn 1s infinite alternate"></div>
+        <div style="background:var(--surface2);border-radius:8px;height:32px;width:60%;margin-bottom:10px"></div>
+        <div style="background:var(--surface2);border-radius:8px;height:18px;width:40%;margin-bottom:24px"></div>
+        <div style="background:var(--surface2);border-radius:var(--radius);height:58px;margin-bottom:24px"></div>
+        <div style="background:var(--surface2);border-radius:var(--radius);height:52px;margin-bottom:12px"></div>
+        <div style="background:var(--surface2);border-radius:var(--radius);height:52px"></div>
+      </div>
+    </div>`;
+
+  let dateBlock = '';
+
+  if (programKey === 'first-step') {
+    try {
+      const resp = await fetch(`${PAY_API}/getFSEvents`);
+      const { currentMarathonEvent, nextMarathonEvent } = await resp.json();
+      const fmt = iso => new Intl.DateTimeFormat('ru-RU', { day:'2-digit', month:'long', year:'numeric' }).format(new Date(iso));
+      let opts = '';
+      if (nextMarathonEvent) opts += `<option value="${nextMarathonEvent._id}">${fmt(nextMarathonEvent.startTime)}</option>`;
+      if (currentMarathonEvent && currentMarathonEvent._id !== nextMarathonEvent?._id)
+        opts += `<option value="${currentMarathonEvent._id}">${fmt(currentMarathonEvent.startTime)}</option>`;
+      dateBlock = `
+        <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Дата старта</div>
+        <select id="payEventSelect" style="width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;margin-bottom:24px;appearance:none;outline:none">${opts}</select>`;
+    } catch(e) {
+      dateBlock = `<div style="color:var(--red);font-size:14px;margin-bottom:16px">Не удалось загрузить даты</div>`;
+    }
+  } else {
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0];
+    const next = new Date(today);
+    next.setDate(today.getDate() + ((8 - today.getDay()) % 7 || 7));
+    const defaultDate = next.toISOString().split('T')[0];
+    dateBlock = `
+      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Дата старта</div>
+      <input type="date" id="payDateInput" min="${minDate}" value="${defaultDate}"
+             style="width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;margin-bottom:24px;outline:none;color-scheme:dark">`;
+  }
+
+  main.innerHTML = `
+    <div style="width:100%;max-width:480px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;animation:fadeIn 0.3s ease">
+        <div style="display:inline-block;padding:4px 12px;border-radius:20px;background:var(--accent-glow);border:1px solid rgba(255,107,53,0.3);color:var(--accent);font-size:13px;font-weight:600;margin-bottom:12px">Оплата программы</div>
+        <div style="font-size:26px;font-weight:700;margin-bottom:6px">${programName}</div>
+        <div style="font-size:14px;color:var(--text-muted);margin-bottom:20px">${clubSlug ? getClubDisplayName(clubSlug) : ''}</div>
+
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+          <span style="font-size:14px;color:var(--text-muted)">Стоимость</span>
+          <span style="font-size:24px;font-weight:700">${price} ₸</span>
+        </div>
+
+        ${dateBlock}
+
+        <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Способ оплаты</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <button id="btnPayKaspi" onclick="executePayment('kaspi','${programKey}','${phone}','${clubId}')"
+                  style="width:100%;padding:16px;border-radius:var(--radius);border:none;background:#f14635;color:white;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px">
+            <span style="font-weight:800;font-size:16px">Kaspi</span>
+            <span>Оплатить через Kaspi</span>
+          </button>
+          <button id="btnPayCard" onclick="executePayment('card','${programKey}','${phone}','${clubId}')"
+                  style="width:100%;padding:16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px">
+            <span>💳 Оплата картой</span>
+          </button>
+        </div>
+        <div id="payError" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);color:var(--red);font-size:14px"></div>
+      </div>
+      <button onclick="renderResult()" style="margin-top:16px;width:100%;padding:12px;border:none;background:transparent;color:var(--text-muted);font-size:14px;cursor:pointer">← Вернуться к результату</button>
+    </div>`;
+}
+
+function getClubDisplayName(slug) {
+  return ({ 'nurly-orda':'HJ Nurly Orda','europe-city':'HJ Europe City','colibri':'HJ Colibri','promenade':'HJ Promenade','villa':'HJ Villa','4you':'HJ 4YOU' })[slug] || '';
+}
+
+async function executePayment(method, programKey, phone, clubId) {
+  const btnKaspi = document.getElementById('btnPayKaspi');
+  const btnCard  = document.getElementById('btnPayCard');
+  const errEl    = document.getElementById('payError');
+  errEl.style.display = 'none';
+  btnKaspi.disabled = btnCard.disabled = true;
+  const btn = method === 'kaspi' ? btnKaspi : btnCard;
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite"></div>';
+
+  try {
+    let endpoint = '', body = { phoneNumber: phone, clubId };
+
+    if (programKey === 'heros-week') {
+      const d = document.getElementById('payDateInput');
+      if (!d?.value) { showPayError('Выберите дату старта.'); return; }
+      body.marathonDate = d.value;
+      endpoint = method === 'kaspi' ? '/genereteKaspiLinkForHerosWeek' : '/registerCardTokenHerosWeek';
+    } else if (programKey === 'basecamp') {
+      const d = document.getElementById('payDateInput');
+      if (!d?.value) { showPayError('Выберите дату старта.'); return; }
+      body.type = 'basecamp';
+      endpoint = method === 'kaspi' ? '/generateKaspiLinkForGeneratedFirstStep' : '/registerCardTokenGeneratedFirstStep';
+    } else if (programKey === 'first-step') {
+      const s = document.getElementById('payEventSelect');
+      if (!s?.value) { showPayError('Выберите дату старта.'); return; }
+      body.marathonEventId = s.value;
+      endpoint = method === 'kaspi' ? '/generateKaspiLinkForFirstStep' : '/registerCardTokenFirstStep';
+    }
+
+    const resp = await fetch(PAY_API + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) { showPayError(data?.message || 'Ошибка оплаты. Попробуйте ещё раз.'); return; }
+
+    const url = data?.Data?.PaymentLink || data?.url;
+    if (url) { window.location.href = url; return; }
+    showPayError('Не удалось получить ссылку на оплату.');
+  } catch(e) {
+    showPayError('Ошибка соединения. Проверьте интернет.');
+  } finally {
+    btn.innerHTML = origText;
+    btnKaspi.disabled = btnCard.disabled = false;
+  }
+
+  function showPayError(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
 }
 
 // ========== DEBUG ==========
