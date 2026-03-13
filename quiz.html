@@ -2951,7 +2951,7 @@ ${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце про�
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 300,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -3022,7 +3022,7 @@ async function generateAiFears(ans, rec) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 300,
         messages: [{ role: 'user', content: prompt }]
       })
