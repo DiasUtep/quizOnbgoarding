@@ -2119,6 +2119,14 @@ function submitPhone() {
     return;
   }
   localStorage.setItem('hj_phone', phone);
+
+  // Создаём лид в AmoCRM
+  fetch('https://admin.herosjourney.kz/pay/api/createQuizLead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phoneNumber: phone })
+  }).catch(e => console.warn('createQuizLead failed:', e));
+
   nextStep();
 }
 
@@ -2492,6 +2500,33 @@ function getClubDisplayName(slug) {
   return ({ 'nurly-orda':'HJ Nurly Orda','europe-city':'HJ Europe City','colibri':'HJ Colibri','promenade':'HJ Promenade','villa':'HJ Villa','4you':'HJ 4YOU' })[slug] || '';
 }
 
+async function saveAnswersToServer(phone, clubId, marathonEventId) {
+  try {
+    const aiText = Object.values(aiCache)[0] || '';
+    await fetch('https://admin.herosjourney.kz/pay/api/saveQuizAnswers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: phone,
+        clubId,
+        sex: answers.qGender || 'X',
+        age: answers.qAge || '',
+        height: answers.qHeight || '',
+        weight: answers.qWeight || '',
+        answerFitnessGoal: answers.q1 || '',
+        experience: answers.q2 || '',
+        answerInjures: answers.q4 || '',
+        answerBody: answers.q3 || '',
+        breakDuration: answers.q2details || '',
+        generatedOutput: aiText,
+        marathonEventId: marathonEventId || null,
+      })
+    });
+  } catch(e) {
+    console.warn('saveQuizAnswers failed:', e);
+  }
+}
+
 async function executePayment(method, programKey, phone, clubId) {
   const btnKaspi = document.getElementById('btnPayKaspi');
   const btnCard  = document.getElementById('btnPayCard');
@@ -2521,6 +2556,9 @@ async function executePayment(method, programKey, phone, clubId) {
       body.marathonEventId = s.value;
       endpoint = method === 'kaspi' ? '/generateKaspiLinkForFirstStep' : '/registerCardTokenFirstStep';
     }
+
+    // Сохраняем ответы квиза перед оплатой
+    await saveAnswersToServer(phone, clubId, body.marathonEventId || null);
 
     const resp = await fetch(PAY_API + endpoint, {
       method: 'POST',
