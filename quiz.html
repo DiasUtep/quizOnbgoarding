@@ -1983,7 +1983,7 @@ function renderQuiz() {
         <div style="margin-bottom:20px">
           <label style="font-size:13px;color:var(--text-muted);margin-bottom:8px;display:block">Номер телефона</label>
           <div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0 16px;transition:border-color 0.2s" id="phoneWrap">
-            <input type="tel" id="inputPhone" placeholder="8 777 777 77 77" value="${ph}"
+            <input type="tel" id="inputPhone" placeholder="8 777 777 77 77" value="${ph}" maxlength="11"
                    oninput="answers.qPhone = this.value.trim(); document.getElementById('phoneWrap').style.borderColor='var(--border)'"
                    style="flex:1;background:transparent;border:none;color:var(--text);font-size:20px;font-weight:600;padding:14px 0;outline:none">
           </div>
@@ -2230,10 +2230,7 @@ function renderResult() {
         <h3>Почему именно эта программа</h3>
         <div id="aiLiveText"><span class="ai-loading">Генерирую персональную рекомендацию</span></div>
       </div>`
-    : `<div class="ai-fallback">
-        <p>Укажи API-ключ Claude — и мы сгенерируем персональную рекомендацию на основе твоих ответов</p>
-        <button onclick="toggleAiConfig()">Настроить AI</button>
-      </div>`;
+    : '';
 
   const timelineHtml = pred ? `
     <div class="result-section">
@@ -2516,7 +2513,7 @@ async function executePayment(method, programKey, phone, clubId) {
     } else if (programKey === 'basecamp') {
       const d = document.getElementById('payDateInput');
       if (!d?.value) { showPayError('Выберите дату старта.'); return; }
-      body.type = 'basecamp';
+      body.type = 'build';
       endpoint = method === 'kaspi' ? '/generateKaspiLinkForGeneratedFirstStep' : '/registerCardTokenGeneratedFirstStep';
     } else if (programKey === 'first-step') {
       const s = document.getElementById('payEventSelect');
@@ -2551,21 +2548,7 @@ async function executePayment(method, programKey, phone, clubId) {
 }
 
 // ========== DEBUG ==========
-function toggleDebug() {
-  showDebug = !showDebug;
-  const panel = document.getElementById('debugPanel');
-  const btn = document.getElementById('btnDebug');
-  panel.classList.toggle('visible', showDebug);
-  panel.classList.toggle('mobile-show', showDebug);
-  btn.classList.toggle('active', showDebug);
-  if (showDebug) {
-    showScenarios = false;
-    document.getElementById('scenariosPanel').classList.remove('visible');
-    document.getElementById('btnScenarios').classList.remove('active');
-    document.querySelector('.layout').style.display = '';
-    renderDebug();
-  }
-}
+function toggleDebug() {}
 
 function renderDebug() {
   if (!showDebug) return;
@@ -2738,23 +2721,7 @@ function debugSetAnswer(qId, value) {
 }
 
 // ========== SCENARIOS ==========
-function toggleScenarios() {
-  showScenarios = !showScenarios;
-  const panel = document.getElementById('scenariosPanel');
-  const btn = document.getElementById('btnScenarios');
-  const layout = document.querySelector('.layout');
-
-  panel.classList.toggle('visible', showScenarios);
-  btn.classList.toggle('active', showScenarios);
-  layout.style.display = showScenarios ? 'none' : '';
-
-  if (showScenarios) {
-    showDebug = false;
-    document.getElementById('debugPanel').classList.remove('visible');
-    document.getElementById('btnDebug').classList.remove('active');
-    renderScenarios('all');
-  }
-}
+function toggleScenarios() {}
 
 function renderScenarios(filter) {
   const panel = document.getElementById('scenariosPanel');
@@ -2858,38 +2825,9 @@ function renderScenarios(filter) {
 }
 
 // ========== AI ==========
-function toggleAiConfig() {
-  const config = document.getElementById('aiConfig');
-  const btn = document.getElementById('btnAi');
-  const visible = config.classList.toggle('visible');
-  if (visible) {
-    const input = document.getElementById('apiKeyInput');
-    input.value = apiKey;
-    input.focus();
-  }
-}
+function toggleAiConfig() {}
+function saveApiKey() {}
 
-function saveApiKey(value) {
-  apiKey = value.trim();
-  if (apiKey) {
-    localStorage.setItem('hj_claude_key', apiKey);
-    aiMode = true;
-    document.getElementById('btnAi').classList.add('active');
-  } else {
-    localStorage.removeItem('hj_claude_key');
-    aiMode = false;
-    document.getElementById('btnAi').classList.remove('active');
-  }
-}
-
-// Close config on click outside
-document.addEventListener('click', (e) => {
-  const config = document.getElementById('aiConfig');
-  const btn = document.getElementById('btnAi');
-  if (!config.contains(e.target) && !btn.contains(e.target)) {
-    config.classList.remove('visible');
-  }
-});
 
 const q1Labels = { A: 'Сбросить вес и подтянуть тело', B: 'Стать выносливее и сильнее', C: 'Наконец начать тренироваться регулярно', D: 'Просто попробовать — интересно, что это' };
 const q2Labels = { A: 'Никогда не ходил(а) в зал', B: 'Ходил(а) раньше, но бросил(а)', C: 'Хожу сейчас, но хочу попробовать что-то другое', D: 'Занимаюсь сам(а) — дома, на улице, без зала' };
