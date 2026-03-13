@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero's Journey — Оплата</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #1a1a1a;
+    --surface2: #252525;
+    --border: #333;
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --accent: #ff6b35;
+    --accent-glow: rgba(255, 107, 53, 0.15);
+    --green: #22c55e;
+    --red: #ef4444;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .header-logo { font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+  .header-logo span { color: var(--accent); }
+
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .program-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(255,107,53,0.3);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .program-name {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .program-meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .price-block {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .price-label { font-size: 14px; color: var(--text-muted); }
+  .price-value { font-size: 24px; font-weight: 700; }
+
+  .section-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .date-select {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 24px;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+  }
+  .date-select:focus { border-color: var(--accent); }
+
+  .date-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 24px;
+    outline: none;
+    color-scheme: dark;
+  }
+  .date-input:focus { border-color: var(--accent); }
+
+  .payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-payment {
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--radius);
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-payment:hover { opacity: 0.9; }
+  .btn-payment:active { transform: scale(0.99); }
+  .btn-payment:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-kaspi {
+    background: #f14635;
+    color: white;
+  }
+  .btn-card {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-card:hover { border-color: var(--accent); }
+
+  .kaspi-logo {
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.5px;
+  }
+
+  .loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: var(--radius);
+    color: var(--red);
+    font-size: 14px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 4px 0;
+  }
+  .info-row span:last-child { color: var(--text); }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 6px;
+    height: 20px;
+    margin-bottom: 8px;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">HERO'S <span>JOURNEY</span></div>
+</div>
+
+<div class="card" id="mainCard">
+  <div id="cardContent">
+    <div class="skeleton" style="width:80px;height:26px;border-radius:20px;margin-bottom:12px"></div>
+    <div class="skeleton" style="width:60%;height:32px;margin-bottom:8px"></div>
+    <div class="skeleton" style="width:40%;height:18px;margin-bottom:20px"></div>
+    <div class="skeleton" style="height:58px;margin-bottom:24px"></div>
+    <div class="skeleton" style="height:52px;margin-bottom:12px"></div>
+    <div class="skeleton" style="height:52px"></div>
+  </div>
+</div>
+
+<div style="width:100%;max-width:480px;font-size:12px;color:var(--text-muted);text-align:center">
+  Безопасная оплата через Kaspi или банковскую карту
+</div>
+
+<script>
+const CLUB_IDS = {
+  'nurly-orda':  '6351ace4d61faf000b2febc8',
+  'europe-city': '6788b54527af6c00ab78c66a',
+  'colibri':     '65e9e70cbd4814536c5e27e9',
+  'promenade':   '67d7c4cc8b5b3112cb0bcd44',
+  'villa':       '683704d8c85fb0a6b1f5a8ca',
+  '4you':        '68a45233d9ba5a6ba953e5f0',
+};
+
+const PROGRAM_INFO = {
+  'heros-week':  { name: "Hero's Week", trainings: 6, duration: '2 недели', price: '19 990' },
+  'basecamp':    { name: 'Basecamp',    trainings: 6, duration: '2 недели', price: '19 990' },
+  'first-step':  { name: 'Первый Шаг', trainings: 12, duration: '4 недели', price: '59 990' },
+};
+
+const API_BASE = 'https://admin.herosjourney.kz/pay/api';
+
+const params = new URLSearchParams(window.location.search);
+const programKey = params.get('program') || '';
+const phone      = params.get('phone') || '';
+const clubSlug   = params.get('club') || '';
+const clubId     = CLUB_IDS[clubSlug] || '';
+
+const info = PROGRAM_INFO[programKey];
+
+async function init() {
+  if (!info) {
+    renderError('Программа не найдена. Пожалуйста, пройдите квиз заново.');
+    return;
+  }
+
+  if (programKey === 'first-step') {
+    await renderFirstStep();
+  } else if (programKey === 'heros-week') {
+    renderHerosWeek();
+  } else if (programKey === 'basecamp') {
+    renderBasecamp();
+  }
+}
+
+function renderCard(dateBlock) {
+  const clubName = getClubName(clubSlug);
+  document.getElementById('cardContent').innerHTML = `
+    <div class="program-badge">Твоя программа</div>
+    <div class="program-name">${info.name}</div>
+    <div class="program-meta">${info.trainings} тренировок · ${info.duration}${clubName ? ' · ' + clubName : ''}</div>
+
+    <div class="price-block">
+      <span class="price-label">Стоимость</span>
+      <span class="price-value">${info.price} ₸</span>
+    </div>
+
+    ${dateBlock}
+
+    <div class="section-label">Способ оплаты</div>
+    <div class="payment-methods">
+      <button class="btn-payment btn-kaspi" id="btnKaspi" onclick="pay('kaspi')">
+        <span class="kaspi-logo">Kaspi</span>
+        <span>Оплатить через Kaspi</span>
+        <div class="loading-spinner" id="spinKaspi"></div>
+      </button>
+      <button class="btn-payment btn-card" id="btnCard" onclick="pay('card')">
+        <span>💳 Оплата картой</span>
+        <div class="loading-spinner" id="spinCard" style="border-top-color: var(--text)"></div>
+      </button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  `;
+}
+
+async function renderFirstStep() {
+  try {
+    const resp = await fetch(`${API_BASE}/getFSEvents`);
+    if (!resp.ok) throw new Error('Ошибка загрузки событий');
+    const { currentMarathonEvent, nextMarathonEvent } = await resp.json();
+
+    const formatDate = (iso) => new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    }).format(new Date(iso));
+
+    let options = '';
+    if (nextMarathonEvent) {
+      options += `<option value="${nextMarathonEvent._id}">${formatDate(nextMarathonEvent.startTime)}</option>`;
+    }
+    if (currentMarathonEvent && currentMarathonEvent._id !== nextMarathonEvent?._id) {
+      options += `<option value="${currentMarathonEvent._id}">${formatDate(currentMarathonEvent.startTime)}</option>`;
+    }
+
+    const dateBlock = `
+      <div class="section-label">Дата старта</div>
+      <select class="date-select" id="eventSelect">${options}</select>
+    `;
+    renderCard(dateBlock);
+  } catch (e) {
+    renderError('Не удалось загрузить доступные даты. Попробуйте позже.');
+  }
+}
+
+function renderHerosWeek() {
+  const today = new Date();
+  const minDate = today.toISOString().split('T')[0];
+
+  // Default: next Monday
+  const next = new Date(today);
+  next.setDate(today.getDate() + ((8 - today.getDay()) % 7 || 7));
+  const defaultDate = next.toISOString().split('T')[0];
+
+  const dateBlock = `
+    <div class="section-label">Дата старта</div>
+    <input type="date" class="date-input" id="heroDateInput"
+           min="${minDate}" value="${defaultDate}">
+  `;
+  renderCard(dateBlock);
+}
+
+function renderBasecamp() {
+  const today = new Date();
+  const minDate = today.toISOString().split('T')[0];
+  const next = new Date(today);
+  next.setDate(today.getDate() + ((8 - today.getDay()) % 7 || 7));
+  const defaultDate = next.toISOString().split('T')[0];
+
+  const dateBlock = `
+    <div class="section-label">Дата старта</div>
+    <input type="date" class="date-input" id="basecampDateInput"
+           min="${minDate}" value="${defaultDate}">
+  `;
+  renderCard(dateBlock);
+}
+
+async function pay(method) {
+  hideError();
+  const btnKaspi = document.getElementById('btnKaspi');
+  const btnCard  = document.getElementById('btnCard');
+  const spin     = document.getElementById(method === 'kaspi' ? 'spinKaspi' : 'spinCard');
+  const btn      = method === 'kaspi' ? btnKaspi : btnCard;
+
+  if (!phone) { showError('Номер телефона не найден. Пройдите квиз заново.'); return; }
+  if (!clubId) { showError('Клуб не найден. Пройдите квиз заново.'); return; }
+
+  btn.disabled = true;
+  btnKaspi.disabled = true;
+  btnCard.disabled = true;
+  spin.style.display = 'block';
+
+  try {
+    let endpoint = '';
+    let body = { phoneNumber: phone, clubId };
+
+    if (programKey === 'heros-week') {
+      const dateInput = document.getElementById('heroDateInput');
+      if (!dateInput?.value) { showError('Выберите дату старта.'); reset(); return; }
+      body.marathonDate = dateInput.value;
+      endpoint = method === 'kaspi'
+        ? '/genereteKaspiLinkForHerosWeek'
+        : '/registerCardTokenHerosWeek';
+
+    } else if (programKey === 'basecamp') {
+      body.type = 'basecamp';
+      endpoint = method === 'kaspi'
+        ? '/generateKaspiLinkForGeneratedFirstStep'
+        : '/registerCardTokenGeneratedFirstStep';
+
+    } else if (programKey === 'first-step') {
+      const select = document.getElementById('eventSelect');
+      if (!select?.value) { showError('Выберите дату старта.'); reset(); return; }
+      body.marathonEventId = select.value;
+      endpoint = method === 'kaspi'
+        ? '/generateKaspiLinkForFirstStep'
+        : '/registerCardTokenFirstStep';
+    }
+
+    const resp = await fetch(API_BASE + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      showError(data?.message || 'Ошибка оплаты. Попробуйте ещё раз.');
+      reset(); return;
+    }
+
+    // Kaspi returns Data.PaymentLink, Card returns url
+    const redirectUrl = data?.Data?.PaymentLink || data?.url;
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    } else {
+      showError('Не удалось получить ссылку на оплату. Попробуйте ещё раз.');
+      reset();
+    }
+
+  } catch (e) {
+    showError('Ошибка соединения. Проверьте интернет и попробуйте снова.');
+    reset();
+  }
+
+  function reset() {
+    spin.style.display = 'none';
+    btnKaspi.disabled = false;
+    btnCard.disabled = false;
+    btn.disabled = false;
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  const el = document.getElementById('errorMsg');
+  if (el) el.style.display = 'none';
+}
+
+function renderError(msg) {
+  document.getElementById('cardContent').innerHTML = `
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:32px;margin-bottom:16px">⚠️</div>
+      <div style="font-size:16px;color:var(--text-muted)">${msg}</div>
+    </div>
+  `;
+}
+
+function getClubName(slug) {
+  const names = {
+    'nurly-orda':  'HJ Nurly Orda',
+    'europe-city': 'HJ Europe City',
+    'colibri':     'HJ Colibri',
+    'promenade':   'HJ Promenade',
+    'villa':       'HJ Villa',
+    '4you':        'HJ 4YOU',
+  };
+  return names[slug] || '';
+}
+
+init();
+</script>
+</body>
+</html>
