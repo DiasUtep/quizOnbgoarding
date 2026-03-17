@@ -6,7 +6,7 @@
 <title>HJ Trial Quiz — Подберём тебе программу</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
+​
   :root {
     --bg: #06060a;
     --surface: rgba(255, 255, 255, 0.04);
@@ -31,16 +31,16 @@
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     --shadow-accent: 0 12px 40px rgba(123, 61, 255, 0.25);
   }
-
+​
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
+​
   @keyframes meshMove {
     0%, 100% { transform: translate(0, 0) scale(1); }
     25% { transform: translate(30px, -50px) scale(1.05); }
     50% { transform: translate(-20px, 20px) scale(0.95); }
     75% { transform: translate(10px, -30px) scale(1.02); }
   }
-
+​
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
@@ -91,7 +91,7 @@
     background-repeat: repeat;
     background-size: 256px 256px;
   }
-
+​
   /* Header */
   .header {
     display: flex;
@@ -131,7 +131,7 @@
   }
   .btn-small:hover { border-color: var(--accent); color: var(--text); }
   .btn-small.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
-
+​
   /* Layout */
   .layout { display: flex; min-height: calc(100vh - 57px); position: relative; z-index: 1; }
   .main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 28px; }
@@ -145,7 +145,7 @@
     max-height: calc(100vh - 57px);
   }
   .debug-panel.visible { display: block; }
-
+​
   /* Progress */
   .progress-wrap { width: 100%; max-width: 480px; margin-bottom: 48px; }
   .progress-label {
@@ -181,7 +181,7 @@
     0%, 100% { box-shadow: 0 0 20px rgba(123, 61, 255, 0.7), 0 0 40px rgba(123, 61, 255, 0.3); }
     50% { box-shadow: 0 0 25px rgba(123, 61, 255, 0.9), 0 0 50px rgba(123, 61, 255, 0.5); }
   }
-
+​
   /* Quiz Card */
   .quiz-card {
     width: 100%;
@@ -240,7 +240,7 @@
     animation: fadeIn 0.2s ease;
   }
   .why-tooltip.visible { display: block; }
-
+​
   .quiz-options { display: flex; flex-direction: column; gap: 10px; }
   .quiz-option {
     padding: 20px 24px;
@@ -292,7 +292,7 @@
   }
   .quiz-option.selected::before { transform: scaleY(1); background: var(--accent-light); }
   .quiz-option.selected::after { opacity: 1; }
-
+​
   /* Navigation */
   .quiz-nav {
     display: flex;
@@ -314,7 +314,7 @@
   }
   .btn-back:hover { color: var(--text); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); }
   .btn-back.hidden { visibility: hidden; }
-
+​
   /* Result */
   .result-card {
     width: 100%;
@@ -414,7 +414,7 @@
     margin-top: 8px;
     font-weight: 300;
   }
-
+​
   .result-section {
     background:
       radial-gradient(ellipse at top right, rgba(123, 61, 255, 0.04) 0%, transparent 50%),
@@ -535,7 +535,7 @@
     transition: all 0.2s;
   }
   .btn-restart:hover { color: var(--text); border-color: var(--text-muted); }
-
+​
   /* Alt programs */
   .alt-programs { margin-top: 40px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.04); }
   .alt-programs-title { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; text-align: center; letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
@@ -602,7 +602,7 @@
   .alt-card-cta:hover { color: white; box-shadow: var(--shadow-accent); transform: translateY(-1px); }
   .alt-card-cta:hover::before { opacity: 1; }
   .alt-card-cta span { position: relative; z-index: 1; }
-
+​
   /* AI mode */
   .ai-toggle {
     display: flex;
@@ -678,7 +678,7 @@
   .assessment-block-text { font-size: 13px; color: var(--text-secondary); line-height: 1.7; font-weight: 300; }
   .assessment-detail p { font-weight: 300; line-height: 1.7; }
   .assessment-detail > p:first-of-type { font-size: 15px; color: var(--text); }
-
+​
   /* Club selection */
   .club-city-group { margin-bottom: 20px; }
   .club-city-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; font-weight: 500; }
@@ -714,7 +714,7 @@
   .club-pin { display: inline-flex; color: var(--accent-light); }
   .club-pin svg { width: 16px; height: 16px; }
   .club-address { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-weight: 300; }
-
+​
   .body-inputs { display: flex; gap: 16px; margin-bottom: 20px; }
   .body-field { flex: 1; }
   .body-field label {
@@ -749,7 +749,7 @@
   .body-field input::-webkit-outer-spin-button,
   .body-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .body-field .suffix { color: var(--text-muted); font-size: 15px; margin-left: 4px; }
-
+​
   .ai-fallback {
     background: rgba(255, 255, 255, 0.025);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -821,7 +821,7 @@
   @media (max-width: 768px) {
     .ai-config { width: calc(100vw - 48px); right: -60px; }
   }
-
+​
   /* Debug Panel */
   .debug-title {
     font-size: 14px;
@@ -844,7 +844,7 @@
   }
   .debug-score .label { color: var(--text-muted); }
   .debug-score .value { font-weight: 600; }
-
+​
   .debug-matrix { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
   .debug-matrix th, .debug-matrix td {
     padding: 8px 6px;
@@ -859,7 +859,7 @@
     color: var(--accent);
     font-weight: 600;
   }
-
+​
   .debug-answers { margin-top: 12px; }
   .debug-answer {
     display: flex;
@@ -878,7 +878,7 @@
     padding: 4px 8px;
     font-size: 12px;
   }
-
+​
   .debug-tag {
     display: inline-block;
     padding: 2px 8px;
@@ -889,7 +889,7 @@
   .tag-fs { background: rgba(34, 197, 94, 0.15); color: var(--green); }
   .tag-bc { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
   .tag-hw { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
-
+​
   .debug-modifier-info {
     padding: 8px 12px;
     background: var(--surface2);
@@ -901,7 +901,7 @@
   .debug-modifier-info .after { color: var(--accent); font-weight: 600; }
   .debug-modifier-info .arrow { color: var(--text-muted); margin: 0 6px; }
   .debug-modifier-info.no-change { color: var(--text-muted); }
-
+​
   /* Scenarios tab */
   .scenarios-panel {
     width: 100%;
@@ -928,7 +928,7 @@
   }
   .filter-btn:hover { border-color: var(--accent); }
   .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
-
+​
   .scenarios-table {
     width: 100%;
     border-collapse: collapse;
@@ -962,7 +962,7 @@
     font-size: 13px;
   }
   .stat-card .stat-value { font-size: 24px; font-weight: 700; }
-
+​
   /* Fear tags */
   .fear-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
   .fear-chip {
@@ -1033,7 +1033,7 @@
     transition: color 0.2s;
   }
   .btn-skip:hover { color: var(--text); }
-
+​
   .fear-answer {
     background: rgba(255, 255, 255, 0.025);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -1062,7 +1062,7 @@
     color: var(--text-secondary);
     font-weight: 300;
   }
-
+​
   /* Icons in options */
   .quiz-option-icon {
     display: flex;
@@ -1087,7 +1087,7 @@
   .quiz-option:hover .opt-icon svg { color: var(--accent-light); }
   .quiz-option.selected .opt-icon { background: rgba(123, 61, 255, 0.15); box-shadow: 0 0 16px rgba(123, 61, 255, 0.25); border-color: rgba(123, 61, 255, 0.2); }
   .quiz-option.selected .opt-icon svg { color: var(--accent-light); }
-
+​
   /* Interstitial screens */
   .interstitial {
     width: 100%;
@@ -1155,7 +1155,7 @@
     animation: shimmer 3s ease-in-out infinite;
   }
   .btn-interstitial:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123, 61, 255, 0.45); }
-
+​
   /* Prediction screen */
   .prediction {
     width: 100%;
@@ -1215,7 +1215,7 @@
     font-weight: 300;
     color: var(--text-secondary);
   }
-
+​
   /* Mobile */
   @media (max-width: 768px) {
     .debug-panel { display: none !important; position: fixed; top: 57px; right: 0; width: 100%; height: calc(100vh - 57px); z-index: 99; }
@@ -1238,11 +1238,11 @@
 </head>
 <body>
 <div class="noise-overlay"></div>
-
+​
 <div class="header">
   <div class="header-logo">HERO'S <span>JOURNEY</span> — Trial Quiz</div>
 </div>
-
+​
 <div class="layout">
   <div class="main" id="mainArea">
     <!-- Quiz content rendered by JS -->
@@ -1252,11 +1252,11 @@
     <div id="debugContent"></div>
   </div>
 </div>
-
+​
 <div class="scenarios-panel" id="scenariosPanel">
   <!-- Scenarios rendered by JS -->
 </div>
-
+​
 <script>
 // ========== DATA ==========
 const questions = [
@@ -1409,7 +1409,7 @@ const questions = [
     inputType: 'phone'
   }
 ];
-
+​
 // Club data from Business & Product Rules
 const clubInfo = {
   'nurly-orda': { name: 'HJ Nurly Orda', city: 'Астана', address: 'Кабанбай батыра, 11/5', zones: ['legs', 'upperbody', 'bootcamp'], hasReshape: false, hasMetcon: false, hasMindBody: false, hasAssessmentCenter: false },
@@ -1419,17 +1419,17 @@ const clubInfo = {
   'villa': { name: 'HJ Villa', city: 'Алматы', address: 'Аль-Фараби, 140а', zones: ['fullbody', 'bootcamp', 'reshape'], hasReshape: true, hasMetcon: false, hasMindBody: false, hasAssessmentCenter: false },
   '4you': { name: 'HJ 4YOU', city: 'Алматы', address: 'Ескараева, 3', zones: ['upperbody', 'legs', 'metcon', 'bootcamp', 'reshape', 'assessment'], hasReshape: true, hasMetcon: true, hasMindBody: false, hasAssessmentCenter: true }
 };
-
+​
 // Scoring tables
 // Fitness Level from Q2: A(newbie)=0, B(lapsed)=1, D(self-trained)=2, C(switcher)=2
 const fitnessScores = { A: 0, B: 1, C: 2, D: 2 };
-
+​
 // Motivation from Q1 + Q3 (average, 0-2 scale)
 const motivationScores = {
   q1: { A: 2, B: 2, C: 1, D: 0 },
   q3: { A: 1, B: 1, C: 1, D: 2 }
 };
-
+​
 // Routing matrix [fitnessCategory][motivationCategory]
 // fitness: 0-1 = beginner, 2 = active, 3 = advanced (not reachable with current Q2 max=2)
 // motivation: 0-0.75 = low, 0.75-1.5 = medium, 1.5-2 = high
@@ -1438,7 +1438,7 @@ const routingMatrix = {
   active:    { low: 'heros-week', medium: 'basecamp',   high: 'basecamp' },
   advanced:  { low: 'heros-week', medium: 'heros-week', high: 'heros-week' }
 };
-
+​
 const programInfo = {
   'first-step': {
     name: 'Первый Шаг',
@@ -1485,7 +1485,7 @@ const programInfo = {
     ]
   }
 };
-
+​
 // AI-generated personalized texts keyed by q1+q2+q3
 // For risk=C (high), all routes go to first-step — separate texts with '_risk' suffix
 const aiTexts = {
@@ -1538,7 +1538,7 @@ const aiTexts = {
   // Q1=D (exploration) — в Basecamp попадают: DCD, DDD
   'DCD': 'Тебе интересно попробовать HJ, и ты уже знаешь, что такое зал — Basecamp покажет формат за 6 тренировок. Без долгого онбординга, разные форматы, assessment на старте. Попробуй и сравни — а после решишь, стоит ли переходить.',
   'DDD': 'Тебе интересно попробовать, и ты уже тренируешься сам — Basecamp за 6 тренировок покажет, что даёт система: assessment, прогрессия, разные форматы нагрузки. Без обязательств — просто проверь, добавит ли зал что-то к твоим тренировкам.',
-
+​
   // ===== FIRST STEP (8 profiles) =====
   'CAA': 'Ты хочешь начать тренироваться регулярно, но никогда не был в зале и не знаешь, с чего начать — Первый Шаг создан именно для этого. 12 тренировок за 4 недели с плавным ростом нагрузки: тренер встретит тебя, объяснит каждое движение и будет рядом. Assessment определит твой уровень, а к концу программы тренировки станут привычной частью недели.',
   'CAB': 'Ты хочешь начать регулярно тренироваться и тебе нужна структура — Первый Шаг даст её на 4 недели вперёд. 12 тренировок с понятным планом: какие форматы, в каком порядке, с какой нагрузкой. Assessment на старте, система уровней и достижений — каждая тренировка ощущается как шаг вперёд.',
@@ -1548,7 +1548,7 @@ const aiTexts = {
   'CBC': 'Ты хочешь вернуться к тренировкам и сделать их регулярными. Первый Шаг — 12 тренировок за 4 недели в удобное время. Плавный старт, assessment для определения уровня и достаточно времени, чтобы привычка закрепилась.',
   'DAD': 'Тебе просто интересно попробовать, и ты никогда не был в зале — Первый Шаг идеален для знакомства. 12 тренировок за 4 недели — без спешки попробуешь все форматы: силовые (работа с весами), HIIT (кардио), Reshape (гибкость). Assessment покажет, на что способно тело, а тренер будет рядом, если понадобится.',
   'DBD': 'Тебе интересно попробовать, и ты уже бывал в зале — Первый Шаг даст время распробовать формат HJ. 12 тренировок, разные форматы, assessment. Без давления — просто тренируйся и к концу программы решишь, твоё это или нет.',
-
+​
   // ===== HERO'S WEEK (12 profiles) =====
   'DAA': 'Тебе интересно попробовать, и ты никогда не был в зале — Hero\'s Week создан для первого знакомства. Три тренировки за неделю: силовая (работа с весами), HIIT (кардио), Reshape (гибкость). Тренер покажет всё с нуля, а ты за три дня поймёшь, нравится ли тебе этот формат — без обязательств и долгих программ.',
   'DAB': 'Тебе интересно попробовать, но без структуры ты вряд ли пойдёшь — Hero\'s Week решает это. Всего 3 тренировки за неделю с чётким планом: силовая (работа с весами), HIIT (кардио), Reshape (гибкость). Минимум обязательств, максимум впечатлений. После недели решишь, хочешь ли продолжить.',
@@ -1563,7 +1563,7 @@ const aiTexts = {
   'DDB': 'Ты тренируешься сам и хочешь попробовать, что даёт зал с тренером и системой. Hero\'s Week — 3 тренировки за неделю с чётким планом. Попробуешь силовые (работа с весами), HIIT (кардио) и Reshape (гибкость) — и решишь, нужна ли тебе эта система.',
   'DDC': 'Ты занимаешься сам и хочешь глянуть, что такое HJ — Hero\'s Week за одну неделю покажет. 3 тренировки в удобное время, без обязательств. Попробуй и реши, стоит ли добавить зал в свою программу.'
 };
-
+​
 // Texts for risk=C override (all go to Первый Шаг regardless of base program)
 const aiTextsRisk = {
   // Q1=A (трансформация)
@@ -1587,7 +1587,7 @@ const aiTextsRisk = {
   'DC': 'Тебе интересно попробовать HJ, но ограничения по здоровью — Первый Шаг учтёт это. Assessment, адаптированная нагрузка, тренер рядом. 12 тренировок в удобное время — попробуй без тревоги.',
   'DD': 'Ты занимаешься сам и хочешь попробовать зал, но здоровье требует внимания. Первый Шаг — 12 тренировок с assessmentом и профессиональным контролем. Тренер адаптирует нагрузку под твои ограничения с первого дня.'
 };
-
+​
 // Dynamic modifiers
 const modifiers = {
   risk_moderate: 'Тренер адаптирует нагрузку с учётом твоих ограничений.',
@@ -1598,7 +1598,7 @@ const modifiers = {
   assessment: 'На assessmentе тренер оценит твои текущие показатели — это точка отсчёта для прогресса.',
   switcher: 'У нас не просто зал — это система тренировок с прогрессией, геймификацией и персональным треком.'
 };
-
+​
 // Fear responses — short reassurance phrases that combine into a flowing paragraph
 const fearResponses = {
   'overload': { label: '«Будет слишком сложно»', text: 'нагрузка растёт плавно — тренер не даст больше, чем ты готов' },
@@ -1611,10 +1611,10 @@ const fearResponses = {
   'schedule': { label: '«Не впишусь в расписание»', text: 'тренировки идут каждый день с утра до вечера — ты сам выбираешь удобное время' },
   'alone': { label: '«Придётся разбираться одному»', text: 'тренер рядом на каждой тренировке, а в первый день тебя встретят и всё покажут' }
 };
-
+​
 // ========== SVG ICON SET (Lucide-style, 24x24, stroke 1.5) ==========
 const svgIcon = (paths, size = 24) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
-
+​
 const SVG = {
   fire: svgIcon('<path d="M12 12c2-2.96 0-7-1-8 0 3.04-2.25 5.25-4 6.5C5.77 11.41 5 13.1 5 15c0 3.87 3.13 7 7 7s7-3.13 7-7c0-2-1-3.5-2-4.5-1 1-2 2-3 2-.5 0-1-.5-2-1.5z"/>'),
   muscle: svgIcon('<path d="M6.5 6.5c1.5-1.5 3.5-1 4.5 0l1 1 1-1c1-1 3-.5 4.5 1s1.5 3.5 0 4.5l-1 1 1 1c1.5 1.5 1 3.5 0 4.5s-3.5 1.5-4.5 0l-1-1-1 1c-1 1-3 1.5-4.5 0s-1.5-3.5 0-4.5l1-1-1-1c-1.5-1.5-1-3.5 0-4.5z"/><path d="m14 14-4-4"/>'),
@@ -1642,7 +1642,7 @@ const SVG = {
   chart: svgIcon('<path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 4-6"/>'),
   city: svgIcon('<rect x="4" y="2" width="6" height="20" rx="1"/><rect x="14" y="7" width="6" height="15" rx="1"/><path d="M6 6h2M6 10h2M6 14h2M6 18h2M16 11h2M16 15h2M16 19h2"/>')
 };
-
+​
 // Icons for Q1 options
 const q1Icons = {
   A: SVG.fire,
@@ -1650,16 +1650,16 @@ const q1Icons = {
   C: SVG.calendar,
   D: SVG.search
 };
-
+​
 // Icons for gender options
 const genderIcons = { F: SVG.female, M: SVG.male, X: SVG.user };
-
+​
 // Icons for age options
 const ageIcons = { '18-24': SVG.bolt, '25-34': SVG.target, '35-44': SVG.gem, '45+': SVG.star };
-
+​
 // Icons for occupation options
 const occupationIcons = { office: SVG.laptop, standing: SVG.running, remote: SVG.home, student: SVG.book, parent: SVG.baby, physical: SVG.wrench };
-
+​
 // "Why we ask" tooltips
 const whyWeAsk = {
   qGender: 'Чтобы правильно обращаться к тебе в рекомендации и учитывать физиологические особенности',
@@ -1671,12 +1671,12 @@ const whyWeAsk = {
   q5: 'Мы закроем твои сомнения в рекомендации — честно и по делу',
   q2details: 'Поможет тренеру понять твой уровень и не давать то, что ты уже умеешь'
 };
-
+​
 // Gender labels for AI
 const genderLabels = { F: 'Женщина', M: 'Мужчина', X: 'Не указано' };
 const ageLabels = { '18-24': '18–24 года', '25-34': '25–34 года', '35-44': '35–44 года', '45+': '45+ лет' };
 const occupationLabels = { office: 'Офис / за компьютером', standing: 'На ногах весь день', remote: 'Удалённая работа / фриланс', student: 'Учёба', parent: 'Забота о детях / семье', physical: 'Физическая работа' };
-
+​
 // Activity detail labels
 const activityDetailLabels = {
   gym: 'тренажёрный зал', crossfit: 'кроссфит', martial: 'единоборства',
@@ -1684,7 +1684,7 @@ const activityDetailLabels = {
   team: 'командные виды спорта', home: 'домашние тренировки',
   dance: 'танцы', cycling: 'велосипед'
 };
-
+​
 function getActivityDetailsPrompt(ans) {
   const details = ans.q2details || [];
   const custom = ans.q2detailscustom || '';
@@ -1693,14 +1693,14 @@ function getActivityDetailsPrompt(ans) {
   if (custom) parts.push(custom);
   return '\n- Предыдущий/текущий опыт: ' + parts.join(', ');
 }
-
+​
 // BMI calculation (hidden from user)
 function calcBMI(ans) {
   if (!ans.qHeight || !ans.qWeight) return null;
   const h = ans.qHeight / 100;
   return Math.round(ans.qWeight / (h * h) * 10) / 10;
 }
-
+​
 function getBmiCategory(bmi) {
   if (bmi === null) return null;
   if (bmi < 18.5) return 'underweight';
@@ -1708,14 +1708,14 @@ function getBmiCategory(bmi) {
   if (bmi < 30) return 'overweight';
   return 'obese';
 }
-
+​
 function getBmiLabel(bmi) {
   if (bmi === null) return 'не указано';
   const cat = getBmiCategory(bmi);
   const labels = { underweight: 'дефицит веса', normal: 'норма', overweight: 'избыточный вес', obese: 'ожирение' };
   return `${bmi} (${labels[cat]})`;
 }
-
+​
 // BMI modifier — soft nudge toward longer programs
 function applyBmiModifier(program, bmi, goal) {
   if (bmi === null) return program;
@@ -1729,7 +1729,7 @@ function applyBmiModifier(program, bmi, goal) {
   }
   return program;
 }
-
+​
 // Steps: interleave questions with interstitial screens and prediction
 // type: 'question' | 'interstitial' | 'prediction'
 const steps = [
@@ -1753,7 +1753,7 @@ const steps = [
   { type: 'question', questionIndex: 12 }, // Club
   { type: 'question', questionIndex: 13 }  // Phone
 ];
-
+​
 function getVisibleStepCount() {
   return steps.filter(s => !s.condition || s.condition()).length;
 }
@@ -1765,10 +1765,10 @@ function getVisibleStepIndex() {
   }
   return idx;
 }
-
+​
 // ========== INTERSTITIAL FACT POOLS (15 per variant, random pick) ==========
 function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
+​
 // --- Profile facts (by age, gender adjusts phrasing) ---
 const profileFacts = {
   '18-24': [
@@ -1840,10 +1840,10 @@ const profileFacts = {
     { text: 'Каждая тренировка в 45+ делает тебя моложе — буквально', sub: 'Улучшается осанка, походка, энергия. Окружающие замечают это раньше, чем ты' }
   ]
 };
-
+​
 // Gender-specific icon for profile interstitial
 const profileIcons = { '18-24': SVG.bolt, '25-34': SVG.target, '35-44': SVG.gem, '45+': SVG.star };
-
+​
 // --- Occupation facts (15 per type) ---
 const occupationFacts = {
   office: [
@@ -1949,7 +1949,7 @@ const occupationFacts = {
     { text: 'Работа нагружает, тренировка восстанавливает — если она правильная', sub: 'Программа HJ учитывает твою рабочую нагрузку и дополняет её, а не дублирует' }
   ]
 };
-
+​
 // --- Q2 experience facts (15 per type) ---
 const experienceFacts = {
   A: [ // newbie
@@ -2021,7 +2021,7 @@ const experienceFacts = {
     { text: 'Самостоятельность — суперсила. Зал даст ей инструменты', sub: 'Ты уже умеешь заставить себя тренироваться. Теперь нужна система, которая направит усилия' }
   ]
 };
-
+​
 // --- Q4 health facts (15 per risk level) ---
 const healthFacts = {
   A: [ // none
@@ -2076,7 +2076,7 @@ const healthFacts = {
     { text: 'Твоё здоровье — на первом месте. Результат — на втором', sub: 'Программа выстроена так, чтобы оба шли параллельно, без компромиссов' }
   ]
 };
-
+​
 const bodyFacts = {
   underweight: [
     { text: 'Силовые тренировки — лучший способ набрать здоровую массу', sub: 'Мышцы растут, тело становится крепче — и это происходит быстрее, чем кажется' },
@@ -2164,7 +2164,7 @@ const bodyFacts = {
     { text: 'Финишная прямая — осталось указать, что тебя беспокоит', sub: 'И мы подберём программу, которая учтёт всё' }
   ]
 };
-
+​
 // Interstitial content — dynamic based on answers, random fact from pool
 function getInterstitialContent(id) {
   if (id === 'after-profile') {
@@ -2173,7 +2173,7 @@ function getInterstitialContent(id) {
     const fact = pickRandom(pool);
     return { icon: profileIcons[a] || SVG.target, text: fact.text, sub: fact.sub };
   }
-
+​
   if (id === 'after-occupation') {
     const occ = answers.qOccupation;
     const pool = occupationFacts[occ];
@@ -2184,7 +2184,7 @@ function getInterstitialContent(id) {
     }
     return { icon: SVG.muscle, text: 'Осталось совсем немного', sub: 'Мы уже почти подобрали тебе программу' };
   }
-
+​
   if (id === 'after-q2') {
     const q2 = answers.q2;
     const pool = experienceFacts[q2];
@@ -2195,7 +2195,7 @@ function getInterstitialContent(id) {
     }
     return { icon: SVG.muscle, text: 'Мы подбираем программу под тебя', sub: '' };
   }
-
+​
   if (id === 'after-q4') {
     const risk = answers.q4;
     const pool = healthFacts[risk];
@@ -2210,7 +2210,7 @@ function getInterstitialContent(id) {
       sub: 'Мы уже почти подобрали тебе программу'
     };
   }
-
+​
   if (id === 'after-body') {
     const bmi = calcBMI(answers);
     const cat = bmi ? getBmiCategory(bmi) : 'skipped';
@@ -2219,10 +2219,10 @@ function getInterstitialContent(id) {
     const bmiIcons = { underweight: SVG.build, normal: SVG.check, overweight: SVG.bolt, obese: SVG.shield, skipped: SVG.muscle };
     return { icon: bmiIcons[cat] || SVG.muscle, text: fact.text, sub: fact.sub };
   }
-
+​
   return { icon: SVG.muscle, text: '', sub: '' };
 }
-
+​
 // Personalized question text based on previous answers
 function getPersonalizedQuestion(q) {
   if (q.id === 'q2details') {
@@ -2265,7 +2265,7 @@ function getPersonalizedQuestion(q) {
   }
   return q.question;
 }
-
+​
 // Prediction screen content
 function getClubFormats(ans) {
   const club = ans.qClub ? clubInfo[ans.qClub] : null;
@@ -2278,7 +2278,7 @@ function getClubFormats(ans) {
   const allFormats = hasReshape ? `${strengthLabel}, ${hiitLabel}, ${reshapeLabel}` : `${strengthLabel} и ${hiitLabel}`;
   return { hasReshape, hasMetcon, isVilla, strengthLabel, hiitLabel, reshapeLabel, allFormats };
 }
-
+​
 function getPredictionContent() {
   const rec = getRecommendation(answers);
   if (!rec) return null;
@@ -2286,7 +2286,7 @@ function getPredictionContent() {
   const timeline = [];
   let subtitle = '';
   const fmt = getClubFormats(answers);
-
+​
   const audienceMap = {
     A: 'для тех, кто впервые в зале',
     B: 'для тех, кто хочет вернуться',
@@ -2294,7 +2294,7 @@ function getPredictionContent() {
     D: 'для тех, кто тренируется самостоятельно'
   };
   const expLabel = audienceMap[answers.q2] || '';
-
+​
   if (rec.finalProgram === 'first-step') {
     subtitle = `Плавный вход в тренировки — ${expLabel}`;
     timeline.push({ label: 'Неделя 1-2', text: `Знакомство с форматами: ${fmt.allFormats} — тренер рядом` });
@@ -2314,10 +2314,10 @@ function getPredictionContent() {
     timeline.push({ label: 'День 3', text: fmt.hasReshape ? 'Гибкость и восстановление на реформерах (Reshape) — похоже на пилатес, но с тренажёрами' : 'Ещё один формат — попробуешь и сравнишь' });
     timeline.push({ label: 'После недели', text: 'Ты знаешь, твоё это или нет — и решаешь сам', final: true });
   }
-
+​
   return { program: info, rec, timeline, subtitle };
 }
-
+​
 // ========== STATE ==========
 let currentStep = 0;
 let answers = {};
@@ -2325,16 +2325,16 @@ let showDebug = false;
 let showScenarios = false;
 let aiMode = true;
 const CLAUDE_PROXY_URL = 'https://admin.herosjourney.kz/pay/api/claude/messages';
-
-
+​
+​
 let aiCache = {};
-
+​
 // ========== SCORING ==========
 function calcFitnessLevel(ans) {
   if (!ans.q2) return null;
   return fitnessScores[ans.q2];
 }
-
+​
 function calcMotivation(ans) {
   const vals = [];
   if (ans.q1) vals.push(motivationScores.q1[ans.q1]);
@@ -2342,44 +2342,44 @@ function calcMotivation(ans) {
   if (vals.length === 0) return null;
   return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
-
+​
 function getFitnessCategory(level) {
   if (level === null) return null;
   if (level <= 1) return 'beginner';
   if (level === 2) return 'active';
   return 'advanced';
 }
-
+​
 function getMotivationCategory(score) {
   if (score === null) return null;
   if (score < 1) return 'low';
   if (score <= 1) return 'medium';
   return 'high';
 }
-
+​
 function getRiskLevel(ans) {
   if (!ans.q4) return null;
   const map = { A: 'none', B: 'moderate', C: 'high' };
   return map[ans.q4];
 }
-
+​
 function isSwitcher(ans) {
   return ans.q2 === 'C';
 }
-
+​
 function applyRiskModifier(program, risk) {
   if (risk === 'high') return 'first-step';
   // moderate: тренер адаптирует нагрузку в рамках любой программы, не понижаем
   return program;
 }
-
+​
 function getRecommendation(ans) {
   const fitness = calcFitnessLevel(ans);
   const motivation = calcMotivation(ans);
   const fitCat = getFitnessCategory(fitness);
   const motCat = getMotivationCategory(motivation);
   if (!fitCat || !motCat) return null;
-
+​
   const baseProgram = routingMatrix[fitCat][motCat];
   const risk = getRiskLevel(ans);
   const afterRisk = applyRiskModifier(baseProgram, risk);
@@ -2387,10 +2387,10 @@ function getRecommendation(ans) {
   const finalProgram = applyBmiModifier(afterRisk, bmi, ans.q1);
   const switcher = isSwitcher(ans);
   const bmiModified = afterRisk !== finalProgram;
-
+​
   return { fitness, motivation, fitCat, motCat, risk, baseProgram, afterRisk, finalProgram, switcher, bmi, bmiModified };
 }
-
+​
 function getAiText(ans) {
   const risk = getRiskLevel(ans);
   if (risk === 'high' && ans.q1 && ans.q2) {
@@ -2401,40 +2401,40 @@ function getAiText(ans) {
   }
   return null;
 }
-
+​
 function getModifiers(program, ans) {
   const mods = [];
   const risk = getRiskLevel(ans);
   if (risk === 'moderate') mods.push(modifiers.risk_moderate);
   if (risk === 'high') mods.push(modifiers.risk_high);
-
+​
   const need = ans.q3;
   if (need === 'A') mods.push(modifiers.need_onboarding);
   if (need === 'B') mods.push(modifiers.need_structure);
   if (need === 'C') mods.push(modifiers.need_logistics);
-
+​
   const info = programInfo[program];
   if (info && info.hasAssessment) mods.push(modifiers.assessment);
-
+​
   if (isSwitcher(ans)) mods.push(modifiers.switcher);
-
+​
   return mods;
 }
-
+​
 // ========== RENDERING ==========
 function renderQuestionTitle(text, qId) {
   const hint = whyWeAsk[qId];
   if (!hint) return `<div class="quiz-question">${text}</div>`;
   return `<div class="quiz-question">${text}<button class="why-btn" onclick="toggleWhy(this)" aria-label="Почему мы спрашиваем"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v.01M12 12a2 2 0 1 0-2-2"/></svg></button><div class="why-tooltip">${hint}</div></div>`;
 }
-
+​
 function toggleWhy(btn) {
   const tooltip = btn.nextElementSibling;
   const isVisible = tooltip.classList.contains('visible');
   document.querySelectorAll('.why-tooltip.visible').forEach(t => t.classList.remove('visible'));
   if (!isVisible) tooltip.classList.add('visible');
 }
-
+​
 function formatAiText(text) {
   let paragraphs = text.split(/\n\n+/).filter(p => p.trim());
   if (paragraphs.length <= 1) {
@@ -2462,13 +2462,13 @@ function formatAiText(text) {
       <button class="ai-expand-toggle" onclick="toggleAiExpand(this)">Читать дальше</button>
     </div>`;
 }
-
+​
 function toggleAiExpand(btn) {
   const wrap = btn.closest('.ai-expandable');
   wrap.classList.toggle('expanded');
   btn.textContent = wrap.classList.contains('expanded') ? 'Свернуть' : 'Читать дальше';
 }
-
+​
 function renderProgressBar() {
   const total = getVisibleStepCount();
   const current = getVisibleStepIndex() + 1;
@@ -2481,23 +2481,23 @@ function renderProgressBar() {
     </div>
   `;
 }
-
+​
 function renderQuiz() {
   const main = document.getElementById('mainArea');
   if (currentStep >= steps.length) {
     renderResult();
     return;
   }
-
+​
   const step = steps[currentStep];
-
+​
   // Skip conditional steps whose condition is not met
   if (step.condition && !step.condition()) {
     currentStep++;
     renderQuiz();
     return;
   }
-
+​
   // Track step
   const stepProps = { step_index: currentStep, step_type: step.type };
   if (step.type === 'question') {
@@ -2508,7 +2508,7 @@ function renderQuiz() {
     stepProps.interstitial_id = step.id;
   }
   trackEvent('quiz_step_viewed', stepProps);
-
+​
   // ---- INTERSTITIAL ----
   if (step.type === 'interstitial') {
     const content = getInterstitialContent(step.id);
@@ -2528,11 +2528,11 @@ function renderQuiz() {
     renderDebug();
     return;
   }
-
+​
   // ---- QUESTION ----
   const q = questions[step.questionIndex];
   const questionText = getPersonalizedQuestion(q);
-
+​
   // ---- CLUB SELECTION ----
   if (q.inputType === 'club') {
     const selected = answers.qClub || '';
@@ -2543,7 +2543,7 @@ function renderQuiz() {
       if (selectedCity && club.city !== selectedCity) return;
       filteredClubs.push({ key, ...club });
     });
-
+​
     main.innerHTML = `
       ${renderProgressBar()}
       <div class="quiz-card" key="${currentStep}">
@@ -2566,7 +2566,7 @@ function renderQuiz() {
     renderDebug();
     return;
   }
-
+​
   // ---- PHONE INPUT ----
   if (q.inputType === 'phone') {
     const ph = answers.qPhone || '';
@@ -2594,13 +2594,13 @@ function renderQuiz() {
     setTimeout(() => { const el = document.getElementById('inputPhone'); if(el) el.focus(); }, 50);
     return;
   }
-
+​
   // ---- BODY INPUT (height/weight) ----
   if (q.inputType === 'body') {
     const h = answers.qHeight || '';
     const w = answers.qWeight || '';
     const skipText = q.skipLabel || 'Пропустить';
-
+​
     main.innerHTML = `
       ${renderProgressBar()}
       <div class="quiz-card" key="${currentStep}">
@@ -2638,13 +2638,13 @@ function renderQuiz() {
     renderDebug();
     return;
   }
-
+​
   if (q.multiSelect) {
     const selected = answers[q.id] || [];
     const customText = answers[q.id + 'custom'] || '';
     const placeholder = q.customPlaceholder || 'Напиши своё...';
     const skipText = q.skipLabel || 'Пропустить';
-
+​
     main.innerHTML = `
       ${renderProgressBar()}
       <div class="quiz-card" key="${currentStep}">
@@ -2675,7 +2675,7 @@ function renderQuiz() {
     const hasIcons = q.id === 'q1' || q.id === 'qGender' || q.id === 'qAge' || q.id === 'qOccupation' || q.id === 'qCity';
     const cityIcons = { almaty: SVG.city, astana: SVG.city };
     const iconMap = q.id === 'qCity' ? cityIcons : q.id === 'qGender' ? genderIcons : q.id === 'qAge' ? ageIcons : q.id === 'qOccupation' ? occupationIcons : q1Icons;
-
+​
     main.innerHTML = `
       ${renderProgressBar()}
       <div class="quiz-card" key="${currentStep}">
@@ -2695,10 +2695,10 @@ function renderQuiz() {
       </div>
     `;
   }
-
+​
   renderDebug();
 }
-
+​
 function nextStep() {
   currentStep++;
   renderQuiz();
@@ -2715,19 +2715,19 @@ function submitPhone() {
   }
   localStorage.setItem('hj_phone', phone);
   trackEvent('phone_submitted', { phone });
-
+​
   // Создаём лид в AmoCRM
   fetch('https://admin.herosjourney.kz/pay/api/createQuizLead', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phoneNumber: phone })
   }).catch(e => console.warn('createQuizLead failed:', e));
-
+​
   nextStep();
 }
-
-
-
+​
+​
+​
 function toggleMultiSelect(qId, key) {
   if (!answers[qId]) answers[qId] = [];
   const idx = answers[qId].indexOf(key);
@@ -2738,13 +2738,13 @@ function toggleMultiSelect(qId, key) {
   }
   renderQuiz();
 }
-
+​
 function skipMultiSelect(qId) {
   answers[qId] = [];
   answers[qId + 'custom'] = '';
   nextStep();
 }
-
+​
 function selectOption(qId, key) {
   // Сброс клуба при смене города
   if (qId === 'qCity' && answers.qClub) {
@@ -2762,7 +2762,7 @@ function selectOption(qId, key) {
     nextStep();
   }, 200);
 }
-
+​
 function goBack() {
   if (currentStep > 0) {
     currentStep--;
@@ -2773,15 +2773,15 @@ function goBack() {
     renderQuiz();
   }
 }
-
+​
 function renderHealthDetailsBlock() {
   const details = answers.q4details || [];
   const custom = answers.q4detailscustom || '';
   if (details.length === 0 && !custom) return '';
-
+​
   const parts = details.map(k => healthDetailLabels[k]).filter(Boolean);
   if (custom) parts.push(custom);
-
+​
   return `
     <div class="result-modifier" style="border-color: rgba(255,107,53,0.3)">
       <p style="font-size:15px;line-height:1.7;margin:0">
@@ -2790,53 +2790,53 @@ function renderHealthDetailsBlock() {
     </div>
   `;
 }
-
+​
 function renderFearAnswersBlock() {
   const fears = answers.q5 || [];
   const custom = answers.q5custom || '';
   if (fears.length === 0 && !custom) return '';
-
+​
   // Build a single flowing paragraph
   const phrases = fears
     .filter(key => fearResponses[key])
     .map(key => fearResponses[key].text);
-
+​
   let paragraph = 'Мы понимаем твои сомнения — и они абсолютно нормальны. ';
   if (phrases.length === 1) {
     paragraph += phrases[0].charAt(0).toUpperCase() + phrases[0].slice(1) + '.';
   } else if (phrases.length > 1) {
     paragraph += phrases.slice(0, -1).join(', ') + ' и ' + phrases[phrases.length - 1] + '.';
   }
-
+​
   if (custom) {
     paragraph += ` Насчёт «${custom}» — тренер ответит на этот вопрос лично перед первой тренировкой.`;
   }
-
+​
   return `
     <div class="result-modifier" style="border-color: rgba(255,107,53,0.2)">
       <p style="font-size:15px;line-height:1.7;margin:0">${paragraph}</p>
     </div>
   `;
 }
-
+​
 function renderResult() {
   const main = document.getElementById('mainArea');
   const rec = getRecommendation(answers);
   if (!rec) { renderQuiz(); return; }
   trackEvent('quiz_completed', { program: rec.finalProgram, club: answers.qClub });
-
+​
   const info = programInfo[rec.finalProgram];
   const pred = getPredictionContent();
   const healthBlock = renderHealthDetailsBlock();
   const hasKey = aiMode;
-
+​
   const recBlock = hasKey
     ? `<div class="result-section">
         <h3>Почему именно эта программа</h3>
         <div id="aiLiveText"><span class="ai-loading">Генерирую персональную рекомендацию</span></div>
       </div>`
     : '';
-
+​
   const timelineHtml = pred ? `
     <div class="result-section">
       <h3>Как это будет</h3>
@@ -2849,7 +2849,7 @@ function renderResult() {
         `).join('')}
       </div>
     </div>` : '';
-
+​
   let assessmentHtml = '';
   if (info.hasAssessment) {
     const club = answers.qClub ? clubInfo[answers.qClub] : null;
@@ -2879,7 +2879,7 @@ function renderResult() {
         <p style="margin-top:8px;font-size:14px">Через месяц ты пройдёшь assessment снова — и увидишь прогресс в цифрах.</p>
       </div>`;
   }
-
+​
   // Альтернативные программы
   const altDiffs = {
     'first-step': {
@@ -2895,9 +2895,9 @@ function renderResult() {
       'basecamp': 'Структурированный старт — 6 тренировок за 2 недели с assessment. Золотая середина'
     }
   };
-
+​
   const fmt = getClubFormats(answers);
-
+​
   function getAltTimeline(key) {
     if (key === 'first-step') return [
       { label: 'Неделя 1-2', text: `Знакомство с форматами: ${fmt.allFormats}` },
@@ -2915,7 +2915,7 @@ function renderResult() {
       { label: 'День 3', text: fmt.hasReshape ? 'Гибкость и восстановление (Reshape)' : 'Ещё один формат на выбор' },
     ];
   }
-
+​
   const altPrograms = Object.keys(programInfo).filter(k => k !== rec.finalProgram);
   const altCardsHtml = altPrograms.map((key, i) => {
     const alt = programInfo[key];
@@ -2938,7 +2938,7 @@ function renderResult() {
         <div class="alt-card-toggle">Подробнее ▾</div>
       </div>`;
   }).join('');
-
+​
   main.innerHTML = `
     <div class="result-card">
       <div class="result-header">
@@ -2948,54 +2948,54 @@ function renderResult() {
         <div class="result-program-sub">${info.name}${answers.qClub ? ' в ' + clubInfo[answers.qClub].name : ''}</div>
         <div class="result-tagline">${pred ? pred.subtitle : info.tagline}</div>
       </div>
-
+​
       ${timelineHtml}
-
+​
       ${recBlock}
-
+​
       ${assessmentHtml}
-
+​
       ${healthBlock}
-
+​
       <div class="result-price">
         <div class="result-price-amount">${info.price} ₸</div>
         <div class="result-price-detail">${info.trainings} тренировок за ${info.durationShort}</div>
       </div>
       <button class="result-cta" onclick="goToPayment('${rec.finalProgram}', '${info.name}')">Начать программу</button>
-
+​
       <div class="alt-programs">
         <p class="alt-programs-title">Мы подобрали для тебя оптимальную программу для старта, но у тебя есть выбор</p>
         ${altCardsHtml}
       </div>
-
+​
       <button class="btn-restart" onclick="restart()">Пройти заново</button>
     </div>
   `;
-
+​
   if (hasKey) {
     generateAiText(answers, rec);
   }
-
+​
   renderDebug();
 }
-
+​
 function toggleAltCard(el) {
   el.classList.toggle('expanded');
 }
-
+​
 function restart() {
   currentStep = 0;
   answers = {};
   aiCache = {};
   renderQuiz();
 }
-
+​
 function goToPayment(programKey, programName) {
   const phone  = answers.qPhone || localStorage.getItem('hj_phone') || '';
   const club   = answers.qClub  || localStorage.getItem('hj_club')  || '';
   renderPaymentScreen(programKey, programName, phone, club);
 }
-
+​
 // ========== PAYMENT SCREEN ==========
 const CLUB_IDS = {
   'nurly-orda':  '6351ace4d61faf000b2febc8',
@@ -3005,20 +3005,20 @@ const CLUB_IDS = {
   'villa':       '683704d8c85fb0a6b1f5a8ca',
   '4you':        '68a45233d9ba5a6ba953e5f0',
 };
-
+​
 const PROGRAM_PRICES = {
   'heros-week': '19 990',
   'basecamp':   '19 990',
   'first-step': '59 990',
 };
-
+​
 const PAY_API = 'https://admin.herosjourney.kz/pay/api';
-
+​
 async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
   const main = document.getElementById('mainArea');
   const clubId = CLUB_IDS[clubSlug] || '';
   const price = PROGRAM_PRICES[programKey] || '';
-
+​
   // Skeleton while loading
   main.innerHTML = `
     <div style="width:100%;max-width:480px">
@@ -3031,9 +3031,9 @@ async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
         <div style="background:var(--surface2);border-radius:var(--radius);height:52px"></div>
       </div>
     </div>`;
-
+​
   let dateBlock = '';
-
+​
   if (programKey === 'first-step') {
     try {
       const resp = await fetch(`${PAY_API}/getFSEvents`);
@@ -3060,21 +3060,21 @@ async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
       <input type="date" id="payDateInput" min="${minDate}" value="${defaultDate}"
              style="width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;margin-bottom:24px;outline:none;color-scheme:dark">`;
   }
-
+​
   main.innerHTML = `
     <div style="width:100%;max-width:480px">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;animation:fadeIn 0.3s ease">
         <div style="display:inline-block;padding:4px 12px;border-radius:20px;background:var(--accent-glow);border:1px solid rgba(255,107,53,0.3);color:var(--accent);font-size:13px;font-weight:600;margin-bottom:12px">Оплата программы</div>
         <div style="font-size:26px;font-weight:700;margin-bottom:6px">${programName}</div>
         <div style="font-size:14px;color:var(--text-muted);margin-bottom:20px">${clubSlug ? getClubDisplayName(clubSlug) : ''}</div>
-
+​
         <div style="background:var(--surface2);border-radius:var(--radius);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
           <span style="font-size:14px;color:var(--text-muted)">Стоимость</span>
           <span style="font-size:24px;font-weight:700">${price} ₸</span>
         </div>
-
+​
         ${dateBlock}
-
+​
         <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Способ оплаты</div>
         <div style="display:flex;flex-direction:column;gap:12px">
           <button id="btnPayKaspi" onclick="executePayment('kaspi','${programKey}','${phone}','${clubId}')"
@@ -3092,11 +3092,11 @@ async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
       <button onclick="renderResult()" style="margin-top:16px;width:100%;padding:12px;border:none;background:transparent;color:var(--text-muted);font-size:14px;cursor:pointer">← Вернуться к результату</button>
     </div>`;
 }
-
+​
 function getClubDisplayName(slug) {
   return ({ 'nurly-orda':'HJ Nurly Orda','europe-city':'HJ Europe City','colibri':'HJ Colibri','promenade':'HJ Promenade','villa':'HJ Villa','4you':'HJ 4YOU' })[slug] || '';
 }
-
+​
 async function saveAnswersToServer(phone, clubId, marathonEventId) {
   try {
     const aiText = Object.values(aiCache)[0] || '';
@@ -3123,7 +3123,7 @@ async function saveAnswersToServer(phone, clubId, marathonEventId) {
     console.warn('saveQuizAnswers failed:', e);
   }
 }
-
+​
 async function executePayment(method, programKey, phone, clubId) {
   const btnKaspi = document.getElementById('btnPayKaspi');
   const btnCard  = document.getElementById('btnPayCard');
@@ -3133,10 +3133,10 @@ async function executePayment(method, programKey, phone, clubId) {
   const btn = method === 'kaspi' ? btnKaspi : btnCard;
   const origText = btn.innerHTML;
   btn.innerHTML = '<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite"></div>';
-
+​
   try {
     let endpoint = '', body = { phoneNumber: phone, clubId };
-
+​
     if (programKey === 'heros-week') {
       const d = document.getElementById('payDateInput');
       if (!d?.value) { showPayError('Выберите дату старта.'); return; }
@@ -3153,20 +3153,20 @@ async function executePayment(method, programKey, phone, clubId) {
       body.marathonEventId = s.value;
       endpoint = method === 'kaspi' ? '/generateKaspiLinkForFirstStep' : '/registerCardTokenFirstStep';
     }
-
+​
     // Сохраняем ответы квиза перед оплатой
     await saveAnswersToServer(phone, clubId, body.marathonEventId || null);
     trackEvent('payment_initiated', { method, program: programKey, club: answers.qClub });
-
+​
     const resp = await fetch(PAY_API + endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     const data = await resp.json();
-
+​
     if (!resp.ok) { showPayError(data?.message || 'Ошибка оплаты. Попробуйте ещё раз.'); return; }
-
+​
     const url = data?.Data?.PaymentLink || data?.url;
     if (url) { window.location.href = url; return; }
     showPayError('Не удалось получить ссылку на оплату.');
@@ -3176,16 +3176,16 @@ async function executePayment(method, programKey, phone, clubId) {
     btn.innerHTML = origText;
     btnKaspi.disabled = btnCard.disabled = false;
   }
-
+​
   function showPayError(msg) {
     errEl.textContent = msg;
     errEl.style.display = 'block';
   }
 }
-
+​
 // ========== DEBUG ==========
 function toggleDebug() {}
-
+​
 function renderDebug() {
   if (!showDebug) return;
   const el = document.getElementById('debugContent');
@@ -3196,14 +3196,14 @@ function renderDebug() {
   const risk = getRiskLevel(answers);
   const switcher = isSwitcher(answers);
   const rec = getRecommendation(answers);
-
+​
   const tagClass = (prog) => {
     if (prog === 'first-step') return 'tag-fs';
     if (prog === 'basecamp') return 'tag-bc';
     return 'tag-hw';
   };
   const tagName = (prog) => programInfo[prog]?.name || '—';
-
+​
   // Answers editor
   let answersHtml = '<div class="debug-answers">';
   questions.forEach((q, i) => {
@@ -3219,13 +3219,13 @@ function renderDebug() {
     `;
   });
   answersHtml += '</div>';
-
+​
   // Matrix
   const cats = ['beginner', 'active', 'advanced'];
   const mots = ['low', 'medium', 'high'];
   const catLabels = { beginner: 'Beginner (0-1)', active: 'Active (2)', advanced: 'Advanced (3)' };
   const motLabels = { low: 'Low (<1)', medium: 'Med (=1)', high: 'High (>1)' };
-
+​
   let matrixHtml = `<table class="debug-matrix">
     <tr><th></th>${mots.map(m => `<th>${motLabels[m]}</th>`).join('')}</tr>
     ${cats.map(c => `<tr>
@@ -3237,7 +3237,7 @@ function renderDebug() {
       }).join('')}
     </tr>`).join('')}
   </table>`;
-
+​
   // Modifier info
   const bmi = calcBMI(answers);
   let modifierHtml = '';
@@ -3260,7 +3260,7 @@ function renderDebug() {
       modifierHtml = `<div class="debug-modifier-info no-change">Без изменений (risk: ${risk || '—'}${bmi ? ', BMI: ' + getBmiLabel(bmi) : ''})</div>`;
     }
   }
-
+​
   el.innerHTML = `
     <div class="debug-section">
       <h4>Ответы</h4>
@@ -3340,7 +3340,7 @@ function renderDebug() {
     </div>
   `;
 }
-
+​
 function debugSetAnswer(qId, value) {
   if (value) {
     answers[qId] = value;
@@ -3355,17 +3355,17 @@ function debugSetAnswer(qId, value) {
   }
   renderQuiz();
 }
-
+​
 // ========== SCENARIOS ==========
 function toggleScenarios() {}
-
+​
 function renderScenarios(filter) {
   const panel = document.getElementById('scenariosPanel');
   const q1Keys = ['A', 'B', 'C', 'D'];
   const q2Keys = ['A', 'B', 'C', 'D'];
   const q3Keys = ['A', 'B', 'C', 'D'];
   const q4Keys = ['A', 'B', 'C'];
-
+​
   const scenarios = [];
   for (const q1 of q1Keys) {
     for (const q2 of q2Keys) {
@@ -3380,24 +3380,24 @@ function renderScenarios(filter) {
       }
     }
   }
-
+​
   const filtered = filter === 'all' ? scenarios : scenarios.filter(s => s.rec.finalProgram === filter);
-
+​
   // Stats
   const counts = { 'first-step': 0, 'basecamp': 0, 'heros-week': 0 };
   const switcherCount = scenarios.filter(s => s.rec.switcher).length;
   scenarios.forEach(s => counts[s.rec.finalProgram]++);
   const total = scenarios.length;
-
+​
   const tagClass = (prog) => {
     if (prog === 'first-step') return 'tag-fs';
     if (prog === 'basecamp') return 'tag-bc';
     return 'tag-hw';
   };
-
+​
   panel.innerHTML = `
     <div class="debug-title" style="margin-bottom:16px">Все сценарии (${total} комбинаций)</div>
-
+​
     <div class="scenarios-stats">
       <div class="stat-card">
         <div class="stat-value" style="color:var(--green)">${counts['first-step']}</div>
@@ -3416,7 +3416,7 @@ function renderScenarios(filter) {
         <div>Switchers (${(switcherCount/total*100).toFixed(0)}%)</div>
       </div>
     </div>
-
+​
     <div class="scenarios-filters">
       <button class="filter-btn ${filter === 'all' ? 'active' : ''}" onclick="renderScenarios('all')">Все</button>
       <button class="filter-btn ${filter === 'first-step' ? 'active' : ''}" onclick="renderScenarios('first-step')">Первый Шаг</button>
@@ -3424,7 +3424,7 @@ function renderScenarios(filter) {
       <button class="filter-btn ${filter === 'heros-week' ? 'active' : ''}" onclick="renderScenarios('heros-week')">Hero's Week</button>
       <button class="filter-btn ${filter === 'switcher' ? 'active' : ''}" onclick="renderScenarios('switcher')">Switchers</button>
     </div>
-
+​
     <div style="max-height:60vh;overflow-y:auto;border-radius:var(--radius)">
       <table class="scenarios-table">
         <thead>
@@ -3459,22 +3459,22 @@ function renderScenarios(filter) {
     </div>
   `;
 }
-
+​
 // ========== AI ==========
 function toggleAiConfig() {}
 function saveApiKey() {}
-
-
+​
+​
 const q1Labels = { A: 'Сбросить вес и подтянуть тело', B: 'Стать выносливее и сильнее', C: 'Наконец начать тренироваться регулярно', D: 'Просто попробовать — интересно, что это' };
 const q2Labels = { A: 'Никогда не ходил(а) в зал', B: 'Ходил(а) раньше, но бросил(а)', C: 'Хожу сейчас, но хочу попробовать что-то другое', D: 'Занимаюсь сам(а) — дома, на улице, без зала' };
 const q3Labels = { A: 'Чтобы всё объяснили и помогли', B: 'Чтобы был понятный план и структура', C: 'Чтобы было удобно по времени и локации', D: 'Просто хочу потренироваться — разберусь сам(а)' };
 const q4Labels = { A: 'Нет ограничений', B: 'Да, но тренироваться могу', C: 'Серьёзные — нужен щадящий режим' };
-
+​
 const healthDetailLabels = {
   'back': 'спина/поясница', 'knees': 'колени', 'shoulders': 'плечи', 'neck': 'шея',
   'heart': 'сердце/давление', 'breathing': 'астма/дыхание', 'varicose': 'варикоз', 'post-surgery': 'послеоперационный период'
 };
-
+​
 function getHealthDetailsPrompt(ans) {
   const details = ans.q4details || [];
   const custom = ans.q4detailscustom || '';
@@ -3483,7 +3483,7 @@ function getHealthDetailsPrompt(ans) {
   if (custom) parts.push(custom);
   return '\n- Конкретные ограничения: ' + parts.join(', ');
 }
-
+​
 async function generateAiText(ans, rec) {
   const fears = ans.q5 || [];
   const fearsCustom = ans.q5custom || '';
@@ -3492,25 +3492,25 @@ async function generateAiText(ans, rec) {
     document.getElementById('aiLiveText').innerHTML = formatAiText(aiCache[cacheKey]);
     return;
   }
-
+​
   const info = programInfo[rec.finalProgram];
-
+​
   const genderStr = ans.qGender ? genderLabels[ans.qGender] : 'Не указано';
   const ageStr = ans.qAge ? ageLabels[ans.qAge] : 'Не указано';
   const occStr = ans.qOccupation ? occupationLabels[ans.qOccupation] : 'Не указано';
   const clubData = ans.qClub ? clubInfo[ans.qClub] : null;
   const clubStr = clubData ? `${clubData.name} (${clubData.city}), зоны: ${clubData.zones.join(', ')}` : 'Не указано';
   const fmt = getClubFormats(ans);
-
+​
   let fearsPrompt = '';
   if (fears.length > 0 || fearsCustom) {
     let fearsList = fears.map(key => fearResponses[key]?.label).filter(Boolean).join(', ');
     if (fearsCustom) fearsList += (fearsList ? ', ' : '') + '«' + fearsCustom + '»';
     fearsPrompt = `\n\nЧеловека беспокоит: ${fearsList}\nВ тексте мягко сними эти сомнения — не списком, а органично вплетая в рекомендацию.`;
   }
-
+​
   const prompt = `Ты — копирайтер фитнес-бренда Hero's Journey. Напиши короткий персональный текст, объясняющий почему программа «${info.name}» подходит этому человеку.
-
+​
 Профиль из анкеты:
 - Студия: ${clubStr}
 - Пол: ${genderStr}
@@ -3522,12 +3522,12 @@ async function generateAiText(ans, rec) {
 - Ограничения по здоровью: ${q4Labels[ans.q4]}${getHealthDetailsPrompt(ans)}${getActivityDetailsPrompt(ans)}
 - Рост/вес: ${ans.qHeight && ans.qWeight ? ans.qHeight + ' см, ' + ans.qWeight + ' кг (BMI: ' + getBmiLabel(calcBMI(ans)) + ')' : 'не указано'}
 - Доступные форматы тренировок: ${fmt.allFormats}${fearsPrompt}
-
+​
 Программа: ${info.name} — ${info.trainings} тренировок, ${info.duration}. ${info.tagline}
 ${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце программы — когда человек уже освоил оборудование и технику.' : 'Включает персональный assessment в начале программы.') : ''}
-
+​
 Форматы тренировок HJ: силовые (работа с весами), HIIT/Bootcamp/Metcon (жиросжигающее кардио), Reshape (гибкость и восстановление на реформерах).
-
+​
 Правила:
 - Обращайся на «ты»
 - Не используй эмодзи
@@ -3539,14 +3539,14 @@ ${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце про�
 - Закончи картинкой результата после прохождения программы
 - Никогда не используй английские термины для сегментов: switcher, lapsed, newbie, beginner и т.д. — пиши только по-русски
 - Избегай слова «интенсивный» — используй «активный», «энергичный», «с нагрузкой»
-
+​
 Формат ответа:
 - Раздели текст на 3 абзаца, разделённых двойным переносом строки (\\n\\n)
 - Первый абзац: ситуация человека и почему эта программа для него
 - Второй абзац: что конкретно его ждёт (форматы, подход тренера, прогрессия)
 - Третий абзац: результат после прохождения программы
 - Каждый абзац 2-3 предложения, без заголовков и буллетов`;
-
+​
   try {
     const resp = await fetch(CLAUDE_PROXY_URL, {
       method: 'POST',
@@ -3559,12 +3559,12 @@ ${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце про�
         messages: [{ role: 'user', content: prompt }]
       })
     });
-
+​
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       throw new Error(err.error?.message || `HTTP ${resp.status}`);
     }
-
+​
     const data = await resp.json();
     const text = data.content[0].text;
     aiCache[cacheKey] = text;
@@ -3575,7 +3575,7 @@ ${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце про�
     if (el) el.innerHTML = `<div style="color:var(--red);font-size:13px">Ошибка: ${err.message}</div>`;
   }
 }
-
+​
 async function generateAiFears(ans, rec) {
   const fears = ans.q5 || [];
   const custom = ans.q5custom || '';
@@ -3584,17 +3584,17 @@ async function generateAiFears(ans, rec) {
     document.getElementById('aiFearsText').innerHTML = `<p style="font-size:14px;line-height:1.6">${aiCache[cacheKey]}</p>`;
     return;
   }
-
+​
   const info = programInfo[rec.finalProgram];
   let fearsList = fears.map(key => fearResponses[key]?.label).filter(Boolean).join('\n- ');
   if (custom) fearsList += `\n- Своё: «${custom}»`;
-
+​
   const genderStr2 = ans.qGender ? genderLabels[ans.qGender] : 'Не указано';
   const ageStr2 = ans.qAge ? ageLabels[ans.qAge] : 'Не указано';
   const occStr2 = ans.qOccupation ? occupationLabels[ans.qOccupation] : 'Не указано';
-
+​
   const prompt = `Ты — копирайтер фитнес-бренда Hero's Journey. Человек прошёл анкету и ему подобрана программа «${info.name}».
-
+​
 Профиль:
 - Пол: ${genderStr2}
 - Возраст: ${ageStr2}
@@ -3602,12 +3602,12 @@ async function generateAiFears(ans, rec) {
 - Цель: ${q1Labels[ans.q1]}
 - Опыт: ${q2Labels[ans.q2]}${getActivityDetailsPrompt(ans)}
 - Рост/вес: ${ans.qHeight && ans.qWeight ? ans.qHeight + ' см, ' + ans.qWeight + ' кг' : 'не указано'}
-
+​
 Человека беспокоит:
 - ${fearsList}
-
+​
 Напиши мягкий, эмпатичный абзац, который снимает эти сомнения. Не список, а связный текст. Начни с понимания («Мы понимаем...» / «Это нормально...»), затем адресно закрой каждое сомнение фактами о HJ — коротко, уверенно. На кастомный вопрос ответь особенно внимательно.
-
+​
 Правила:
 - Обращайся на «ты»
 - Не используй эмодзи
@@ -3617,7 +3617,7 @@ async function generateAiFears(ans, rec) {
 - 2-4 предложения
 - Никогда не используй английские термины для сегментов: switcher, lapsed, newbie и т.д.
 - Избегай слова «интенсивный»`;
-
+​
   try {
     const resp = await fetch(CLAUDE_PROXY_URL, {
       method: 'POST',
@@ -3630,12 +3630,12 @@ async function generateAiFears(ans, rec) {
         messages: [{ role: 'user', content: prompt }]
       })
     });
-
+​
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       throw new Error(err.error?.message || `HTTP ${resp.status}`);
     }
-
+​
     const data = await resp.json();
     const text = data.content[0].text;
     aiCache[cacheKey] = text;
@@ -3646,11 +3646,11 @@ async function generateAiFears(ans, rec) {
     if (el) el.innerHTML = `<div style="color:var(--red);font-size:13px">Ошибка: ${err.message}</div>`;
   }
 }
-
+​
 // ========== EVENT TRACKER ==========
 const TRACKER_API = 'https://api.tracker.herosjourney.kz';
 const TRACKER_KEY = 'evt_e4bb74488e8b5d42c0cd15783a4406d9';
-
+​
 function getDeviceId() {
   let id = localStorage.getItem('hj_device_id');
   if (!id) {
@@ -3659,7 +3659,7 @@ function getDeviceId() {
   }
   return id;
 }
-
+​
 function trackEvent(eventName, properties) {
   const body = {
     event_name: eventName,
@@ -3675,7 +3675,7 @@ function trackEvent(eventName, properties) {
     body: JSON.stringify(body)
   }).catch(() => {});
 }
-
+​
 // ========== INIT ==========
 // aiMode is always true (key hardcoded)
 trackEvent('quiz_started', { referrer: document.referrer });
