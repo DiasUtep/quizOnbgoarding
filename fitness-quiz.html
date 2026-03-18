@@ -1699,15 +1699,16 @@ const interstitials = {
 
 // ========== STEPS ==========
 const steps = [];
+// Phone — первый шаг
+steps.push({ type: 'question', questionIndex: 10 }); // Phone
 // 8 quiz questions with interstitials
 for (let i = 0; i < 8; i++) {
   steps.push({ type: 'question', questionIndex: i });
   steps.push({ type: 'interstitial', questionId: questions[i].id });
 }
-// City, Club, Phone at end
+// City, Club at end
 steps.push({ type: 'question', questionIndex: 8 });  // City
 steps.push({ type: 'question', questionIndex: 9 });  // Club
-steps.push({ type: 'question', questionIndex: 10 }); // Phone
 
 // ========== TIMELINE ==========
 function getTimeline(program) {
@@ -2189,8 +2190,9 @@ const PAY_API = 'https://admin.herosjourney.kz/pay/api';
 
 function goToPayment(programKey, programName) {
   const phone = answers.qPhone || localStorage.getItem('hj_phone') || '';
-  const club = answers.qClub || localStorage.getItem('hj_club') || '';
-  renderPaymentScreen(programKey, programName, phone, club);
+  const club  = answers.qClub  || localStorage.getItem('hj_club')  || '';
+  const params = new URLSearchParams({ program: programKey, phone, club });
+  (window.top || window).location.href = 'https://herosjourney.kz/paymentlink?' + params.toString();
 }
 
 function getClubDisplayName(slug) {
@@ -2237,8 +2239,9 @@ async function saveAnswersToServer(phone, clubId) {
       body: JSON.stringify({
         phoneNumber: phone,
         clubId,
+        quizType: 'fitness-quiz',
         generatedOutput: aiText,
-        quizType: 'fitness-quiz'
+        ...answers,
       })
     });
   } catch(e) { console.warn('saveQuizAnswers failed:', e); }
