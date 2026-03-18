@@ -3096,7 +3096,7 @@ async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
 function getClubDisplayName(slug) {
   return ({ 'nurly-orda':'HJ Nurly Orda','europe-city':'HJ Europe City','colibri':'HJ Colibri','promenade':'HJ Promenade','villa':'HJ Villa','4you':'HJ 4YOU' })[slug] || '';
 }
-
+console.log("answers", answers)
 async function saveAnswersToServer(phone, clubId, marathonEventId) {
   try {
     const aiText = Object.values(aiCache)[0] || '';
