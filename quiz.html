@@ -2995,8 +2995,7 @@ function restart() {
 function goToPayment(programKey, programName) {
   const phone = answers.qPhone || localStorage.getItem('hj_phone') || '';
   const club  = answers.qClub  || localStorage.getItem('hj_club')  || '';
-  const params = new URLSearchParams({ program: programKey, phone, club });
-  (window.top || window).location.href = 'https://herosjourney.kz/paymentlink?' + params.toString();
+  renderPaymentScreen(programKey, programName, phone, club);
 }
 
 // ========== PAYMENT SCREEN ==========
