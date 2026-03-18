@@ -2230,6 +2230,20 @@ async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
   main.innerHTML = `<div style="width:100%;max-width:480px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;animation:fadeIn 0.3s ease"><div style="display:inline-block;padding:4px 12px;border-radius:20px;background:var(--accent-glow);border:1px solid rgba(123,61,255,0.3);color:var(--accent);font-size:13px;font-weight:600;margin-bottom:12px">Оплата программы</div><div style="font-size:26px;font-weight:700;margin-bottom:6px">${programName}</div><div style="font-size:14px;color:var(--text-muted);margin-bottom:20px">${clubSlug ? getClubDisplayName(clubSlug) : ''}</div><div style="background:var(--surface2);border-radius:var(--radius);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><span style="font-size:14px;color:var(--text-muted)">Стоимость</span><span style="font-size:24px;font-weight:700">${price} ₸</span></div>${dateBlock}<div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Способ оплаты</div><div style="display:flex;flex-direction:column;gap:12px"><button id="btnPayKaspi" onclick="executePayment('kaspi','${programKey}','${phone}','${clubId}')" style="width:100%;padding:16px;border-radius:var(--radius);border:none;background:#f14635;color:white;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><span style="font-weight:800;font-size:16px">Kaspi</span><span>Оплатить через Kaspi</span></button><button id="btnPayCard" onclick="executePayment('card','${programKey}','${phone}','${clubId}')" style="width:100%;padding:16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><span>Оплата картой</span></button></div><div id="payError" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);color:var(--red);font-size:14px"></div></div><button onclick="renderResult()" style="margin-top:16px;width:100%;padding:12px;border:none;background:transparent;color:var(--text-muted);font-size:14px;cursor:pointer">← Вернуться к результату</button></div>`;
 }
 
+function buildReadableAnswers() {
+  const readable = {};
+  questions.forEach(q => {
+    const key = answers[q.id];
+    if (!key) return;
+    const option = q.options.find(o => o.key === key);
+    readable[q.question] = option ? option.label : key;
+  });
+  const club = answers.qClub ? (clubInfo[answers.qClub]?.name || answers.qClub) : '';
+  if (club) readable['Клуб'] = club;
+  if (answers.qCity) readable['Город'] = answers.qCity;
+  return readable;
+}
+
 async function saveAnswersToServer(phone, clubId) {
   try {
     const aiText = Object.values(aiCache)[0] || '';
@@ -2241,7 +2255,7 @@ async function saveAnswersToServer(phone, clubId) {
         clubId,
         quizType: 'fitness-quiz',
         generatedOutput: aiText,
-        ...answers,
+        ...buildReadableAnswers(),
       })
     });
   } catch(e) { console.warn('saveQuizAnswers failed:', e); }
