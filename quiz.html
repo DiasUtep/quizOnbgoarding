@@ -2706,7 +2706,7 @@ function nextStep() {
 function submitPhone() {
   const phone = (answers.qPhone || '').trim();
   const digits = phone.replace(/\D/g, '');
-  if (!phone || phone.replace(/\D/g, '').length < 7) {
+  if (!phone || digits.length < 7 || digits[0] !== '8') {
     const wrap = document.getElementById('phoneWrap');
     if (wrap) wrap.style.borderColor = 'var(--red)';
     const el = document.getElementById('inputPhone');
@@ -3554,7 +3554,7 @@ ${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце про�
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'gpt-4o',
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -3566,7 +3566,7 @@ ${info.hasAssessment ? (info.assessmentAtEnd ? 'Assessment в конце про�
     }
 
     const data = await resp.json();
-    const text = data.content[0].text;
+    const text = data.choices[0].message.content;
     aiCache[cacheKey] = text;
     const el = document.getElementById('aiLiveText');
     if (el) el.innerHTML = formatAiText(text);
@@ -3625,7 +3625,7 @@ async function generateAiFears(ans, rec) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'gpt-4o',
         max_tokens: 300,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -3637,7 +3637,7 @@ async function generateAiFears(ans, rec) {
     }
 
     const data = await resp.json();
-    const text = data.content[0].text;
+    const text = data.choices[0].message.content;
     aiCache[cacheKey] = text;
     const el = document.getElementById('aiFearsText');
     if (el) el.innerHTML = `<p style="font-size:14px;line-height:1.6">${text}</p>`;
