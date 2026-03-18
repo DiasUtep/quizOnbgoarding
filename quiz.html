@@ -2961,7 +2961,7 @@ function renderResult() {
         <div class="result-price-amount">${info.price} ₸</div>
         <div class="result-price-detail">${info.trainings} тренировок за ${info.durationShort}</div>
       </div>
-      <button class="result-cta" onclick="goToPayment('${rec.finalProgram}', '${info.name}')">Начать программу</button>
+      <button class="result-cta" onclick="goToPayment('${rec.finalProgram}', '${info.name.replace(/'/g, "\\'")}')">Начать программу</button>
 
       <div class="alt-programs">
         <p class="alt-programs-title">Мы подобрали для тебя оптимальную программу для старта, но у тебя есть выбор</p>
