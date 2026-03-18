@@ -2137,7 +2137,7 @@ function renderResult() {
         <div class="result-price-detail">${info.trainings} тренировок за ${info.durationShort}</div>
       </div>
 
-      <button class="result-cta" onclick="goToPayment('${profile.program}', '${info.name}')"><span>Начать программу</span></button>
+      <button class="result-cta" onclick="goToPayment('${profile.program}', '${info.name.replace(/'/g, "\\'")}')"><span>Начать программу</span></button>
 
       <div class="share-row">
         <button class="share-btn" onclick="shareResult()">Поделиться результатом</button>
