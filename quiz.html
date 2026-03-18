@@ -1733,6 +1733,7 @@ function applyBmiModifier(program, bmi, goal) {
 // Steps: interleave questions with interstitial screens and prediction
 // type: 'question' | 'interstitial' | 'prediction'
 const steps = [
+  { type: 'question', questionIndex: 13 }, // Phone — первый шаг
   { type: 'question', questionIndex: 0 }, // City
   { type: 'question', questionIndex: 1 }, // Gender
   { type: 'question', questionIndex: 2 }, // Age
@@ -1751,7 +1752,6 @@ const steps = [
   { type: 'interstitial', id: 'after-body' },
   { type: 'question', questionIndex: 11 }, // Q5 — страхи
   { type: 'question', questionIndex: 12 }, // Club
-  { type: 'question', questionIndex: 13 }  // Phone
 ];
 
 function getVisibleStepCount() {
@@ -2991,9 +2991,10 @@ function restart() {
 }
 
 function goToPayment(programKey, programName) {
-  const phone  = answers.qPhone || localStorage.getItem('hj_phone') || '';
-  const club   = answers.qClub  || localStorage.getItem('hj_club')  || '';
-  renderPaymentScreen(programKey, programName, phone, club);
+  const phone = answers.qPhone || localStorage.getItem('hj_phone') || '';
+  const club  = answers.qClub  || localStorage.getItem('hj_club')  || '';
+  const params = new URLSearchParams({ program: programKey, phone, club });
+  (window.top || window).location.href = 'https://herosjourney.kz/paymentlink?' + params.toString();
 }
 
 // ========== PAYMENT SCREEN ==========
@@ -3096,7 +3097,31 @@ async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
 function getClubDisplayName(slug) {
   return ({ 'nurly-orda':'HJ Nurly Orda','europe-city':'HJ Europe City','colibri':'HJ Colibri','promenade':'HJ Promenade','villa':'HJ Villa','4you':'HJ 4YOU' })[slug] || '';
 }
-console.log("answers", answers)
+
+function buildReadableAnswers() {
+  const q2detailLabels = { home: 'Дома', gym: 'В зале', street: 'На улице', pool: 'Бассейн' };
+  const q5Labels = Object.fromEntries(Object.entries(fearResponses).map(([k, v]) => [k, v.label]));
+  const club = answers.qClub ? (clubInfo[answers.qClub]?.name || answers.qClub) : '';
+
+  return {
+    'Телефон':        answers.qPhone || '',
+    'Клуб':          club,
+    'Город':         answers.qCity || '',
+    'Пол':           genderLabels[answers.qGender] || answers.qGender || '',
+    'Возраст':       ageLabels[answers.qAge] || answers.qAge || '',
+    'Цель':          q1Labels[answers.q1] || answers.q1 || '',
+    'Опыт':          q2Labels[answers.q2] || answers.q2 || '',
+    'Где занимался': (answers.q2details || []).map(k => q2detailLabels[k] || k).join(', '),
+    'Потребности':   q3Labels[answers.q3] || answers.q3 || '',
+    'Здоровье':      q4Labels[answers.q4] || answers.q4 || '',
+    'Ограничения':   (answers.q4details || []).map(k => healthDetailLabels[k] || k).join(', '),
+    'Деятельность':  occupationLabels[answers.qOccupation] || answers.qOccupation || '',
+    'Рост':          answers.qHeight || '',
+    'Вес':           answers.qWeight || '',
+    'Страхи':        (answers.q5 || []).map(k => q5Labels[k] || k).join(', '),
+  };
+}
+
 async function saveAnswersToServer(phone, clubId, marathonEventId) {
   try {
     const aiText = Object.values(aiCache)[0] || '';
@@ -3106,17 +3131,9 @@ async function saveAnswersToServer(phone, clubId, marathonEventId) {
       body: JSON.stringify({
         phoneNumber: phone,
         clubId,
-        sex: answers.qGender || 'X',
-        age: answers.qAge || '',
-        height: answers.qHeight || '',
-        weight: answers.qWeight || '',
-        answerFitnessGoal: answers.q1 || '',
-        experience: answers.q2 || '',
-        answerInjures: answers.q4 || '',
-        answerBody: answers.q3 || '',
-        breakDuration: answers.q2details || '',
+        quizType: 'quiz_v4',
         generatedOutput: aiText,
-        marathonEventId: marathonEventId || null,
+        ...buildReadableAnswers(),
       })
     });
   } catch(e) {
@@ -3168,7 +3185,7 @@ async function executePayment(method, programKey, phone, clubId) {
     if (!resp.ok) { showPayError(data?.message || 'Ошибка оплаты. Попробуйте ещё раз.'); return; }
 
     const url = data?.Data?.PaymentLink || data?.url;
-    if (url) { window.location.href = url; return; }
+    if (url) { window.location.href = 'https://herosjourney.kz/paymentlink?redirectTo=' + encodeURIComponent(url); return; }
     showPayError('Не удалось получить ссылку на оплату.');
   } catch(e) {
     showPayError('Ошибка соединения. Проверьте интернет.');
