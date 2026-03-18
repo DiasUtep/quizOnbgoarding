@@ -1,0 +1,2330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HJ Фитнес-квиз — Узнай свой уровень</title>
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #06060a;
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface2: rgba(255, 255, 255, 0.07);
+    --surface-solid: #111116;
+    --border: rgba(255, 255, 255, 0.06);
+    --text: #f0f0f5;
+    --text-muted: #5a5a72;
+    --text-secondary: #8888a0;
+    --accent: #7B3DFF;
+    --accent-light: #9D6FFF;
+    --accent-soft: #6930d4;
+    --accent-glow: rgba(123, 61, 255, 0.10);
+    --accent-glow-strong: rgba(123, 61, 255, 0.22);
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #9D6FFF;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --radius: 20px;
+    --radius-lg: 28px;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-accent: 0 12px 40px rgba(123, 61, 255, 0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @keyframes meshMove {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(30px, -50px) scale(1.05); }
+    50% { transform: translate(-20px, 20px) scale(0.95); }
+    75% { transform: translate(10px, -30px) scale(1.02); }
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  /* Animated gradient mesh */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -40vh;
+    left: 40%;
+    width: 100vw;
+    height: 80vh;
+    background:
+      radial-gradient(ellipse 600px 400px at 30% 40%, rgba(123, 61, 255, 0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 70% 20%, rgba(99, 40, 220, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: meshMove 20s ease-in-out infinite;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -30vh;
+    right: -15vw;
+    width: 60vw;
+    height: 60vh;
+    background:
+      radial-gradient(ellipse 400px 400px at 60% 60%, rgba(123, 61, 255, 0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 300px 300px at 30% 70%, rgba(34, 197, 94, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: meshMove 25s ease-in-out infinite reverse;
+  }
+  /* Noise texture overlay */
+  .noise-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: rgba(6, 6, 10, 0.85);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header-logo span {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-actions { display: flex; gap: 8px; }
+  .btn-small {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-small:hover { border-color: var(--accent); color: var(--text); }
+  .btn-small.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  /* Layout */
+  .layout { display: flex; min-height: calc(100vh - 57px); position: relative; z-index: 1; }
+  .main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 28px; }
+  .debug-panel {
+    width: 380px;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    padding: 24px;
+    overflow-y: auto;
+    display: none;
+    max-height: calc(100vh - 57px);
+  }
+  .debug-panel.visible { display: block; }
+
+  /* Progress */
+  .progress-wrap { width: 100%; max-width: 480px; margin-bottom: 48px; }
+  .progress-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .progress-bar { height: 3px; background: rgba(255,255,255,0.04); border-radius: 2px; overflow: visible; position: relative; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-soft), var(--accent), var(--accent-light));
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-shadow: 0 0 12px rgba(123, 61, 255, 0.4);
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: -4px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    box-shadow: 0 0 20px rgba(123, 61, 255, 0.7), 0 0 40px rgba(123, 61, 255, 0.3);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 20px rgba(123, 61, 255, 0.7), 0 0 40px rgba(123, 61, 255, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(123, 61, 255, 0.9), 0 0 50px rgba(123, 61, 255, 0.5); }
+  }
+
+  /* Quiz Card */
+  .quiz-card {
+    width: 100%;
+    max-width: 480px;
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes optionIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .quiz-question {
+    font-size: 32px;
+    font-weight: 300;
+    margin-bottom: 40px;
+    letter-spacing: -0.8px;
+    line-height: 1.3;
+    color: var(--text);
+  }
+  .quiz-question { position: relative; }
+  .why-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    vertical-align: middle;
+    transition: color 0.2s;
+    position: relative;
+    top: -2px;
+  }
+  .why-btn:hover { color: var(--accent-light); }
+  .why-tooltip {
+    display: none;
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: rgba(123, 61, 255, 0.08);
+    border: 1px solid rgba(123, 61, 255, 0.15);
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    animation: fadeIn 0.2s ease;
+  }
+  .why-tooltip.visible { display: block; }
+
+  .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+  .quiz-option {
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.025);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-size: 15px;
+    font-weight: 400;
+    position: relative;
+    overflow: hidden;
+    animation: optionIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    backdrop-filter: blur(8px);
+  }
+  .quiz-option:nth-child(1) { animation-delay: 0.05s; }
+  .quiz-option:nth-child(2) { animation-delay: 0.1s; }
+  .quiz-option:nth-child(3) { animation-delay: 0.15s; }
+  .quiz-option:nth-child(4) { animation-delay: 0.2s; }
+  .quiz-option:nth-child(5) { animation-delay: 0.25s; }
+  .quiz-option:nth-child(6) { animation-delay: 0.3s; }
+  .quiz-option::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--accent), var(--accent-light));
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .quiz-option::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at left center, rgba(123, 61, 255, 0.06) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .quiz-option:hover { border-color: rgba(123, 61, 255, 0.25); transform: translateX(4px); }
+  .quiz-option:hover::before { transform: scaleY(1); }
+  .quiz-option:hover::after { opacity: 1; }
+  .quiz-option.selected {
+    border-color: rgba(123, 61, 255, 0.5);
+    background: rgba(123, 61, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(123, 61, 255, 0.12), inset 0 0 0 1px rgba(123, 61, 255, 0.1);
+  }
+  .quiz-option.selected::before { transform: scaleY(1); background: var(--accent-light); }
+  .quiz-option.selected::after { opacity: 1; }
+
+  /* Navigation */
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 32px;
+    max-width: 520px;
+    width: 100%;
+  }
+  .btn-back {
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.3px;
+  }
+  .btn-back:hover { color: var(--text); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); }
+  .btn-back.hidden { visibility: hidden; }
+
+  /* Result */
+  .result-card {
+    width: 100%;
+    max-width: 520px;
+    animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .result-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 40px 32px 36px;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(123, 61, 255, 0.08) 0%, transparent 60%),
+      linear-gradient(180deg, rgba(15, 15, 22, 0.95) 0%, rgba(6, 6, 10, 0.98) 100%);
+    border: 1px solid rgba(123, 61, 255, 0.1);
+    box-shadow: 0 16px 60px rgba(0, 0, 0, 0.4);
+  }
+  .result-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 15%, rgba(123, 61, 255, 0.35) 50%, transparent 85%);
+  }
+  .result-header h2 {
+    font-size: 11px;
+    color: var(--accent-light);
+    font-weight: 500;
+    margin-bottom: 20px;
+    position: relative;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .result-basis {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    position: relative;
+    letter-spacing: 0.3px;
+    font-weight: 300;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+  .result-duration {
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 20%, var(--accent-light) 80%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+  }
+  .result-program-sub {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    position: relative;
+    font-weight: 300;
+  }
+  .result-tagline { color: var(--text-muted); font-size: 14px; position: relative; font-weight: 300; line-height: 1.5; }
+  .result-price {
+    text-align: center;
+    padding: 32px;
+    margin-top: 24px;
+    background: linear-gradient(135deg, rgba(123, 61, 255, 0.06) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(123, 61, 255, 0.1);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+  }
+  .result-price::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(123, 61, 255, 0.2), transparent);
+  }
+  .result-price-amount {
+    font-size: 40px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 30%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+  }
+  .result-price-detail {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    font-weight: 300;
+  }
+
+  .result-section {
+    background:
+      radial-gradient(ellipse at top right, rgba(123, 61, 255, 0.04) 0%, transparent 50%),
+      rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .result-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(123, 61, 255, 0.15), transparent);
+  }
+  .result-section:hover { border-color: rgba(123, 61, 255, 0.2); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
+  .result-section h3 {
+    font-size: 11px;
+    color: var(--accent-light);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .result-section h3::before {
+    content: '';
+    width: 16px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    flex-shrink: 0;
+  }
+  .result-section ul { list-style: none; }
+  .result-section li {
+    padding: 8px 0;
+    padding-left: 22px;
+    position: relative;
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .result-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(123, 61, 255, 0.5);
+  }
+  .result-modifier {
+    background: linear-gradient(135deg, rgba(123, 61, 255, 0.08), rgba(123, 61, 255, 0.03));
+    border: 1px solid rgba(123, 61, 255, 0.15);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 300;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-modifier::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent-light));
+  }
+  .result-cta {
+    display: block;
+    width: 100%;
+    padding: 20px;
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent) 0%, #5A1FD6 100%);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 28px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(123, 61, 255, 0.3);
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  .result-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123, 61, 255, 0.45); }
+  .result-cta:active { transform: translateY(0); }
+  .btn-restart {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-restart:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* Alt programs */
+  .alt-programs { margin-top: 40px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.04); }
+  .alt-programs-title { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; text-align: center; letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+  .alt-card {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+  }
+  .alt-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(123, 61, 255, 0.06) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .alt-card:hover { border-color: rgba(123, 61, 255, 0.2); transform: translateY(-2px); }
+  .alt-card:hover::before { opacity: 1; }
+  .alt-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; position: relative; }
+  .alt-card-name { font-weight: 600; font-size: 16px; }
+  .alt-card-price { color: var(--accent-light); font-weight: 700; font-size: 17px; }
+  .alt-card-details { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; position: relative; }
+  .alt-card-diff { font-size: 13px; color: var(--text-secondary); position: relative; font-weight: 300; line-height: 1.5; }
+  .alt-card-toggle { font-size: 12px; color: var(--accent-light); margin-top: 14px; text-align: center; transition: opacity 0.2s; letter-spacing: 0.5px; }
+  .alt-card.expanded .alt-card-toggle { display: none; }
+  .alt-card-expand { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+  .alt-card.expanded .alt-card-expand { max-height: 600px; }
+  .alt-card.expanded { border-color: rgba(123, 61, 255, 0.3); box-shadow: 0 8px 40px rgba(123, 61, 255, 0.1); }
+  .alt-tl { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; padding-left: 4px; }
+  .alt-tl-step { display: flex; gap: 12px; font-size: 13px; }
+  .alt-tl-label { color: var(--accent-light); font-weight: 600; white-space: nowrap; min-width: 90px; font-size: 12px; letter-spacing: 0.3px; }
+  .alt-tl-text { color: var(--text-muted); font-weight: 300; line-height: 1.5; }
+  .alt-features { margin: 18px 0; padding-left: 18px; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px; font-weight: 300; }
+  .alt-card-cta {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: 1px solid rgba(123, 61, 255, 0.4);
+    border-radius: var(--radius);
+    background: rgba(123, 61, 255, 0.06);
+    color: var(--accent-light);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .alt-card-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent), #5A1FD6);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .alt-card-cta:hover { color: white; box-shadow: var(--shadow-accent); transform: translateY(-1px); }
+  .alt-card-cta:hover::before { opacity: 1; }
+  .alt-card-cta span { position: relative; z-index: 1; }
+
+  /* AI mode */
+  .ai-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .ai-toggle:hover { border-color: var(--accent); }
+  .ai-toggle.active { border-color: var(--green); color: var(--green); background: rgba(34, 197, 94, 0.1); }
+  .ai-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); transition: background 0.2s; }
+  .ai-toggle.active .dot { background: var(--green); box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
+  .ai-config {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 320px;
+    z-index: 200;
+    display: none;
+  }
+  .ai-config.visible { display: block; }
+  .ai-config label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; }
+  .ai-config input {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .ai-config input:focus { outline: none; border-color: var(--accent); }
+  .ai-config .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+  /* Body input (height/weight) */
+  /* Assessment blocks */
+  .assessment-blocks { display: flex; gap: 14px; margin-top: 20px; }
+  .assessment-block {
+    flex: 1;
+    background:
+      radial-gradient(ellipse at bottom left, rgba(123, 61, 255, 0.06) 0%, transparent 60%),
+      rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(123, 61, 255, 0.1);
+    border-radius: var(--radius);
+    padding: 22px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .assessment-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(123, 61, 255, 0.2), transparent);
+  }
+  .assessment-block:hover { border-color: rgba(123, 61, 255, 0.25); transform: translateY(-3px); box-shadow: 0 8px 28px rgba(123, 61, 255, 0.1); }
+  .assessment-block-title { font-weight: 600; font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .assess-icon { display: inline-flex; color: var(--accent-light); flex-shrink: 0; }
+  .assess-icon svg { width: 20px; height: 20px; }
+  .assessment-block-text { font-size: 13px; color: var(--text-secondary); line-height: 1.7; font-weight: 300; }
+  .assessment-detail p { font-weight: 300; line-height: 1.7; }
+  .assessment-detail > p:first-of-type { font-size: 15px; color: var(--text); }
+
+  /* Club selection */
+  .club-city-group { margin-bottom: 20px; }
+  .club-city-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; font-weight: 500; }
+  .club-option {
+    cursor: pointer;
+    padding: 18px 22px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+  }
+  .club-option::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; width: 3px; height: 100%;
+    background: linear-gradient(to bottom, var(--accent), var(--accent-light));
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .club-option:hover { border-color: rgba(123, 61, 255, 0.25); transform: translateX(4px); }
+  .club-option:hover::before { transform: scaleY(1); }
+  .club-option.selected {
+    border-color: rgba(123, 61, 255, 0.5);
+    background: rgba(123, 61, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(123, 61, 255, 0.12), inset 0 0 0 1px rgba(123, 61, 255, 0.1);
+  }
+  .club-option.selected::before { transform: scaleY(1); }
+  .club-name { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .club-pin { display: inline-flex; color: var(--accent-light); }
+  .club-pin svg { width: 16px; height: 16px; }
+  .club-address { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-weight: 300; }
+
+  .body-inputs { display: flex; gap: 16px; margin-bottom: 20px; }
+  .body-field { flex: 1; }
+  .body-field label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .body-field .input-wrap {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    padding: 0 16px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(8px);
+  }
+  .body-field .input-wrap:focus-within { border-color: rgba(123, 61, 255, 0.5); box-shadow: 0 0 24px rgba(123, 61, 255, 0.15), inset 0 0 0 1px rgba(123, 61, 255, 0.08); }
+  .body-field input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    font-weight: 600;
+    padding: 14px 0;
+    width: 100%;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .body-field input::-webkit-outer-spin-button,
+  .body-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .body-field .suffix { color: var(--text-muted); font-size: 15px; margin-left: 4px; }
+
+  .ai-fallback {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .ai-fallback p { color: var(--text-muted); font-size: 14px; margin-bottom: 14px; font-weight: 300; }
+  .ai-fallback button {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(123, 61, 255, 0.4);
+    background: rgba(123, 61, 255, 0.06);
+    color: var(--accent-light);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .ai-fallback button:hover { background: var(--accent); color: white; box-shadow: var(--shadow-accent); }
+  .ai-paragraph {
+    font-size: 15px;
+    line-height: 1.75;
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .ai-paragraph:last-child { margin-bottom: 0; }
+  .ai-paragraph:first-child::first-line { font-weight: 400; }
+  .ai-expand-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    opacity: 0;
+  }
+  .ai-expandable.expanded .ai-expand-content {
+    max-height: 600px;
+    opacity: 1;
+  }
+  .ai-expand-toggle {
+    background: none;
+    border: none;
+    color: var(--accent-light);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-top: 4px;
+    transition: color 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .ai-expand-toggle:hover { color: var(--accent); }
+  .ai-expandable.expanded .ai-expand-toggle { margin-top: 12px; }
+  .ai-loading {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-style: italic;
+  }
+  .ai-loading::after {
+    content: '';
+    animation: dots 1.5s steps(4) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+  @media (max-width: 768px) {
+    .ai-config { width: calc(100vw - 48px); right: -60px; }
+  }
+
+  /* Debug Panel */
+  .debug-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .debug-section { margin-bottom: 20px; }
+  .debug-section h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+  .debug-score {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .debug-score .label { color: var(--text-muted); }
+  .debug-score .value { font-weight: 600; }
+
+  .debug-matrix { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  .debug-matrix th, .debug-matrix td {
+    padding: 8px 6px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .debug-matrix th { background: var(--surface2); color: var(--text-muted); font-weight: 500; }
+  .debug-matrix td { background: var(--surface); }
+  .debug-matrix td.highlight {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .debug-answers { margin-top: 12px; }
+  .debug-answer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .debug-answer .q { color: var(--text-muted); }
+  .debug-answer select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .debug-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-fs { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+  .tag-bc { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+  .tag-hw { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+
+  .debug-modifier-info {
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .debug-modifier-info .before { color: var(--text-muted); text-decoration: line-through; }
+  .debug-modifier-info .after { color: var(--accent); font-weight: 600; }
+  .debug-modifier-info .arrow { color: var(--text-muted); margin: 0 6px; }
+  .debug-modifier-info.no-change { color: var(--text-muted); }
+
+  /* Scenarios tab */
+  .scenarios-panel {
+    width: 100%;
+    max-width: 900px;
+    padding: 24px;
+    display: none;
+  }
+  .scenarios-panel.visible { display: block; }
+  .scenarios-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent); }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  .scenarios-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .scenarios-table th, .scenarios-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  .scenarios-table th {
+    background: var(--surface);
+    color: var(--text-muted);
+    font-weight: 500;
+    position: sticky;
+    top: 56px;
+  }
+  .scenarios-table tr:hover td { background: var(--surface2); }
+  .scenarios-table td { background: var(--surface); }
+  .scenarios-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 13px;
+  }
+  .stat-card .stat-value { font-size: 24px; font-weight: 700; }
+
+  /* Fear tags */
+  .fear-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .fear-chip {
+    padding: 10px 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    backdrop-filter: blur(8px);
+  }
+  .fear-chip:hover { border-color: rgba(123, 61, 255, 0.3); color: var(--text); transform: translateY(-2px); }
+  .fear-chip.selected {
+    border-color: rgba(123, 61, 255, 0.5);
+    background: rgba(123, 61, 255, 0.12);
+    color: var(--accent-light);
+    box-shadow: 0 4px 20px rgba(123, 61, 255, 0.15), inset 0 0 0 1px rgba(123, 61, 255, 0.1);
+  }
+  .fear-custom-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 16px;
+    resize: none;
+    height: 52px;
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+  .fear-custom-input::placeholder { color: var(--text-muted); }
+  .fear-custom-input:focus { outline: none; border-color: rgba(123, 61, 255, 0.5); box-shadow: 0 0 24px rgba(123, 61, 255, 0.1); }
+  .btn-continue {
+    padding: 16px 40px;
+    border-radius: var(--radius);
+    border: none;
+    background: linear-gradient(135deg, var(--accent), #5A1FD6);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(123, 61, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-continue::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  .btn-continue:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123, 61, 255, 0.45); }
+  .btn-skip {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .btn-skip:hover { color: var(--text); }
+
+  .fear-answer {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .fear-answer::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent-light));
+  }
+  .fear-answer .fear-q {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 8px;
+  }
+  .fear-answer .fear-a {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+
+  /* Icons in options */
+  .quiz-option-icon {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .quiz-option-icon .opt-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 22px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  .quiz-option-icon .opt-icon svg { width: 22px; height: 22px; color: var(--text-muted); transition: color 0.3s; }
+  .quiz-option:hover .opt-icon { background: rgba(123, 61, 255, 0.08); border-color: rgba(123, 61, 255, 0.1); }
+  .quiz-option:hover .opt-icon svg { color: var(--accent-light); }
+  .quiz-option.selected .opt-icon { background: rgba(123, 61, 255, 0.15); box-shadow: 0 0 16px rgba(123, 61, 255, 0.25); border-color: rgba(123, 61, 255, 0.2); }
+  .quiz-option.selected .opt-icon svg { color: var(--accent-light); }
+
+  /* Interstitial screens */
+  .interstitial {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 40px 0;
+  }
+  .interstitial-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(123, 61, 255, 0.2), rgba(123, 61, 255, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 32px;
+    box-shadow: 0 0 40px rgba(123, 61, 255, 0.25), 0 0 80px rgba(123, 61, 255, 0.1);
+    border: 1px solid rgba(123, 61, 255, 0.2);
+    animation: float 3s ease-in-out infinite;
+    color: var(--accent-light);
+  }
+  .interstitial-icon svg { width: 32px; height: 32px; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .interstitial-text {
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .interstitial-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 36px;
+    line-height: 1.7;
+    font-weight: 300;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .btn-interstitial {
+    padding: 18px 56px;
+    border-radius: var(--radius);
+    border: none;
+    background: linear-gradient(135deg, var(--accent), #5A1FD6);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(123, 61, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-interstitial::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  .btn-interstitial:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123, 61, 255, 0.45); }
+
+  /* Prediction screen */
+  .prediction {
+    width: 100%;
+    max-width: 520px;
+    animation: fadeIn 0.4s ease;
+  }
+  .prediction-title {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .prediction-timeline {
+    position: relative;
+    padding-left: 36px;
+    margin-bottom: 32px;
+  }
+  .prediction-timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent-light), var(--green));
+    box-shadow: 0 0 12px rgba(123, 61, 255, 0.4);
+  }
+  .prediction-step {
+    position: relative;
+    padding: 16px 0;
+  }
+  .prediction-step::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 22px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 12px rgba(123, 61, 255, 0.5);
+    transition: all 0.3s;
+  }
+  .prediction-step.final::before { background: var(--green); width: 12px; height: 12px; left: -30px; top: 21px; box-shadow: 0 0 16px rgba(34, 197, 94, 0.5); }
+  .prediction-step .ps-label {
+    font-size: 11px;
+    color: var(--accent-light);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
+  .prediction-step .ps-text {
+    font-size: 15px;
+    margin-top: 6px;
+    line-height: 1.6;
+    font-weight: 300;
+    color: var(--text-secondary);
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .debug-panel { display: none !important; position: fixed; top: 57px; right: 0; width: 100%; height: calc(100vh - 57px); z-index: 99; }
+    .debug-panel.visible.mobile-show { display: block !important; }
+    .quiz-question { font-size: 24px; letter-spacing: -0.3px; }
+    .result-duration { font-size: 36px; }
+    .result-header { padding: 36px 20px 32px; }
+    .result-price-amount { font-size: 32px; }
+    .scenarios-panel { padding: 16px; }
+    .scenarios-table { font-size: 11px; }
+    .scenarios-table th, .scenarios-table td { padding: 6px; }
+    .interstitial-text { font-size: 22px; }
+    .interstitial-icon { width: 60px; height: 60px; }
+    .interstitial-icon svg { width: 28px; height: 28px; }
+    .assessment-blocks { flex-direction: column; }
+    .main { padding: 32px 20px; }
+    .progress-wrap { margin-bottom: 36px; }
+  }
+
+
+  /* Score bars (fitness quiz specific) */
+  .score-bar-wrap { margin-bottom: 16px; }
+  .score-bar-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+  .score-bar { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .score-bar-fill.fitness { background: var(--green); }
+  .score-bar-fill.motivation { background: var(--blue); }
+
+  .result-program-card {
+    background: radial-gradient(ellipse at top right, rgba(123, 61, 255, 0.04) 0%, transparent 50%), rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 14px;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .result-program-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(123, 61, 255, 0.15), transparent);
+  }
+  .result-program-card:hover { border-color: rgba(123, 61, 255, 0.2); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
+  .result-program-label {
+    font-size: 11px;
+    color: var(--accent-light);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .result-program-duration {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 20%, var(--accent-light) 80%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+  .result-program-name { font-size: 16px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 300; }
+  .result-program-why { font-size: 14px; color: var(--text); line-height: 1.6; font-weight: 300; }
+
+  .result-emoji { font-size: 64px; margin-bottom: 16px; color: var(--accent-light); }
+  .result-profile-name {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 20%, var(--accent-light) 80%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .result-profile-desc { font-size: 15px; color: var(--text-secondary); max-width: 400px; margin: 0 auto; line-height: 1.7; font-weight: 300; }
+
+  /* Traits */
+  .traits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .trait {
+    padding: 14px 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .trait:hover { border-color: rgba(123, 61, 255, 0.15); transform: translateY(-1px); }
+  .trait .trait-icon { font-size: 20px; display: block; margin-bottom: 6px; color: var(--accent-light); }
+  .trait .trait-icon svg { width: 20px; height: 20px; }
+  .trait .trait-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .trait .trait-value { color: var(--text); font-weight: 500; font-size: 14px; margin-top: 2px; display: block; }
+
+  /* Intro */
+  .intro-card { width: 100%; max-width: 480px; text-align: center; animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+  .intro-emoji { font-size: 64px; margin-bottom: 20px; color: var(--accent-light); }
+  .intro-title { font-size: 36px; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; background: linear-gradient(135deg, #fff 20%, var(--accent-light) 80%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .intro-desc { font-size: 15px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.7; font-weight: 300; }
+  .intro-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 36px; }
+  .intro-start {
+    display: inline-block;
+    padding: 18px 56px;
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent), #5A1FD6);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(123, 61, 255, 0.3);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .intro-start::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  .intro-start:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123, 61, 255, 0.45); }
+
+  /* Share */
+  .share-row { display: flex; gap: 8px; margin-top: 12px; }
+  .share-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius);
+    background: rgba(255,255,255,0.025);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    backdrop-filter: blur(8px);
+  }
+  .share-btn:hover { border-color: rgba(123, 61, 255, 0.3); color: var(--text); }
+
+  .quiz-context { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; font-weight: 300; }
+
+</style>
+</head>
+<body>
+<div class="noise-overlay"></div>
+
+<div class="header">
+  <div class="header-logo">HERO'S <span>JOURNEY</span></div>
+</div>
+
+<div class="main" id="mainArea"></div>
+
+<script>
+// ========== SVG ICON SET (Lucide-style, 24x24, stroke 1.5) ==========
+const svgIcon = (paths, size = 24) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+
+const SVG = {
+  fire: svgIcon('<path d="M12 12c2-2.96 0-7-1-8 0 3.04-2.25 5.25-4 6.5C5.77 11.41 5 13.1 5 15c0 3.87 3.13 7 7 7s7-3.13 7-7c0-2-1-3.5-2-4.5-1 1-2 2-3 2-.5 0-1-.5-2-1.5z"/>'),
+  muscle: svgIcon('<path d="M6.5 6.5c1.5-1.5 3.5-1 4.5 0l1 1 1-1c1-1 3-.5 4.5 1s1.5 3.5 0 4.5l-1 1 1 1c1.5 1.5 1 3.5 0 4.5s-3.5 1.5-4.5 0l-1-1-1 1c-1 1-3 1.5-4.5 0s-1.5-3.5 0-4.5l1-1-1-1c-1.5-1.5-1-3.5 0-4.5z"/><path d="m14 14-4-4"/>'),
+  calendar: svgIcon('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>'),
+  search: svgIcon('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>'),
+  bolt: svgIcon('<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>'),
+  target: svgIcon('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
+  gem: svgIcon('<path d="M6 3h12l4 6-10 13L2 9z"/><path d="M2 9h20"/><path d="m10 9 2 13 2-13"/><path d="m6 3 4 6M18 3l-4 6"/>'),
+  star: svgIcon('<path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>'),
+  check: svgIcon('<path d="M20 6 9 17l-5-5"/>'),
+  shield: svgIcon('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
+  pin: svgIcon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>'),
+  chart: svgIcon('<path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 4-6"/>'),
+  city: svgIcon('<rect x="4" y="2" width="6" height="20" rx="1"/><rect x="14" y="7" width="6" height="15" rx="1"/><path d="M6 6h2M6 10h2M6 14h2M6 18h2M16 11h2M16 15h2M16 19h2"/>'),
+  running: svgIcon('<circle cx="15" cy="4" r="2"/><path d="m9 20 3.5-7L9 9.5 14 4M6 20l3-6M18 9l-3 5.5"/>'),
+  dumbbell: svgIcon('<path d="M6.5 6.5h11M6.5 17.5h11"/><rect x="2" y="5" width="4.5" height="14" rx="1"/><rect x="17.5" y="5" width="4.5" height="14" rx="1"/><path d="M6.5 12h11"/>'),
+  // Quiz-specific icons
+  elevator: svgIcon('<rect x="3" y="2" width="18" height="20" rx="2"/><path d="M9 12h6M12 9v6"/>'),
+  brain: svgIcon('<path d="M12 2a5 5 0 0 1 5 5c0 1.5-.5 2.5-1.5 3.5L12 14l-3.5-3.5C7.5 9.5 7 8.5 7 7a5 5 0 0 1 5-5z"/><path d="M12 14v8"/>'),
+  laugh: svgIcon('<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/>'),
+  rocket: svgIcon('<path d="M4.5 16.5c-1.5 1.5-2 5-2 5s3.5-.5 5-2 1.5-3.5 0-5-3.5-1.5-5 0z"/><path d="M12 13c2-2.96 4.5-5.5 7-7 0 0 .5-3-2-5.5S12 2 12 2s-3.5.5-5.5 3 .5 5.5.5 5.5c2.5-2.5 5.04-5 7-7"/>'),
+  sofa: svgIcon('<path d="M2 14v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 14h20"/>'),
+  hand: svgIcon('<path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10V5a2 2 0 0 0-4 0v9c0 4.42 3.58 8 8 8h1c2.76 0 5-2.24 5-5v-4a2 2 0 0 0-4 0"/>'),
+  trophy: svgIcon('<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>'),
+  lion: svgIcon('<circle cx="12" cy="12" r="4"/><path d="M12 2c2.5 2.5 2.5 5 0 6-2.5-1-2.5-3.5 0-6z"/><path d="M22 12c-2.5 2.5-5 2.5-6 0 1-2.5 3.5-2.5 6 0z"/><path d="M12 22c-2.5-2.5-2.5-5 0-6 2.5 1 2.5 3.5 0 6z"/><path d="M2 12c2.5-2.5 5-2.5 6 0-1 2.5-3.5 2.5-6 0z"/>'),
+  refresh: svgIcon('<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>'),
+  bear: svgIcon('<circle cx="12" cy="13" r="7"/><circle cx="8" cy="6" r="3"/><circle cx="16" cy="6" r="3"/><circle cx="10" cy="12" r="1"/><circle cx="14" cy="12" r="1"/><path d="M10 16s1 1 2 1 2-1 2-1"/>')
+};
+
+// Icon maps for quiz options
+const stairsIcons = { A: SVG.elevator, B: SVG.search, C: SVG.running, D: SVG.bolt };
+const plankIcons = { A: SVG.laugh, B: SVG.hand, C: SVG.muscle, D: SVG.fire };
+const morningIcons = { A: SVG.sofa, B: SVG.laugh, C: SVG.running, D: SVG.bolt };
+const sweatIcons = { A: SVG.running, B: SVG.calendar, C: SVG.chart, D: SVG.fire };
+const giftIcons = { A: SVG.search, B: SVG.star, C: SVG.target, D: SVG.dumbbell };
+const squatIcons = { A: SVG.shield, B: SVG.hand, C: SVG.check, D: SVG.bolt };
+const fearIcons = { A: SVG.search, B: SVG.shield, C: SVG.gem, D: SVG.rocket };
+const supersetIcons = { A: SVG.laugh, B: SVG.brain, C: SVG.check, D: SVG.dumbbell };
+
+const questionIconMap = {
+  stairs: stairsIcons, plank: plankIcons, morning: morningIcons, sweat: sweatIcons,
+  gift: giftIcons, squat: squatIcons, fear: fearIcons, superset: supersetIcons
+};
+
+// Interstitial icons
+const interstitialIcons = {
+  stairs: { A: SVG.brain, B: SVG.chart, C: SVG.bolt, D: SVG.fire },
+  plank: { A: SVG.muscle, B: SVG.chart, C: SVG.check, D: SVG.trophy },
+  morning: { A: SVG.calendar, B: SVG.target, C: SVG.pin, D: SVG.bolt },
+  sweat: { A: SVG.hand, B: SVG.brain, C: SVG.chart, D: SVG.fire },
+  gift: { A: SVG.star, B: SVG.bolt, C: SVG.target, D: SVG.refresh },
+  squat: { A: SVG.shield, B: SVG.chart, C: SVG.muscle, D: SVG.dumbbell },
+  fear: { A: SVG.hand, B: SVG.shield, C: SVG.gem, D: SVG.rocket },
+  superset: { A: SVG.laugh, B: SVG.brain, C: SVG.check, D: SVG.trophy }
+};
+
+// Profile icons (replacing emoji)
+const profileIcons = {
+  'beginner-low': SVG.sofa,
+  'beginner-medium': SVG.star,
+  'beginner-high': SVG.rocket,
+  'active-low': SVG.bear,
+  'active-medium': SVG.refresh,
+  'active-high': SVG.bolt,
+  'advanced-low': SVG.target,
+  'advanced-medium': SVG.trophy,
+  'advanced-high': SVG.lion
+};
+
+// Trait icons
+const traitIcons = { activity: SVG.running, motivation: SVG.fire, potential: SVG.chart, format: SVG.target };
+
+// ========== QUESTIONS ==========
+const questions = [
+  {
+    id: 'stairs',
+    question: 'Лифт или лестница?',
+    context: 'Будь честен — никто не смотрит',
+    options: [
+      { label: 'Всегда лифт. Лестница — это для пожарных', key: 'A', fitness: 0, motivation: 0 },
+      { label: 'Зависит от этажа и настроения', key: 'B', fitness: 1, motivation: 0 },
+      { label: 'Обычно лестница — привычка', key: 'C', fitness: 2, motivation: 1 },
+      { label: 'Бегом по лестнице, лифт для слабых', key: 'D', fitness: 3, motivation: 1 }
+    ]
+  },
+  {
+    id: 'plank',
+    question: 'Сколько простоишь в планке?',
+    context: 'Примерно, без подготовки, прямо сейчас',
+    options: [
+      { label: 'Что такое планка?', key: 'A', fitness: 0, motivation: 0 },
+      { label: 'Секунд 15-20, потом всё трясётся', key: 'B', fitness: 1, motivation: 0 },
+      { label: 'Минуту точно выдержу', key: 'C', fitness: 2, motivation: 1 },
+      { label: 'Две минуты+ — не вопрос', key: 'D', fitness: 3, motivation: 1 }
+    ]
+  },
+  {
+    id: 'morning',
+    question: 'Друг зовёт на тренировку в 7 утра. Ты...',
+    context: null,
+    options: [
+      { label: 'Делаю вид, что не видел сообщение', key: 'A', fitness: 0, motivation: 0 },
+      { label: 'Соглашаюсь, но скорее всего отменю', key: 'B', fitness: 0, motivation: 1 },
+      { label: 'Приду, если не надо далеко ехать', key: 'C', fitness: 1, motivation: 1 },
+      { label: 'Уже в зале — жду его', key: 'D', fitness: 1, motivation: 2 }
+    ]
+  },
+  {
+    id: 'sweat',
+    question: 'Последний раз ты потел от нагрузки...',
+    context: 'Не от жары, а от физической активности',
+    options: [
+      { label: 'Когда бежал за автобусом', key: 'A', fitness: 0, motivation: 0 },
+      { label: 'Пару месяцев назад — точно не помню', key: 'B', fitness: 1, motivation: 0 },
+      { label: 'На прошлой неделе', key: 'C', fitness: 2, motivation: 1 },
+      { label: 'Вчера. Или сегодня', key: 'D', fitness: 3, motivation: 1 }
+    ]
+  },
+  {
+    id: 'gift',
+    question: 'Тебе подарили абонемент в зал. Первая мысль?',
+    context: null,
+    options: [
+      { label: 'Продам на OLX', key: 'A', fitness: 0, motivation: 0 },
+      { label: 'О, давно хотел — но сам бы не купил', key: 'B', fitness: 0, motivation: 2 },
+      { label: 'Наконец-то! Нужна система и план', key: 'C', fitness: 1, motivation: 2 },
+      { label: 'У меня уже есть абонемент', key: 'D', fitness: 2, motivation: 1 }
+    ]
+  },
+  {
+    id: 'squat',
+    question: 'Присядь и встань. Что чувствуешь?',
+    context: 'Серьёзно — прямо сейчас попробуй',
+    options: [
+      { label: 'Колени что-то сказали... не буду повторять', key: 'A', fitness: 0, motivation: 0 },
+      { label: 'Нормально, но десять раз — нет, спасибо', key: 'B', fitness: 1, motivation: 0 },
+      { label: 'Легко. Могу ещё', key: 'C', fitness: 2, motivation: 1 },
+      { label: 'Сделал 20 пока читал вопрос', key: 'D', fitness: 3, motivation: 1 }
+    ]
+  },
+  {
+    id: 'fear',
+    question: 'Что тебя больше всего останавливает от зала?',
+    context: 'Или останавливало раньше',
+    options: [
+      { label: 'Не хочу чувствовать себя новичком', key: 'A', fitness: 0, motivation: 1 },
+      { label: 'Не уверен, что справлюсь с нагрузкой', key: 'B', fitness: 0, motivation: 1 },
+      { label: 'Не хочу тратить деньги, пока не уверен', key: 'C', fitness: 0, motivation: 1 },
+      { label: 'Ничего не останавливает', key: 'D', fitness: 1, motivation: 2 }
+    ]
+  },
+  {
+    id: 'superset',
+    question: 'Знаешь, что такое суперсет?',
+    context: null,
+    options: [
+      { label: 'Это из Marvel?', key: 'A', fitness: 0, motivation: 0 },
+      { label: 'Слышал, но объяснить не смогу', key: 'B', fitness: 1, motivation: 0 },
+      { label: 'Да — два упражнения без отдыха', key: 'C', fitness: 2, motivation: 1 },
+      { label: 'Делаю каждую тренировку', key: 'D', fitness: 3, motivation: 1 }
+    ]
+  },
+  // City, Club, Phone — added at end for lead capture
+  {
+    id: 'qCity',
+    question: 'В каком городе хочешь тренироваться?',
+    options: [
+      { label: 'Алматы', key: 'almaty', svgIcon: true },
+      { label: 'Астана', key: 'astana', svgIcon: true }
+    ]
+  },
+  {
+    id: 'qClub',
+    question: 'В какой студии хочешь тренироваться?',
+    inputType: 'club'
+  },
+  {
+    id: 'qPhone',
+    question: 'Введи свой номер телефона',
+    inputType: 'phone'
+  }
+];
+
+// ========== CLUB DATA ==========
+const clubInfo = {
+  'nurly-orda': { name: 'HJ Nurly Orda', city: 'Астана', address: 'Кабанбай батыра, 11/5', zones: ['legs', 'upperbody', 'bootcamp'], hasReshape: false, hasMetcon: false, hasMindBody: false, hasAssessmentCenter: false },
+  'europe-city': { name: 'HJ Europe City', city: 'Астана', address: 'Акмешит, 1, блок 5', zones: ['legs', 'upperbody', 'bootcamp', 'metcon', 'mindbody'], hasReshape: false, hasMetcon: true, hasMindBody: true, hasAssessmentCenter: false },
+  'colibri': { name: 'HJ Colibri', city: 'Алматы', address: 'Уалиханова, 170/1', zones: ['legs', 'upperbody', 'bootcamp', 'metcon'], hasReshape: false, hasMetcon: true, hasMindBody: false, hasAssessmentCenter: false },
+  'promenade': { name: 'HJ Promenade', city: 'Алматы', address: 'Абая, 44а', zones: ['legs', 'upperbody', 'bootcamp', 'metcon'], hasReshape: false, hasMetcon: true, hasMindBody: false, hasAssessmentCenter: false },
+  'villa': { name: 'HJ Villa', city: 'Алматы', address: 'Аль-Фараби, 140а', zones: ['fullbody', 'bootcamp', 'reshape'], hasReshape: true, hasMetcon: false, hasMindBody: false, hasAssessmentCenter: false },
+  '4you': { name: 'HJ 4YOU', city: 'Алматы', address: 'Ескараева, 3', zones: ['upperbody', 'legs', 'metcon', 'bootcamp', 'reshape', 'assessment'], hasReshape: true, hasMetcon: true, hasMindBody: false, hasAssessmentCenter: true }
+};
+
+// ========== PROFILES ==========
+const profiles = {
+  'beginner-low': {
+    name: 'Диванный стратег',
+    desc: 'Ты знаешь, что спорт — это полезно. Теоретически. На практике — пока наблюдаешь со стороны. Но раз ты здесь — значит, что-то уже сдвинулось.',
+    program: 'heros-week',
+    why: 'Тебе подойдёт короткий тест-драйв без обязательств — 3 тренировки за неделю. Попробуй и реши сам.',
+    traits: { activity: 'минимальная', motivation: 'просыпается', potential: 'высокий', format: 'тест-драйв' }
+  },
+  'beginner-medium': {
+    name: 'Спящий атлет',
+    desc: 'Тело пока не привыкло к нагрузке, но голова уже готова. Это лучшая комбинация — мотивация есть, осталось начать правильно.',
+    program: 'first-step',
+    why: 'Плавный старт за месяц — 12 тренировок с постепенным ростом нагрузки. Тренер рядом, assessment в конце покажет реальный уровень.',
+    traits: { activity: 'начальная', motivation: 'есть', potential: 'огромный', format: 'плавный старт' }
+  },
+  'beginner-high': {
+    name: 'Мотивированный новичок',
+    desc: 'Горишь желанием начать — и это круто. Главное сейчас — не перегореть на старте, а выстроить привычку. Системный подход даст больше, чем энтузиазм.',
+    program: 'basecamp',
+    why: '6 тренировок за 2 недели — достаточно активно для твоей мотивации, но с правильной структурой. Assessment покажет точку старта.',
+    traits: { activity: 'начальная', motivation: 'высокая', potential: 'огромный', format: 'активный старт' }
+  },
+  'active-low': {
+    name: 'Вольный медведь',
+    desc: 'Ты в неплохой форме, но тренируешься стихийно — когда настроение есть. Система и структура могут дать тебе х2 к результату.',
+    program: 'heros-week',
+    why: 'Попробуй формат HJ за неделю — 3 тренировки покажут, чем система отличается от хаотичных занятий.',
+    traits: { activity: 'средняя', motivation: 'нестабильная', potential: 'большой', format: 'тест-драйв' }
+  },
+  'active-medium': {
+    name: 'Перезагрузка',
+    desc: 'Ты знаешь, что такое тренировки — но пришло время перейти на новый уровень. Системный подход, прогрессия и assessment покажут, где ты на самом деле.',
+    program: 'basecamp',
+    why: '6 тренировок за 2 недели — силовые (работа с весами), жиросжигающее кардио (HIIT) и гибкость на реформерах (Reshape). Assessment в конце.',
+    traits: { activity: 'средняя', motivation: 'стабильная', potential: 'большой', format: 'структурированный старт' }
+  },
+  'active-high': {
+    name: 'Готов к системе',
+    desc: 'Активность и мотивация на месте. Тебе не хватает системы, которая превратит хаотичные тренировки в стабильный прогресс.',
+    program: 'basecamp',
+    why: '6 тренировок за 2 недели — прогрессия по уровням, разные форматы, assessment. Ты уже готов — осталось попасть в систему.',
+    traits: { activity: 'выше средней', motivation: 'высокая', potential: 'реализуемый', format: 'структурированный старт' }
+  },
+  'advanced-low': {
+    name: 'Свободный агент',
+    desc: 'Ты в хорошей форме и тренируешься — но без привязки к системе. Попробуй формат HJ и сравни со своим подходом.',
+    program: 'heros-week',
+    why: '3 тренировки за неделю — быстрый тест-драйв. Без обязательств — после недели решишь сам.',
+    traits: { activity: 'высокая', motivation: 'автономная', potential: 'раскрыт', format: 'тест-драйв' }
+  },
+  'advanced-medium': {
+    name: 'Опытный боец',
+    desc: 'Ты знаешь, что делаешь. Вопрос — даст ли система HJ что-то, чего ты не можешь организовать сам? Попробуй и проверь.',
+    program: 'heros-week',
+    why: '3 тренировки за неделю — силовые, кардио, гибкость. Сравни с тем, что у тебя сейчас.',
+    traits: { activity: 'высокая', motivation: 'стабильная', potential: 'раскрыт', format: 'тест-драйв' }
+  },
+  'advanced-high': {
+    name: 'Зальный ветеран',
+    desc: 'Ты и так в системе. HJ может добавить прогрессию по уровням, новые форматы и assessment — но ты лучше знаешь, нужно ли это тебе.',
+    program: 'heros-week',
+    why: '3 тренировки за неделю — проверь формат HJ и реши, стоит ли менять привычное.',
+    traits: { activity: 'высокая', motivation: 'высокая', potential: 'раскрыт', format: 'тест-драйв' }
+  }
+};
+
+const programInfo = {
+  'first-step': { name: 'First Step', trainings: 12, duration: '~4 недели', durationShort: 'месяц', price: '59 990' },
+  'basecamp': { name: 'Basecamp', trainings: 6, duration: '~2 недели', durationShort: '2 недели', price: '19 990' },
+  'heros-week': { name: "Hero's Week", trainings: 3, duration: '1 неделя', durationShort: 'неделю', price: '9 990' }
+};
+
+// ========== INTERSTITIALS ==========
+const interstitials = {
+  stairs: {
+    A: { text: 'Ходьба по лестнице сжигает в 7 раз больше калорий, чем лифт', sub: 'Но мы начнём с чего попроще' },
+    B: { text: 'Люди, которые выбирают лестницу хотя бы иногда, уже активнее 60% населения', sub: 'Осталось добавить систему' },
+    C: { text: 'Привычка ходить пешком — первый признак активного человека', sub: 'Тело уже готово к большему' },
+    D: { text: 'Бег по лестнице — это по сути HIIT (жиросжигающее кардио с короткими интервалами). Ты уже тренируешься, даже не замечая', sub: 'Осталось направить энергию в систему' }
+  },
+  plank: {
+    A: { text: 'Планка — упражнение, где ты держишь тело ровно на руках. Включает 20+ мышц одновременно', sub: 'На первой тренировке попробуешь — тренер покажет' },
+    B: { text: '15 секунд планки — это уже работающий кор. За месяц регулярных тренировок эта цифра удваивается', sub: 'Тело адаптируется быстрее, чем кажется' },
+    C: { text: 'Минута планки = крепкий кор и хорошая база. Ты готов к силовым тренировкам с весами', sub: 'Тренер поможет выйти на следующий уровень' },
+    D: { text: '2 минуты планки — это уровень подготовленного атлета. Тебе нужна система прогрессии, а не базовый онбординг', sub: 'HJ покажет, куда двигаться дальше' }
+  },
+  morning: {
+    A: { text: '72% людей начинают тренироваться не потому что захотели утром, а потому что есть расписание и система', sub: 'Мотивация приходит после первой тренировки, не до' },
+    B: { text: 'Намерение — это уже полдела. Люди, которые записываются заранее, ходят в 3 раза чаще', sub: 'Система HJ автоматически бронирует тренировки' },
+    C: { text: 'Логистика — один из главных барьеров. HJ работает в 6 студиях в Астане и Алматы — выбери ближайшую', sub: 'Тренировки каждый день с утра до вечера' },
+    D: { text: 'Ты из тех, кто не ищет оправданий. Таких в HJ 4 200+ — и система прогрессии помогает им расти каждую неделю', sub: 'Присоединяйся к атлетам, которые тренируются системно' }
+  },
+  sweat: {
+    A: { text: 'Первая тренировка в HJ длится 55 минут. После неё ты будешь потеть по-другому — от осознания, что тело может больше', sub: 'Нагрузка подбирается под твой уровень' },
+    B: { text: 'Мышечная память сохраняется до 15 лет. Даже после перерыва тело возвращается в форму быстрее, чем с нуля', sub: 'Первые 2-3 тренировки — и ты вспомнишь ощущение' },
+    C: { text: 'Регулярная активность — уже привычка. Системные тренировки с прогрессией дадут результат, который не даёт хаотичный спорт', sub: 'Assessment покажет, где ты сейчас' },
+    D: { text: 'Ежедневная активность — признак спортивного характера. В HJ таких называют атлетами с первого дня', sub: 'Система прогрессии направит энергию в результат' }
+  },
+  gift: {
+    A: { text: 'Понимаем — зал не для всех. Но 3 тренировки за неделю могут изменить отношение. 67% тех, кто «просто попробовал», остаются', sub: 'Иногда нужно один раз попробовать' },
+    B: { text: 'Ты хочешь начать, но барьер мешает — цена, время, неуверенность. Триальная программа снимает все три', sub: 'От 9 990 ₸ за первый шаг' },
+    C: { text: 'Ты уже знаешь, что тебе нужно — план и структура. HJ даёт оба: программа с прогрессией и тренер, который ведёт', sub: 'Каждая тренировка — часть системы' },
+    D: { text: 'У тебя есть абонемент — значит, ты уже в игре. Попробуй формат HJ и сравни с текущим залом', sub: 'Многие приходят «просто сравнить» — и остаются' }
+  },
+  squat: {
+    A: { text: 'Колени — не приговор. В HJ тренер адаптирует каждое упражнение под твои особенности. Reshape (гибкость на реформерах) — отличный старт', sub: 'Безопасность — приоритет на каждой тренировке' },
+    B: { text: 'Один присед — легко. 50 за тренировку — вызов. Но тело адаптируется за 2-3 недели при правильной нагрузке', sub: 'Тренер подберёт вес и повторения под тебя' },
+    C: { text: 'Хорошая база! Силовые тренировки с весами дадут ногам нагрузку, которую приседания без веса уже не дают', sub: 'Следующий шаг — работа с оборудованием' },
+    D: { text: '20 приседов на автомате — тело просит нагрузки. Силовые с прогрессией веса — то, что нужно для роста', sub: 'Assessment покажет реальный максимум' }
+  },
+  fear: {
+    A: { text: 'В HJ все начинали с нуля. Тренер рядом, показывает каждое движение. А другие атлеты заняты своей тренировкой — никто не смотрит', sub: 'В первый день тебя встретят и всё покажут' },
+    B: { text: 'Нагрузка подбирается под твой уровень. Первые тренировки — знакомство с форматами, не испытание. Тренер рядом и контролирует технику', sub: 'Именно для этого существуют триальные программы' },
+    C: { text: 'Триальная программа — от 9 990 ₸ за 3 тренировки. Это возможность попробовать, не обязательство. После программы решаешь сам', sub: 'Меньше, чем месяц в обычном зале' },
+    D: { text: 'Ничего не останавливает — значит, пора пробовать. 4 200+ атлетов уже тренируются в HJ', sub: 'Осталось выбрать программу' }
+  },
+  superset: {
+    A: { text: 'Не переживай — в HJ не нужно знать термины. Тренер покажет каждое движение и объяснит зачем', sub: 'Через месяц ты сам будешь объяснять друзьям, что такое суперсет' },
+    B: { text: 'Ты на полпути. В HJ термины станут практикой: суперсет, дропсет, прогрессия — всё это часть системы тренировок', sub: 'Тренер научит применять, а не просто знать' },
+    C: { text: 'Ты разбираешься в тренировках. В HJ это знание ляжет в систему прогрессии — каждая тренировка строится на предыдущей', sub: 'Assessment покажет точные цифры для прогресса' },
+    D: { text: 'Ты уже тренируешься системно. HJ добавит прогрессию по уровням, геймификацию и объективные замеры через assessment', sub: 'Попробуй формат — и сравни со своим подходом' }
+  }
+};
+
+// ========== STEPS ==========
+const steps = [];
+// 8 quiz questions with interstitials
+for (let i = 0; i < 8; i++) {
+  steps.push({ type: 'question', questionIndex: i });
+  steps.push({ type: 'interstitial', questionId: questions[i].id });
+}
+// City, Club, Phone at end
+steps.push({ type: 'question', questionIndex: 8 });  // City
+steps.push({ type: 'question', questionIndex: 9 });  // Club
+steps.push({ type: 'question', questionIndex: 10 }); // Phone
+
+// ========== TIMELINE ==========
+function getTimeline(program) {
+  const timeline = [];
+  if (program === 'first-step') {
+    timeline.push({ label: 'Неделя 1-2', text: 'Знакомство с форматами: силовые тренировки (работа с весами), жиросжигающее кардио (HIIT), гибкость на реформерах (Reshape) — тренер рядом' });
+    timeline.push({ label: 'Неделя 3-4', text: 'Рост нагрузки — тело адаптируется, ты чувствуешь прогресс' });
+    timeline.push({ label: 'Assessment', text: 'Анализ состава тела и замер силовых показателей — объективная точка отсчёта для отслеживания прогресса' });
+    timeline.push({ label: 'После программы', text: 'У тебя есть объективная картина старта — и ты можешь подобрать максимально эффективную программу дальше', final: true });
+  } else if (program === 'basecamp') {
+    timeline.push({ label: 'Неделя 1', text: 'Первые 3 тренировки — силовые (работа с весами), жиросжигающее кардио (HIIT), гибкость на реформерах (Reshape)' });
+    timeline.push({ label: 'Неделя 2', text: 'Рост нагрузки — тело адаптируется, ты чувствуешь систему' });
+    timeline.push({ label: 'Assessment', text: 'Анализ состава тела и замер силовых показателей — объективная точка отсчёта для отслеживания прогресса' });
+    timeline.push({ label: 'После программы', text: 'У тебя есть объективная картина старта — и ты можешь подобрать максимально эффективную программу дальше', final: true });
+  } else {
+    timeline.push({ label: 'День 1', text: 'Силовая тренировка — знакомство с оборудованием и работой с весами' });
+    timeline.push({ label: 'День 2', text: 'Жиросжигающее кардио (HIIT) — короткие интервалы, проверишь выносливость' });
+    timeline.push({ label: 'День 3', text: 'Гибкость и восстановление на реформерах (Reshape) — похоже на пилатес, но с тренажёрами' });
+    timeline.push({ label: 'После недели', text: 'Ты знаешь, твоё это или нет — и решаешь сам', final: true });
+  }
+  return timeline;
+}
+
+// ========== AI ==========
+const CLAUDE_PROXY_URL = 'https://admin.herosjourney.kz/pay/api/claude/messages';
+let aiCache = {};
+
+function getAnswerSummary() {
+  const lines = [];
+  for (let i = 0; i < 8; i++) {
+    const q = questions[i];
+    const key = answers[q.id];
+    if (!key) continue;
+    const opt = q.options.find(o => o.key === key);
+    if (opt) lines.push(`- ${q.question} → ${opt.label}`);
+  }
+  return lines.join('\n');
+}
+
+function formatAiText(text) {
+  let paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+  if (paragraphs.length <= 1) {
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    if (sentences.length >= 6) {
+      const third = Math.ceil(sentences.length / 3);
+      paragraphs = [
+        sentences.slice(0, third).join('').trim(),
+        sentences.slice(third, third * 2).join('').trim(),
+        sentences.slice(third * 2).join('').trim()
+      ];
+    } else { return `<p class="ai-paragraph">${text}</p>`; }
+  }
+  if (paragraphs.length <= 1) return `<p class="ai-paragraph">${paragraphs[0]}</p>`;
+  const first = `<p class="ai-paragraph">${paragraphs[0]}</p>`;
+  const rest = paragraphs.slice(1).map(p => `<p class="ai-paragraph">${p}</p>`).join('');
+  return `<div class="ai-expandable">${first}<div class="ai-expand-content">${rest}</div><button class="ai-expand-toggle" onclick="toggleAiExpand(this)">Читать дальше</button></div>`;
+}
+
+function toggleAiExpand(btn) {
+  const wrap = btn.closest('.ai-expandable');
+  wrap.classList.toggle('expanded');
+  btn.textContent = wrap.classList.contains('expanded') ? 'Свернуть' : 'Читать дальше';
+}
+
+async function generateAiText(profile, info) {
+  const cacheKey = 'rec_' + profile.name + '_' + (answers.qClub||'');
+  if (aiCache[cacheKey]) {
+    document.getElementById('aiLiveText').innerHTML = formatAiText(aiCache[cacheKey]);
+    return;
+  }
+
+  const clubData = answers.qClub ? clubInfo[answers.qClub] : null;
+  const clubStr = clubData ? `${clubData.name} (${clubData.city})` : 'Не указано';
+
+  const prompt = `Ты — копирайтер фитнес-студии Hero's Journey (HJ).
+
+Человек прошёл развлекательный фитнес-квиз. Вот его ответы:
+${getAnswerSummary()}
+
+Его профиль: ${profile.name} (активность: ${profile.traits.activity}, мотивация: ${profile.traits.motivation})
+Рекомендованная программа: ${info.name} — ${info.trainings} тренировок за ${info.durationShort}
+Студия: ${clubStr}
+
+Напиши персональную рекомендацию, которая:
+1. Ссылается на конкретные ответы человека (не все, а 2-3 самых показательных)
+2. Объясняет, почему именно эта программа подходит под его уровень и мотивацию
+3. Снимает главный страх/барьер, который виден из ответов
+
+Формат ответа:
+- Раздели текст на 3 абзаца, разделённых двойным переносом строки (\n\n)
+- Первый абзац: ситуация человека и почему эта программа для него
+- Второй абзац: что конкретно его ждёт (форматы, подход тренера)
+- Третий абзац: результат после прохождения программы
+- Каждый абзац 2-3 предложения, без заголовков и буллетов
+
+Тон: дружелюбный, прямой, без пафоса. На «ты».
+Если упоминаешь термины HJ (HIIT, Metcon, Reshape, assessment), обязательно объясняй что это значит.
+Никогда не используй английские термины для сегментов: switcher, lapsed, newbie, beginner и т.д.
+Не используй слово «интенсивный» — замени на «активный», «энергичный», «с нагрузкой».
+Пиши на русском.`;
+
+  try {
+    const resp = await fetch(CLAUDE_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    const text = data.content[0].text;
+    aiCache[cacheKey] = text;
+    const el = document.getElementById('aiLiveText');
+    if (el) el.innerHTML = formatAiText(text);
+  } catch(e) {
+    const el = document.getElementById('aiLiveText');
+    if (el) el.innerHTML = `<div style="color:var(--red);font-size:13px">Ошибка: ${e.message}</div>`;
+  }
+}
+
+// ========== STATE ==========
+let currentStep = -1; // -1 = intro
+let answers = {};
+
+// ========== SCORING ==========
+function getScores() {
+  let fitness = 0, motivation = 0, count = 0;
+  for (let i = 0; i < 8; i++) {
+    const q = questions[i];
+    const ans = answers[q.id];
+    if (!ans) continue;
+    const opt = q.options.find(o => o.key === ans);
+    if (opt) { fitness += opt.fitness; motivation += opt.motivation; count++; }
+  }
+  return { fitness, motivation, count };
+}
+
+function getProfile() {
+  const { fitness, motivation } = getScores();
+  const fitNorm = fitness / 24;
+  const motNorm = motivation / 12;
+  let fitCat = fitNorm < 0.3 ? 'beginner' : fitNorm < 0.65 ? 'active' : 'advanced';
+  let motCat = motNorm < 0.3 ? 'low' : motNorm < 0.65 ? 'medium' : 'high';
+  const key = `${fitCat}-${motCat}`;
+  return { profile: profiles[key], key, fitness, motivation, fitNorm, motNorm, fitCat, motCat };
+}
+
+// ========== RENDER ==========
+function render() {
+  if (currentStep === -1) { renderIntro(); return; }
+  if (currentStep >= steps.length) { renderResult(); return; }
+
+  const step = steps[currentStep];
+
+  // Track step
+  const stepProps = { step_index: currentStep, step_type: step.type };
+  if (step.type === 'question') {
+    const q = questions[step.questionIndex];
+    stepProps.question_id = q.id;
+    stepProps.question_text = q.question;
+  } else if (step.type === 'interstitial') {
+    stepProps.interstitial_id = step.questionId;
+  }
+  trackEvent('quiz_step_viewed', stepProps);
+
+  if (step.type === 'interstitial') { renderInterstitial(step.questionId); return; }
+
+  const q = questions[step.questionIndex];
+  if (q.inputType === 'club') { renderClub(q); return; }
+  if (q.inputType === 'phone') { renderPhone(q); return; }
+  if (q.id === 'qCity') { renderCityQuestion(q); return; }
+  renderQuestion(step.questionIndex);
+}
+
+function getProgressInfo() {
+  const total = steps.length;
+  const current = currentStep + 1;
+  return { total, current, percent: (current / total * 100).toFixed(0) };
+}
+
+function renderProgressBar() {
+  const { total, current, percent } = getProgressInfo();
+  return `<div class="progress-wrap">
+    <div class="progress-label">Шаг ${current} из ${total}</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
+  </div>`;
+}
+
+function renderIntro() {
+  const main = document.getElementById('mainArea');
+  main.innerHTML = `
+    <div class="intro-card">
+      <div class="intro-emoji">${SVG.dumbbell}</div>
+      <div class="intro-title">Узнай свой фитнес-профиль</div>
+      <div class="intro-desc">8 вопросов — отвечай честно, мы определим твой уровень и подберём программу</div>
+      <div class="intro-meta">~2 минуты</div>
+      <button class="intro-start" onclick="startQuiz()">Начать</button>
+    </div>`;
+}
+
+function startQuiz() { currentStep = 0; render(); }
+
+function renderQuestion(qIndex) {
+  const main = document.getElementById('mainArea');
+  const q = questions[qIndex];
+  const icons = questionIconMap[q.id];
+  const questionNum = qIndex + 1;
+
+  main.innerHTML = `
+    ${renderProgressBar()}
+    <button class="btn-back ${currentStep === 0 ? 'hidden' : ''}" onclick="goBack()">← Назад</button>
+    <div class="quiz-card">
+      <div class="quiz-question">${q.question}</div>
+      ${q.context ? `<div class="quiz-context">${q.context}</div>` : ''}
+      <div class="quiz-options">
+        ${q.options.map(o => `
+          <div class="quiz-option" onclick="selectAnswer('${q.id}', '${o.key}')">
+            ${icons ? `<div class="quiz-option-icon"><span class="opt-icon">${icons[o.key]}</span><span>${o.label}</span></div>` : `<span>${o.label}</span>`}
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderCityQuestion(q) {
+  const main = document.getElementById('mainArea');
+  const cityIcons = { almaty: SVG.city, astana: SVG.city };
+
+  main.innerHTML = `
+    ${renderProgressBar()}
+    <button class="btn-back" onclick="goBack()">← Назад</button>
+    <div class="quiz-card">
+      <div class="quiz-question">${q.question}</div>
+      <div class="quiz-options">
+        ${q.options.map(o => `
+          <div class="quiz-option" onclick="selectOption('qCity', '${o.key}')">
+            <div class="quiz-option-icon"><span class="opt-icon">${cityIcons[o.key]}</span><span>${o.label}</span></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderClub(q) {
+  const main = document.getElementById('mainArea');
+  const selected = answers.qClub || '';
+  const cityMap = { almaty: 'Алматы', astana: 'Астана' };
+  const selectedCity = cityMap[answers.qCity] || null;
+  const filteredClubs = [];
+  Object.entries(clubInfo).forEach(([key, club]) => {
+    if (selectedCity && club.city !== selectedCity) return;
+    filteredClubs.push({ key, ...club });
+  });
+
+  main.innerHTML = `
+    ${renderProgressBar()}
+    <button class="btn-back" onclick="goBack()">← Назад</button>
+    <div class="quiz-card">
+      <div class="quiz-question">${q.question}</div>
+      <div class="quiz-options">
+        ${filteredClubs.map(c => `
+          <div class="club-option ${selected === c.key ? 'selected' : ''}"
+               onclick="selectOption('qClub', '${c.key}')">
+            <div class="club-name"><span class="club-pin">${SVG.pin}</span> ${c.name}</div>
+            <div class="club-address">${c.address}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderPhone(q) {
+  const main = document.getElementById('mainArea');
+  const ph = answers.qPhone || '';
+  main.innerHTML = `
+    ${renderProgressBar()}
+    <div class="quiz-card">
+      <div class="quiz-question">${q.question}</div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:13px;color:var(--text-muted);margin-bottom:8px;display:block">Номер телефона</label>
+        <div style="display:flex;align-items:center;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);padding:0 16px;transition:border-color 0.2s" id="phoneWrap">
+          <input type="tel" id="inputPhone" placeholder="8 777 777 77 77" value="${ph}" maxlength="11"
+                 oninput="answers.qPhone = this.value.trim(); document.getElementById('phoneWrap').style.borderColor='rgba(255,255,255,0.06)'"
+                 style="flex:1;background:transparent;border:none;color:var(--text);font-size:20px;font-weight:600;padding:14px 0;outline:none">
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:6px">Мы свяжемся с тобой для записи на первую тренировку</div>
+      </div>
+      <button class="btn-continue" onclick="submitPhone()">Продолжить</button>
+    </div>
+    <div style="margin-top:24px"><button class="btn-back" onclick="goBack()">← Назад</button></div>`;
+  setTimeout(() => { const el = document.getElementById('inputPhone'); if(el) el.focus(); }, 50);
+}
+
+function selectAnswer(qId, key) {
+  answers[qId] = key;
+  currentStep++;
+  render();
+}
+
+function selectOption(qId, key) {
+  if (qId === 'qCity' && answers.qClub) {
+    const club = clubInfo[answers.qClub];
+    const cityMap = { almaty: 'Алматы', astana: 'Астана' };
+    if (club && club.city !== cityMap[key]) delete answers.qClub;
+  }
+  answers[qId] = key;
+  if (qId === 'qClub') localStorage.setItem('hj_club', key);
+  setTimeout(() => { currentStep++; render(); }, 200);
+}
+
+function submitPhone() {
+  const phone = (answers.qPhone || '').trim();
+  if (!phone || phone.replace(/\D/g, '').length < 7) {
+    const wrap = document.getElementById('phoneWrap');
+    if (wrap) wrap.style.borderColor = 'var(--red)';
+    const el = document.getElementById('inputPhone');
+    if (el) el.focus();
+    return;
+  }
+  localStorage.setItem('hj_phone', phone);
+  trackEvent('phone_submitted', { phone });
+  fetch('https://admin.herosjourney.kz/pay/api/createQuizLead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phoneNumber: phone })
+  }).catch(e => console.warn('createQuizLead failed:', e));
+  nextStep();
+}
+
+function nextStep() { currentStep++; render(); }
+
+function goBack() {
+  if (currentStep <= 0) return;
+  if (currentStep >= 2 && steps[currentStep - 1]?.type === 'interstitial') {
+    currentStep -= 2;
+  } else { currentStep--; }
+  render();
+}
+
+function renderInterstitial(questionId) {
+  const main = document.getElementById('mainArea');
+  const answer = answers[questionId];
+  const content = interstitials[questionId]?.[answer];
+  if (!content) { currentStep++; render(); return; }
+
+  const icon = interstitialIcons[questionId]?.[answer] || SVG.bolt;
+
+  main.innerHTML = `
+    ${renderProgressBar()}
+    <div class="interstitial">
+      <div class="interstitial-icon">${icon}</div>
+      <div class="interstitial-text">${content.text}</div>
+      <div class="interstitial-sub">${content.sub}</div>
+      <button class="btn-interstitial" onclick="nextStep()">Продолжить</button>
+    </div>
+    <div style="margin-top:24px"><button class="btn-back" onclick="goBack()">← Назад</button></div>`;
+}
+
+function renderResult() {
+  const main = document.getElementById('mainArea');
+  const { profile, key, fitness, motivation, fitNorm, motNorm } = getProfile();
+  const info = programInfo[profile.program];
+  const fitPercent = Math.round(fitNorm * 100);
+  const motPercent = Math.round(motNorm * 100);
+  const profileIcon = profileIcons[key] || SVG.star;
+  const clubName = answers.qClub ? clubInfo[answers.qClub]?.name : '';
+
+  trackEvent('quiz_completed', { program: profile.program, club: answers.qClub });
+
+  main.innerHTML = `
+    <div class="result-card">
+      <div class="result-header">
+        <h2>Твой фитнес-профиль</h2>
+        <div class="result-emoji">${profileIcon}</div>
+        <div class="result-profile-name">${profile.name}</div>
+        <div class="result-profile-desc">${profile.desc}</div>
+      </div>
+
+      <div class="result-section">
+        <h3>Твои показатели</h3>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Уровень активности</span><span>${fitPercent}%</span></div>
+          <div class="score-bar"><div class="score-bar-fill fitness" style="width:${fitPercent}%"></div></div>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Мотивация</span><span>${motPercent}%</span></div>
+          <div class="score-bar"><div class="score-bar-fill motivation" style="width:${motPercent}%"></div></div>
+        </div>
+        <div class="traits-grid">
+          <div class="trait"><span class="trait-icon">${traitIcons.activity}</span><span class="trait-label">Активность</span><span class="trait-value">${profile.traits.activity}</span></div>
+          <div class="trait"><span class="trait-icon">${traitIcons.motivation}</span><span class="trait-label">Мотивация</span><span class="trait-value">${profile.traits.motivation}</span></div>
+          <div class="trait"><span class="trait-icon">${traitIcons.potential}</span><span class="trait-label">Потенциал</span><span class="trait-value">${profile.traits.potential}</span></div>
+          <div class="trait"><span class="trait-icon">${traitIcons.format}</span><span class="trait-label">Формат</span><span class="trait-value">${profile.traits.format}</span></div>
+        </div>
+      </div>
+
+      <div class="result-program-card">
+        <div class="result-program-label">Рекомендуемая программа</div>
+        <div class="result-program-duration">${info.trainings} тренировок за ${info.durationShort}</div>
+        <div class="result-program-name">${info.name}${clubName ? ' в ' + clubName : ''}</div>
+        <div class="result-program-why">${profile.why}</div>
+      </div>
+
+      <div class="result-section">
+        <h3>Как это будет</h3>
+        <div class="prediction-timeline">
+          ${getTimeline(profile.program).map(t => `
+            <div class="prediction-step ${t.final ? 'final' : ''}">
+              <div class="ps-label">${t.label}</div>
+              <div class="ps-text">${t.text}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="result-section">
+        <h3>Почему именно эта программа</h3>
+        <div id="aiLiveText"><span class="ai-loading">Генерирую персональную рекомендацию</span></div>
+      </div>
+
+      <div class="result-price">
+        <div class="result-price-amount">${info.price} ₸</div>
+        <div class="result-price-detail">${info.trainings} тренировок за ${info.durationShort}</div>
+      </div>
+
+      <button class="result-cta" onclick="goToPayment('${profile.program}', '${info.name}')"><span>Начать программу</span></button>
+
+      <div class="share-row">
+        <button class="share-btn" onclick="shareResult()">Поделиться результатом</button>
+        <button class="share-btn" onclick="restart()">Пройти заново</button>
+      </div>
+    </div>`;
+
+  generateAiText(profile, info);
+}
+
+function shareResult() {
+  const { profile } = getProfile();
+  const icon = profileIcons[getProfile().key] ? '' : '';
+  const text = `Мой фитнес-профиль: ${profile.name}! Узнай свой →`;
+  if (navigator.share) {
+    navigator.share({ title: 'HJ Фитнес-квиз', text, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(text + ' ' + window.location.href);
+    const btn = document.querySelector('.share-btn');
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => { btn.textContent = 'Поделиться результатом'; }, 2000);
+  }
+}
+
+function restart() {
+  currentStep = -1;
+  answers = {};
+  aiCache = {};
+  render();
+}
+
+// ========== PAYMENT ==========
+const CLUB_IDS = {
+  'nurly-orda':  '6351ace4d61faf000b2febc8',
+  'europe-city': '6788b54527af6c00ab78c66a',
+  'colibri':     '65e9e70cbd4814536c5e27e9',
+  'promenade':   '67d7c4cc8b5b3112cb0bcd44',
+  'villa':       '683704d8c85fb0a6b1f5a8ca',
+  '4you':        '68a45233d9ba5a6ba953e5f0',
+};
+
+const PROGRAM_PRICES = {
+  'heros-week': '9 990',
+  'basecamp':   '19 990',
+  'first-step': '59 990',
+};
+
+const PAY_API = 'https://admin.herosjourney.kz/pay/api';
+
+function goToPayment(programKey, programName) {
+  const phone = answers.qPhone || localStorage.getItem('hj_phone') || '';
+  const club = answers.qClub || localStorage.getItem('hj_club') || '';
+  renderPaymentScreen(programKey, programName, phone, club);
+}
+
+function getClubDisplayName(slug) {
+  return ({'nurly-orda':'HJ Nurly Orda','europe-city':'HJ Europe City','colibri':'HJ Colibri','promenade':'HJ Promenade','villa':'HJ Villa','4you':'HJ 4YOU'})[slug] || '';
+}
+
+async function renderPaymentScreen(programKey, programName, phone, clubSlug) {
+  const main = document.getElementById('mainArea');
+  const clubId = CLUB_IDS[clubSlug] || '';
+  const price = PROGRAM_PRICES[programKey] || '';
+
+  main.innerHTML = `<div style="width:100%;max-width:480px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px"><div style="background:var(--surface2);border-radius:20px;height:26px;width:100px;margin-bottom:14px;animation:fadeIn 1s infinite alternate"></div><div style="background:var(--surface2);border-radius:8px;height:32px;width:60%;margin-bottom:10px"></div><div style="background:var(--surface2);border-radius:8px;height:18px;width:40%;margin-bottom:24px"></div><div style="background:var(--surface2);border-radius:var(--radius);height:58px;margin-bottom:24px"></div><div style="background:var(--surface2);border-radius:var(--radius);height:52px;margin-bottom:12px"></div><div style="background:var(--surface2);border-radius:var(--radius);height:52px"></div></div></div>`;
+
+  let dateBlock = '';
+  if (programKey === 'first-step') {
+    try {
+      const resp = await fetch(`${PAY_API}/getFSEvents`);
+      const { currentMarathonEvent, nextMarathonEvent } = await resp.json();
+      const fmt = iso => new Intl.DateTimeFormat('ru-RU', { day:'2-digit', month:'long', year:'numeric' }).format(new Date(iso));
+      let opts = '';
+      if (nextMarathonEvent) opts += `<option value="${nextMarathonEvent._id}">${fmt(nextMarathonEvent.startTime)}</option>`;
+      if (currentMarathonEvent && currentMarathonEvent._id !== nextMarathonEvent?._id)
+        opts += `<option value="${currentMarathonEvent._id}">${fmt(currentMarathonEvent.startTime)}</option>`;
+      dateBlock = `<div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Дата старта</div><select id="payEventSelect" style="width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;margin-bottom:24px;appearance:none;outline:none">${opts}</select>`;
+    } catch(e) { dateBlock = `<div style="color:var(--red);font-size:14px;margin-bottom:16px">Не удалось загрузить даты</div>`; }
+  } else {
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0];
+    const next = new Date(today);
+    next.setDate(today.getDate() + ((8 - today.getDay()) % 7 || 7));
+    const defaultDate = next.toISOString().split('T')[0];
+    dateBlock = `<div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Дата старта</div><input type="date" id="payDateInput" min="${minDate}" value="${defaultDate}" style="width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;margin-bottom:24px;outline:none;color-scheme:dark">`;
+  }
+
+  main.innerHTML = `<div style="width:100%;max-width:480px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;animation:fadeIn 0.3s ease"><div style="display:inline-block;padding:4px 12px;border-radius:20px;background:var(--accent-glow);border:1px solid rgba(123,61,255,0.3);color:var(--accent);font-size:13px;font-weight:600;margin-bottom:12px">Оплата программы</div><div style="font-size:26px;font-weight:700;margin-bottom:6px">${programName}</div><div style="font-size:14px;color:var(--text-muted);margin-bottom:20px">${clubSlug ? getClubDisplayName(clubSlug) : ''}</div><div style="background:var(--surface2);border-radius:var(--radius);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><span style="font-size:14px;color:var(--text-muted)">Стоимость</span><span style="font-size:24px;font-weight:700">${price} ₸</span></div>${dateBlock}<div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Способ оплаты</div><div style="display:flex;flex-direction:column;gap:12px"><button id="btnPayKaspi" onclick="executePayment('kaspi','${programKey}','${phone}','${clubId}')" style="width:100%;padding:16px;border-radius:var(--radius);border:none;background:#f14635;color:white;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><span style="font-weight:800;font-size:16px">Kaspi</span><span>Оплатить через Kaspi</span></button><button id="btnPayCard" onclick="executePayment('card','${programKey}','${phone}','${clubId}')" style="width:100%;padding:16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><span>Оплата картой</span></button></div><div id="payError" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);color:var(--red);font-size:14px"></div></div><button onclick="renderResult()" style="margin-top:16px;width:100%;padding:12px;border:none;background:transparent;color:var(--text-muted);font-size:14px;cursor:pointer">← Вернуться к результату</button></div>`;
+}
+
+async function saveAnswersToServer(phone, clubId) {
+  try {
+    const aiText = Object.values(aiCache)[0] || '';
+    await fetch('https://admin.herosjourney.kz/pay/api/saveQuizAnswers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: phone,
+        clubId,
+        generatedOutput: aiText,
+        quizType: 'fitness-quiz'
+      })
+    });
+  } catch(e) { console.warn('saveQuizAnswers failed:', e); }
+}
+
+async function executePayment(method, programKey, phone, clubId) {
+  const btnKaspi = document.getElementById('btnPayKaspi');
+  const btnCard  = document.getElementById('btnPayCard');
+  const errEl    = document.getElementById('payError');
+  errEl.style.display = 'none';
+  btnKaspi.disabled = btnCard.disabled = true;
+  const btn = method === 'kaspi' ? btnKaspi : btnCard;
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite"></div>';
+
+  try {
+    let endpoint = '', body = { phoneNumber: phone, clubId };
+    if (programKey === 'heros-week') {
+      const d = document.getElementById('payDateInput');
+      if (!d?.value) { showPayError('Выберите дату старта.'); return; }
+      body.marathonDate = d.value;
+      endpoint = method === 'kaspi' ? '/genereteKaspiLinkForHerosWeek' : '/registerCardTokenHerosWeek';
+    } else if (programKey === 'basecamp') {
+      const d = document.getElementById('payDateInput');
+      if (!d?.value) { showPayError('Выберите дату старта.'); return; }
+      body.type = 'build';
+      endpoint = method === 'kaspi' ? '/generateKaspiLinkForGeneratedFirstStep' : '/registerCardTokenGeneratedFirstStep';
+    } else if (programKey === 'first-step') {
+      const s = document.getElementById('payEventSelect');
+      if (!s?.value) { showPayError('Выберите дату старта.'); return; }
+      body.marathonEventId = s.value;
+      endpoint = method === 'kaspi' ? '/generateKaspiLinkForFirstStep' : '/registerCardTokenFirstStep';
+    }
+    await saveAnswersToServer(phone, clubId);
+    trackEvent('payment_initiated', { method, program: programKey, club: answers.qClub });
+    const resp = await fetch(PAY_API + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+    if (!resp.ok) { showPayError(data?.message || 'Ошибка оплаты. Попробуйте ещё раз.'); return; }
+    const url = data?.Data?.PaymentLink || data?.url;
+    if (url) { window.location.href = url; return; }
+    showPayError('Не удалось получить ссылку на оплату.');
+  } catch(e) {
+    showPayError('Ошибка соединения. Проверьте интернет.');
+  } finally {
+    btn.innerHTML = origText;
+    btnKaspi.disabled = btnCard.disabled = false;
+  }
+
+  function showPayError(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
+}
+
+// ========== EVENT TRACKER ==========
+const TRACKER_API = 'https://api.tracker.herosjourney.kz';
+const TRACKER_KEY = 'evt_e4bb74488e8b5d42c0cd15783a4406d9';
+
+function getDeviceId() {
+  let id = localStorage.getItem('hj_device_id');
+  if (!id) {
+    id = 'web-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('hj_device_id', id);
+  }
+  return id;
+}
+
+function trackEvent(eventName, properties) {
+  const body = {
+    event_name: eventName,
+    device_id: getDeviceId(),
+    user_id: answers.qPhone || localStorage.getItem('hj_phone') || undefined,
+    timestamp: Date.now(),
+    event_properties: properties || {},
+    context: { platform: 'web', quiz: 'fitness' }
+  };
+  fetch(TRACKER_API + '/v1/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': TRACKER_KEY },
+    body: JSON.stringify(body)
+  }).catch(() => {});
+}
+
+// ========== INIT ==========
+trackEvent('quiz_started', { referrer: document.referrer, quiz: 'fitness' });
+render();
+</script>
+</body>
+</html>
