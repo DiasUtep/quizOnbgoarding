@@ -1814,14 +1814,14 @@ ${getAnswerSummary()}
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'gpt-4o',
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }]
       })
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
-    const text = data.content[0].text;
+    const text = data.choices[0].message.content;
     aiCache[cacheKey] = text;
     const el = document.getElementById('aiLiveText');
     if (el) el.innerHTML = formatAiText(text);
@@ -2023,7 +2023,8 @@ function selectOption(qId, key) {
 
 function submitPhone() {
   const phone = (answers.qPhone || '').trim();
-  if (!phone || phone.replace(/\D/g, '').length < 7) {
+  const digits = phone.replace(/\D/g, '');
+  if (!phone || digits.length < 7 || digits[0] !== '8') {
     const wrap = document.getElementById('phoneWrap');
     if (wrap) wrap.style.borderColor = 'var(--red)';
     const el = document.getElementById('inputPhone');
