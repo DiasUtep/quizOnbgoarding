@@ -1870,14 +1870,17 @@ function render() {
 
   // Track step
   const stepProps = { step_index: currentStep, step_type: step.type };
+  let stepEventName = 'quiz_step_viewed';
   if (step.type === 'question') {
     const q = questions[step.questionIndex];
     stepProps.question_id = q.id;
     stepProps.question_text = q.question;
+    stepEventName = 'step:' + q.id;
   } else if (step.type === 'interstitial') {
     stepProps.interstitial_id = step.questionId;
+    stepEventName = 'interstitial:' + step.questionId;
   }
-  trackEvent('quiz_step_viewed', stepProps);
+  trackEvent(stepEventName, stepProps);
 
   if (step.type === 'interstitial') { renderInterstitial(step.questionId); return; }
 
@@ -2332,7 +2335,7 @@ function showRedirectScreen(url) {
 
 // ========== EVENT TRACKER ==========
 const TRACKER_API = 'https://api.tracker.herosjourney.kz';
-const TRACKER_KEY = 'evt_e4bb74488e8b5d42c0cd15783a4406d9';
+const TRACKER_KEY = 'evt_fae69f9d965fd5507bdadcb11d8c6b6d';
 
 function getDeviceId() {
   let id = localStorage.getItem('hj_device_id');
@@ -2349,8 +2352,8 @@ function trackEvent(eventName, properties) {
     device_id: getDeviceId(),
     user_id: answers.qPhone || localStorage.getItem('hj_phone') || undefined,
     timestamp: Date.now(),
-    event_properties: properties || {},
-    context: { platform: 'web', quiz: 'fitness' }
+    event_properties: { ...(properties || {}), quiz: 'fitness' },
+    context: { platform: 'web' }
   };
   fetch(TRACKER_API + '/v1/track', {
     method: 'POST',
