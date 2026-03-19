@@ -2502,14 +2502,17 @@ function renderQuiz() {
 
   // Track step
   const stepProps = { step_index: currentStep, step_type: step.type };
+  let stepEventName = 'quiz_step_viewed';
   if (step.type === 'question') {
     const q = questions[step.questionIndex];
     stepProps.question_id = q.id;
     stepProps.question_text = q.question;
+    stepEventName = 'step:' + q.id;
   } else if (step.type === 'interstitial') {
     stepProps.interstitial_id = step.id;
+    stepEventName = 'interstitial:' + step.id;
   }
-  trackEvent('quiz_step_viewed', stepProps);
+  trackEvent(stepEventName, stepProps);
 
   // ---- INTERSTITIAL ----
   if (step.type === 'interstitial') {
@@ -3702,8 +3705,8 @@ function trackEvent(eventName, properties) {
     device_id: getDeviceId(),
     user_id: answers.qPhone || localStorage.getItem('hj_phone') || undefined,
     timestamp: Date.now(),
-    event_properties: properties || {},
-    context: { platform: 'web', quiz: 'detailed' }
+    event_properties: { ...(properties || {}), quiz: 'detailed' },
+    context: { platform: 'web' }
   };
   fetch(TRACKER_API + '/v1/track', {
     method: 'POST',
