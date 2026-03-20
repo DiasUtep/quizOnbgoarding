@@ -2193,9 +2193,18 @@ const PROGRAM_PRICES = {
 
 const PAY_API = 'https://admin.herosjourney.kz/pay/api';
 
+function firePixel() {
+  const iframe = document.createElement('iframe');
+  iframe.src = 'https://herosjourney.kz/paymentlink';
+  iframe.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;border:none;';
+  document.body.appendChild(iframe);
+  setTimeout(() => iframe.remove(), 5000);
+}
+
 function goToPayment(programKey, programName) {
   const phone = answers.qPhone || localStorage.getItem('hj_phone') || '';
   const club  = answers.qClub  || localStorage.getItem('hj_club')  || '';
+  firePixel();
   renderPaymentScreen(programKey, programName, phone, club);
 }
 
