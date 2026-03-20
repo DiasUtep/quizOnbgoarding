@@ -3198,7 +3198,7 @@ async function executePayment(method, programKey, phone, clubId) {
     if (!resp.ok) { showPayError(data?.message || 'Ошибка оплаты. Попробуйте ещё раз.'); return; }
 
     const url = data?.Data?.PaymentLink || data?.url;
-    if (url) { showRedirectScreen(url); return; }
+    if (url) { (window.top || window).location.href = 'https://herosjourney.kz/paymentlink?redirectTo=' + encodeURIComponent(url); return; }
     showPayError('Не удалось получить ссылку на оплату.');
   } catch(e) {
     showPayError('Ошибка соединения. Проверьте интернет.');
