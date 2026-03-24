@@ -3134,6 +3134,19 @@ function buildReadableAnswers() {
     'Страхи':        (answers.q5 || []).map(k => q5Labels[k] || k).join(', '),
   };
 }
+  console.log(JSON.stringify({
+  userId,
+  marathonEventId,
+  questionnaireAnswers: {
+    ...buildReadableAnswers(),
+    clubId,
+    phoneNumber: phone,
+    quizType: 'quiz_v4'
+  },
+  generatedResults: [
+    { output: aiText }
+  ]
+}, null, 2));
 
 async function saveAnswersToServer(phone, clubId, marathonEventId) {
   try {
