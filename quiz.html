@@ -3148,24 +3148,58 @@ function buildReadableAnswers() {
   ]
 }, null, 2));
 
-async function saveAnswersToServer(phone, clubId, marathonEventId) {
+  async function saveAnswersToServer(phone, clubId, marathonEventId) {
   try {
     const aiText = Object.values(aiCache)[0] || '';
+    const readableAnswers = buildReadableAnswers();
+
     await fetch('https://admin.herosjourney.kz/pay/api/saveQuizAnswers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+
       body: JSON.stringify({
         phoneNumber: phone,
         clubId,
+        marathonEventId: marathonEventId || null,
         quizType: 'quiz_v4',
+
+        ...readableAnswers,
+
+        // старое поле (его ждёт backend)
         generatedOutput: aiText,
-        ...buildReadableAnswers(),
+
+        // новые поля по схеме :contentReference[oaicite:0]{index=0}
+        questionnaireAnswers: readableAnswers,
+
+        generatedResults: [
+          { output: aiText }
+        ]
       })
     });
+
   } catch(e) {
     console.warn('saveQuizAnswers failed:', e);
   }
 }
+
+// async function saveAnswersToServer(phone, clubId, marathonEventId) {
+//   try {
+//     const aiText = Object.values(aiCache)[0] || '';
+//     await fetch('https://admin.herosjourney.kz/pay/api/saveQuizAnswers', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({
+//         phoneNumber: phone,
+//         clubId,
+//         quizType: 'quiz_v4',
+//         generatedOutput: aiText,
+//         ...buildReadableAnswers(),
+//       })
+//     });
+//   } catch(e) {
+//     console.warn('saveQuizAnswers failed:', e);
+//   }
+// }
 
 async function executePayment(method, programKey, phone, clubId) {
   const btnKaspi = document.getElementById('btnPayKaspi');
