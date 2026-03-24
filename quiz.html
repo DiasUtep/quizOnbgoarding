@@ -5344,23 +5344,68 @@
       }
 
       async function saveAnswersToServer(phone, clubId, marathonEventId) {
-        try {
-          const aiText = Object.values(aiCache)[0] || "";
-          await fetch("https://admin.herosjourney.kz/pay/api/saveQuizAnswers", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              phoneNumber: phone,
-              clubId,
-              quizType: "quiz_v4",
-              generatedOutput: aiText,
-              ...buildReadableAnswers(),
-            }),
-          });
-        } catch (e) {
-          console.warn("saveQuizAnswers failed:", e);
-        }
-      }
+  try {
+    const aiText = Object.values(aiCache)[0] || "";
+    const readableAnswers = buildReadableAnswers();
+
+    const payload = {
+      phoneNumber: phone,
+      clubId,
+      marathonEventId: marathonEventId || null,
+      quizType: "quiz_v4",
+
+      // поля которые ждёт backend
+      sex: answers.qGender || "",
+      age: answers.qAge || "",
+      height: answers.qHeight || "",
+      weight: answers.qWeight || "",
+      experience: answers.q2 || "",
+      answerFitnessGoal: answers.q1 || "",
+      answerInjures: answers.q4 || "",
+      breakDuration: answers.qBreak || "",
+
+      generatedOutput: aiText,
+
+      // читаемый формат
+      questionnaireAnswers: readableAnswers,
+
+      // новый формат по схеме
+      generatedResults: [
+        { output: aiText }
+      ]
+    };
+
+    console.log("payload", payload);
+
+    await fetch("https://admin.herosjourney.kz/pay/api/saveQuizAnswers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+  } catch (e) {
+    console.warn("saveQuizAnswers failed:", e);
+  }
+}
+
+      // async function saveAnswersToServer(phone, clubId, marathonEventId) {
+      //   try {
+      //     const aiText = Object.values(aiCache)[0] || "";
+      //     await fetch("https://admin.herosjourney.kz/pay/api/saveQuizAnswers", {
+      //       method: "POST",
+      //       headers: { "Content-Type": "application/json" },
+      //       body: JSON.stringify({
+      //         phoneNumber: phone,
+      //         clubId,
+      //         quizType: "quiz_v4",
+      //         generatedOutput: aiText,
+      //         ...buildReadableAnswers(),
+      //       }),
+      //     });
+      //   } catch (e) {
+      //     console.warn("saveQuizAnswers failed:", e);
+      //   }
+      // }
 
       async function executePayment(method, programKey, phone, clubId) {
         const btnKaspi = document.getElementById("btnPayKaspi");
