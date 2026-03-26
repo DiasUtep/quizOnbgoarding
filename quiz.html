@@ -4827,10 +4827,17 @@
         trackEvent("phone_submitted", { phone });
 
         // Создаём лид в AmoCRM
+        const _urlParams = new URLSearchParams(window.location.search);
         fetch("https://admin.herosjourney.kz/pay/api/createQuizLead", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber: phone }),
+          body: JSON.stringify({
+            phoneNumber: phone,
+            utm_source: "programma_hj",
+            utm_campaign: "ep-conversion-hj_programma-24.03.26",
+            utm_content: "dlya_teh_kto_nachinal_i_brosal",
+            fbclid: _urlParams.get("fbclid") || "",
+          }),
         }).catch((e) => console.warn("createQuizLead failed:", e));
 
         nextStep();
