@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Колесо Фортуны — Hero's Journey</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --gold:#D4AF37;
+  --gold2:#F5D76E;
+  --gold3:#8B6914;
+  --bg:#05030E;
+  --card:#0D0920;
+  --text:#fff;
+  --muted:rgba(255,255,255,.55);
+  --red:#FF4D4D;
+}
+
+html,body{
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Segoe UI',system-ui,sans-serif;
+  overflow-x:hidden;
+}
+
+/* ── BG CANVAS ── */
+#bg-canvas{
+  position:fixed;inset:0;
+  pointer-events:none;z-index:0;
+}
+
+/* ── PAGE WRAPPER ── */
+.page{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:0 16px 60px;
+  min-height:100vh;
+}
+
+/* ── HEADER ── */
+.header{
+  width:100%;max-width:1100px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 0 0;
+}
+.logo{
+  font-size:12px;letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--gold);opacity:.75;
+}
+.date-badge{
+  font-size:12px;color:var(--muted);
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;padding:5px 14px;
+}
+
+/* ── HERO ── */
+.hero{
+  text-align:center;
+  padding:28px 0 20px;
+}
+.hero-tag{
+  display:inline-block;
+  font-size:10px;letter-spacing:5px;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(212,175,55,.25);
+  border-radius:20px;padding:5px 16px;margin-bottom:16px;
+  background:rgba(212,175,55,.05);
+}
+.hero-title{
+  font-size:clamp(36px,7vw,68px);
+  font-weight:900;letter-spacing:-2px;line-height:1.05;
+  background:linear-gradient(160deg,#fff 0%,var(--gold2) 40%,var(--gold) 70%,var(--gold3) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:10px;
+}
+.hero-sub{
+  font-size:16px;color:var(--muted);line-height:1.5;
+}
+
+/* ── MAIN LAYOUT ── */
+.main-layout{
+  display:flex;gap:48px;align-items:flex-start;justify-content:center;
+  width:100%;max-width:1060px;
+  margin-top:12px;
+}
+@media(max-width:780px){
+  .main-layout{flex-direction:column;align-items:center;gap:32px}
+}
+
+/* ── WHEEL COLUMN ── */
+.wheel-col{
+  display:flex;flex-direction:column;align-items:center;
+  flex-shrink:0;
+}
+
+/* Outer glow ring */
+.wheel-outer{
+  position:relative;
+  padding:14px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(212,175,55,.12),transparent 60%),
+    radial-gradient(circle at 70% 70%,rgba(212,175,55,.08),transparent 60%);
+}
+.wheel-outer::before{
+  content:'';
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(
+    var(--gold3),var(--gold),var(--gold2),var(--gold),var(--gold3),
+    var(--gold),var(--gold2),var(--gold),var(--gold3)
+  );
+  opacity:.35;
+  animation:slow-spin 20s linear infinite;
+}
+@keyframes slow-spin{to{transform:rotate(360deg)}}
+
+.wheel-inner{
+  position:relative;z-index:1;
+  border-radius:50%;
+  padding:6px;
+  background:conic-gradient(var(--gold3),var(--gold2),var(--gold),var(--gold3));
+  box-shadow:0 0 60px rgba(212,175,55,.2),0 0 120px rgba(212,175,55,.08);
+}
+
+/* Pointer */
+.pointer-wrap{
+  position:absolute;
+  top:-4px;left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  display:flex;flex-direction:column;align-items:center;
+}
+.ptr-stem{
+  width:3px;height:18px;
+  background:linear-gradient(var(--gold2),var(--gold));
+  border-radius:2px 2px 0 0;
+  box-shadow:0 0 10px rgba(212,175,55,.7);
+}
+.ptr-head{
+  width:0;height:0;
+  border-left:11px solid transparent;
+  border-right:11px solid transparent;
+  border-top:22px solid var(--gold2);
+  filter:drop-shadow(0 3px 8px rgba(212,175,55,.6));
+}
+
+#wheel{display:block;border-radius:50%;}
+
+/* CTA area */
+.cta-area{
+  margin-top:24px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+
+.spin-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:18px 60px;
+  background:linear-gradient(135deg,var(--gold3) 0%,var(--gold) 45%,var(--gold2) 60%,var(--gold) 80%,var(--gold3) 100%);
+  background-size:200% 100%;
+  border:none;border-radius:50px;
+  font-size:18px;font-weight:800;
+  color:#1a0e00;letter-spacing:.5px;text-transform:uppercase;
+  cursor:pointer;
+  transition:background-position .4s,transform .2s,box-shadow .2s;
+  box-shadow:0 0 40px rgba(212,175,55,.3),0 8px 24px rgba(0,0,0,.5);
+  position:relative;overflow:hidden;
+}
+.spin-btn::after{
+  content:'';position:absolute;
+  top:0;left:-70%;width:50%;height:100%;
+  background:rgba(255,255,255,.22);
+  transform:skewX(-18deg);
+  transition:left .5s;
+}
+.spin-btn:hover::after{left:130%}
+.spin-btn:hover{
+  background-position:100% 0;
+  transform:translateY(-3px);
+  box-shadow:0 0 55px rgba(212,175,55,.4),0 14px 32px rgba(0,0,0,.5);
+}
+.spin-btn:active{transform:translateY(-1px)}
+.spin-btn:disabled{
+  opacity:.4;cursor:not-allowed;
+  transform:none!important;
+  box-shadow:none;
+}
+
+.spin-icon{font-size:22px;line-height:1}
+
+.spin-hint{
+  font-size:12px;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+}
+.spin-hint::before,.spin-hint::after{
+  content:'';flex:1;height:1px;
+  background:rgba(255,255,255,.1);
+}
+
+/* ── PRIZES COLUMN ── */
+.prizes-col{
+  flex:1;min-width:240px;max-width:320px;
+}
+@media(max-width:780px){
+  .prizes-col{max-width:100%;width:100%}
+}
+
+.prizes-head{
+  font-size:10px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--gold);opacity:.75;
+  margin-bottom:14px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(212,175,55,.15);
+}
+
+.prize-section{margin-bottom:20px}
+.prize-section-label{
+  font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;
+}
+
+.prize-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 13px;border-radius:11px;margin-bottom:5px;
+  border:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.025);
+  transition:background .2s;
+}
+.prize-item:hover{background:rgba(255,255,255,.04)}
+.prize-item.rare{
+  border-color:rgba(212,175,55,.2);
+  background:rgba(212,175,55,.04);
+}
+.prize-item.bonus{
+  border-color:rgba(72,199,142,.18);
+  background:rgba(72,199,142,.03);
+}
+.pi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pi-name{flex:1;font-size:13px;color:rgba(255,255,255,.88);line-height:1.3}
+.pi-qty{font-size:11px;color:var(--muted);white-space:nowrap}
+.prize-item.bonus .pi-qty{color:#48C78E;font-weight:700}
+.prize-item.rare .pi-qty{color:var(--gold);font-weight:600}
+
+/* ── MODAL OVERLAY ── */
+.modal-wrap{
+  position:fixed;inset:0;z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-wrap.hidden{display:none}
+
+.modal-backdrop{
+  position:absolute;inset:0;
+  background:rgba(5,3,14,.88);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+
+.modal-card{
+  position:relative;z-index:1;
+  background:linear-gradient(160deg,#120B2C 0%,#0E0920 100%);
+  border:1px solid rgba(212,175,55,.22);
+  border-radius:28px;
+  padding:44px 36px 36px;
+  max-width:420px;width:100%;
+  text-align:center;
+  box-shadow:0 0 100px rgba(212,175,55,.08),0 30px 80px rgba(0,0,0,.7);
+  animation:modal-in .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modal-in{
+  from{opacity:0;transform:scale(.85) translateY(12px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.modal-card::before{
+  content:'';position:absolute;
+  top:0;left:15%;right:15%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+.modal-emoji{font-size:42px;margin-bottom:16px;display:block;line-height:1}
+.modal-brand{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:8px}
+.modal-title{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
+.modal-sub{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:24px}
+
+/* Phone input */
+.field{position:relative;margin-bottom:12px}
+.inp{
+  width:100%;
+  background:rgba(255,255,255,.045);
+  border:1.5px solid rgba(212,175,55,.15);
+  border-radius:13px;
+  padding:15px 18px;
+  font-size:20px;letter-spacing:2px;
+  color:var(--text);outline:none;
+  text-align:center;
+  transition:border-color .25s;
+  -webkit-appearance:none;
+}
+.inp::placeholder{color:rgba(255,255,255,.2);font-size:14px;letter-spacing:1px}
+.inp:focus{border-color:rgba(212,175,55,.5)}
+.inp.err{border-color:rgba(255,77,77,.5)}
+
+.err-msg{
+  font-size:13px;color:var(--red);
+  min-height:18px;margin-top:8px;
+  line-height:1.4;
+}
+
+.btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--gold3) 0%,var(--gold) 50%,var(--gold3) 100%);
+  border:none;border-radius:13px;
+  padding:16px;
+  font-size:16px;font-weight:700;
+  color:#1a0e00;cursor:pointer;
+  letter-spacing:.2px;
+  position:relative;overflow:hidden;
+  transition:opacity .2s,transform .1s;
+}
+.btn::after{
+  content:'';position:absolute;
+  top:0;left:-65%;width:50%;height:100%;
+  background:rgba(255,255,255,.2);
+  transform:skewX(-15deg);
+  transition:left .45s;
+}
+.btn:hover::after{left:125%}
+.btn:hover{opacity:.9}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.modal-note{
+  margin-top:16px;font-size:12px;
+  color:var(--muted);line-height:1.5;
+}
+.modal-note b{color:rgba(255,255,255,.7)}
+
+.btn-ghost{
+  background:none;border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:9px 24px;
+  font-size:13px;color:var(--muted);cursor:pointer;
+  margin-top:10px;width:100%;
+  transition:border-color .2s,color .2s;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+
+/* ── PRIZE REVEAL MODAL ── */
+.prize-modal-card{
+  position:relative;z-index:1;
+  background:linear-gradient(160deg,#160C35 0%,#0E0920 100%);
+  border:1px solid rgba(212,175,55,.3);
+  border-radius:28px;
+  padding:52px 36px 44px;
+  max-width:440px;width:100%;
+  text-align:center;
+  box-shadow:0 0 120px rgba(212,175,55,.12),0 30px 80px rgba(0,0,0,.7);
+  animation:modal-in .45s cubic-bezier(.34,1.56,.64,1);
+}
+.prize-modal-card::before{
+  content:'';position:absolute;
+  top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+.prize-big-icon{
+  font-size:64px;line-height:1;
+  display:block;margin-bottom:20px;
+  animation:icon-pop .55s .1s both cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes icon-pop{
+  from{transform:scale(0) rotate(-20deg);opacity:0}
+  to{transform:scale(1) rotate(0);opacity:1}
+}
+
+.prize-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:6px}
+.prize-heading{font-size:26px;font-weight:800;margin-bottom:16px;letter-spacing:-.5px}
+
+.prize-name-reveal{
+  font-size:clamp(20px,5vw,30px);
+  font-weight:900;line-height:1.2;
+  background:linear-gradient(135deg,var(--gold2),var(--gold),#B8860B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:22px;padding:0 8px;
+  animation:slide-up .5s .25s both;
+}
+@keyframes slide-up{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.prize-message{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:28px}
+
+/* ── CONFETTI ── */
+#confetti{
+  position:fixed;inset:0;
+  pointer-events:none;z-index:490;
+}
+
+/* ── SPINNER ── */
+.spin-loader{
+  display:inline-block;
+  width:15px;height:15px;
+  border:2px solid rgba(26,14,0,.25);
+  border-top-color:#1a0e00;
+  border-radius:50%;
+  animation:rot .65s linear infinite;
+  vertical-align:middle;
+  margin-right:6px;
+}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── BOTTOM SECTION ── */
+.bottom-section{
+  width:100%;max-width:1060px;
+  margin-top:48px;
+  padding-top:32px;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  text-align:center;
+}
+@media(max-width:600px){
+  .bottom-section{grid-template-columns:1fr;gap:8px}
+}
+.bs-item{
+  padding:18px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.02);
+}
+.bs-icon{font-size:28px;margin-bottom:8px;display:block}
+.bs-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.bs-sub{font-size:12px;color:var(--muted);line-height:1.4}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="confetti"></canvas>
+
+<!-- ══════════════ PHONE MODAL ══════════════ -->
+<div id="phone-modal" class="modal-wrap hidden">
+  <div class="modal-backdrop" onclick="closePhoneModal()"></div>
+  <div class="modal-card">
+    <span class="modal-emoji">🎡</span>
+    <div class="modal-brand">Hero's Journey</div>
+    <h2 class="modal-title">Введите ваш номер</h2>
+    <p class="modal-sub">Мы проверим наличие абонемента<br>с 25 марта по 10 апреля 2026</p>
+
+    <div class="field">
+      <input id="phone-inp" class="inp" type="tel" placeholder="8 (___) ___-__-__" maxlength="18" autocomplete="tel"/>
+    </div>
+    <div class="err-msg" id="err-msg"></div>
+
+    <button class="btn" id="check-btn" onclick="checkAndSpin()">Крутить рулетку →</button>
+
+    <div class="modal-note">
+      Участвуют клиенты, купившие абонемент<br>
+      <b>с 25 марта по 10 апреля 2026</b>
+    </div>
+    <button class="btn-ghost" onclick="closePhoneModal()">Отмена</button>
+  </div>
+</div>
+
+<!-- ══════════════ PRIZE MODAL ══════════════ -->
+<div id="prize-modal" class="modal-wrap hidden">
+  <div class="modal-backdrop"></div>
+  <div class="prize-modal-card">
+    <span class="prize-big-icon" id="prize-icon">🎉</span>
+    <div class="prize-label" id="prize-label">Поздравляем!</div>
+    <h2 class="prize-heading" id="prize-heading">Вы выиграли</h2>
+    <div class="prize-name-reveal" id="prize-name">—</div>
+    <p class="prize-message" id="prize-msg">
+      Ваш номер сохранён. Менеджер свяжется с вами в ближайшее время 🎊
+    </p>
+    <button class="btn" onclick="closePrizeModal()">Отлично!</button>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE ══════════════ -->
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">Hero's Journey</div>
+    <div class="date-badge">25 марта — 10 апреля 2026</div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-tag">Эксклюзивный розыгрыш для участников</div>
+    <h1 class="hero-title">Колесо Фортуны</h1>
+    <p class="hero-sub">Только для тех, кто купил абонемент в период акции.<br>Один шанс — один приз!</p>
+  </div>
+
+  <!-- Main layout -->
+  <div class="main-layout">
+
+    <!-- Wheel -->
+    <div class="wheel-col">
+      <div class="wheel-outer">
+        <div class="wheel-inner">
+          <div class="pointer-wrap">
+            <div class="ptr-stem"></div>
+            <div class="ptr-head"></div>
+          </div>
+          <canvas id="wheel"></canvas>
+        </div>
+      </div>
+
+      <div class="cta-area">
+        <button class="spin-btn" id="spin-btn" onclick="openPhoneModal()">
+          <span class="spin-icon">🎰</span>
+          Крутить колесо
+        </button>
+        <div class="spin-hint">Нажми и введи номер для участия</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom info -->
+  <div class="bottom-section">
+    <div class="bs-item">
+      <span class="bs-icon">🎯</span>
+      <div class="bs-title">Один шанс</div>
+      <div class="bs-sub">Каждый участник крутит колесо только один раз</div>
+    </div>
+    <div class="bs-item">
+      <span class="bs-icon">📞</span>
+      <div class="bs-title">Свяжемся сами</div>
+      <div class="bs-sub">После выигрыша менеджер позвонит вам в ближайшее время</div>
+    </div>
+    <div class="bs-item">
+      <span class="bs-icon">🔒</span>
+      <div class="bs-title">Честный розыгрыш</div>
+      <div class="bs-sub">Приз определяется случайно на нашем сервере</div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const API = 'https://admin.herosjourney.kz/pay/api';
+
+// ══ SEGMENTS — порядок совпадает с segmentIndex на бэкенде ══
+const SEGS = [
+  { label:'Фен\nBORK',          color:'#6B1212' },  // 0
+  { label:'Лазер\n50 000₸',     color:'#991A1A' },  // 1
+  { label:'+1 мес\nHJ',          color:'#12285C' },  // 2
+  { label:'Твигфл\n10 000₸',    color:'#6B3300' },  // 3
+  { label:'Shetel\n20 000₸',    color:'#2E3B4A' },  // 4
+  { label:'FEM\n20 000₸',       color:'#0F4023' },  // 5
+  { label:'BOSS\n100 000₸',     color:'#5C4200' },  // 6
+  { label:'MIDO\n20 000₸',      color:'#073558' },  // 7
+  { label:'+1 мес\nзаморозки',  color:'#063D33' },  // 8
+  { label:'Метадиагн\nmetabody',color:'#32106B' },  // 9
+  { label:"Hero's\nWeek x4",   color:'#55103A' },  // 10
+];
+
+let phone = '';
+let spinning = false;
+let rot = 0;
+
+// ══ ANIMATED BG ══
+(function bgParticles(){
+  const c = document.getElementById('bg-canvas');
+  const ctx = c.getContext('2d');
+  let pts = [];
+  function resize(){
+    c.width = innerWidth; c.height = innerHeight;
+    pts = Array.from({length:55},()=>({
+      x:Math.random()*c.width, y:Math.random()*c.height,
+      r:Math.random()*1.8+.4,
+      vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+      op:Math.random()*.35+.05,
+      gold:Math.random()>.6,
+    }));
+  }
+  resize(); addEventListener('resize',resize);
+  (function frame(){
+    ctx.clearRect(0,0,c.width,c.height);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=c.width; if(p.x>c.width)p.x=0;
+      if(p.y<0)p.y=c.height; if(p.y>c.height)p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.gold?`rgba(212,175,55,${p.op})`:`rgba(255,255,255,${p.op})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(frame);
+  })();
+})();
+
+// ══ WHEEL INIT ══
+const wheelCanvas = document.getElementById('wheel');
+let WS = 0, WR = 0;
+function initWheel(){
+  WS = Math.min(320, innerWidth - 80);
+  WR = WS/2 - 6;
+  wheelCanvas.width = WS;
+  wheelCanvas.height = WS;
+  drawWheel(rot);
+}
+
+function drawWheel(deg){
+  const c = wheelCanvas;
+  const ctx = c.getContext('2d');
+  const N = SEGS.length;
+  const seg = Math.PI*2/N;
+  const off = -Math.PI/2 - seg/2;
+  ctx.clearRect(0,0,WS,WS);
+  ctx.save();
+  ctx.translate(WS/2,WS/2);
+  ctx.rotate(deg*Math.PI/180);
+
+  for(let i=0;i<N;i++){
+    const sa=off+i*seg, ea=sa+seg, ma=sa+seg/2;
+    const s=SEGS[i];
+
+    // Gradient fill
+    const gx=Math.cos(ma)*WR*.15, gy=Math.sin(ma)*WR*.15;
+    const gx2=Math.cos(ma)*WR, gy2=Math.sin(ma)*WR;
+    const g=ctx.createLinearGradient(gx,gy,gx2,gy2);
+    g.addColorStop(0,lighten(s.color,30));
+    g.addColorStop(1,s.color);
+
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.arc(0,0,WR,sa,ea);
+    ctx.closePath();
+    ctx.fillStyle=g; ctx.fill();
+
+    // Border
+    ctx.strokeStyle='rgba(212,175,55,.45)';
+    ctx.lineWidth=1.5; ctx.stroke();
+
+    // Text
+    ctx.save();
+    ctx.rotate(ma);
+    ctx.textAlign='right';
+    ctx.fillStyle='rgba(255,255,255,.93)';
+    ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=4;
+    const fs=Math.max(8,Math.round(WR*.057));
+    ctx.font=`700 ${fs}px 'Segoe UI',Arial`;
+    const tx=WR*.87, lh=fs+3;
+    const lines=s.label.split('\n');
+    if(lines.length===2){
+      ctx.fillText(lines[0],tx,-lh*.5+1);
+      ctx.fillText(lines[1],tx, lh*.5+1);
+    }else{
+      ctx.fillText(lines[0],tx,3);
+    }
+    ctx.restore();
+  }
+
+  // Outer gold ring
+  const rg=ctx.createLinearGradient(-WR,0,WR,0);
+  rg.addColorStop(0,'#5C3C00'); rg.addColorStop(.3,'#D4AF37');
+  rg.addColorStop(.5,'#F5D76E'); rg.addColorStop(.7,'#D4AF37'); rg.addColorStop(1,'#5C3C00');
+  ctx.beginPath(); ctx.arc(0,0,WR+.5,0,Math.PI*2);
+  ctx.strokeStyle=rg; ctx.lineWidth=5; ctx.stroke();
+
+  // Divider dots
+  for(let i=0;i<N;i++){
+    const a=off+i*seg;
+    ctx.beginPath(); ctx.arc(Math.cos(a)*(WR-1),Math.sin(a)*(WR-1),2.5,0,Math.PI*2);
+    ctx.fillStyle='#FFD700'; ctx.fill();
+  }
+
+  // Center medallion
+  const cr=WR*.13;
+  const cg=ctx.createRadialGradient(0,-cr*.25,0,0,0,cr);
+  cg.addColorStop(0,'#FFF5B0'); cg.addColorStop(.55,'#D4AF37'); cg.addColorStop(1,'#7A5800');
+  ctx.beginPath(); ctx.arc(0,0,cr,0,Math.PI*2);
+  ctx.fillStyle=cg; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  ctx.shadowBlur=0; ctx.fillStyle='#1a0900';
+  ctx.font=`900 ${Math.round(cr*.62)}px 'Segoe UI',Arial`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('HJ',0,1);
+
+  ctx.restore();
+}
+
+function lighten(hex,amt){
+  const n=parseInt(hex.replace('#',''),16);
+  const r=Math.min(255,(n>>16)+amt);
+  const g=Math.min(255,((n>>8)&0xff)+amt);
+  const b=Math.min(255,(n&0xff)+amt);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ══ PHONE FORMAT ══
+const inp=document.getElementById('phone-inp');
+inp.addEventListener('input',function(){
+  let d=this.value.replace(/\D/g,'');
+  if(d.length>0) d='8'+d.slice(1);
+  if(d.length>11) d=d.slice(0,11);
+  let o='';
+  if(d.length>0) o=d[0];
+  if(d.length>1) o+=' ('+d.slice(1,Math.min(d.length,4));
+  if(d.length>=4) o+=') '+d.slice(4,Math.min(d.length,7));
+  if(d.length>=7) o+='-'+d.slice(7,Math.min(d.length,9));
+  if(d.length>=9) o+='-'+d.slice(9,11);
+  this.value=o;
+});
+inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkAndSpin()});
+
+// ══ MODAL CONTROL ══
+function openPhoneModal(){
+  if(spinning) return;
+  inp.value=''; setErr(''); inp.classList.remove('err');
+  document.getElementById('check-btn').disabled=false;
+  document.getElementById('check-btn').textContent='Крутить рулетку →';
+  document.getElementById('phone-modal').classList.remove('hidden');
+  setTimeout(()=>inp.focus(),100);
+}
+function closePhoneModal(){
+  document.getElementById('phone-modal').classList.add('hidden');
+}
+function closePrizeModal(){
+  document.getElementById('prize-modal').classList.add('hidden');
+  stopConfetti();
+}
+
+function setErr(msg){
+  const el=document.getElementById('err-msg');
+  el.textContent=msg;
+  inp.classList.toggle('err',!!msg);
+}
+
+// ══ CHECK + SPIN ══
+async function checkAndSpin(){
+  const raw=inp.value.replace(/\D/g,'');
+  if(raw.length<11){ setErr('Введите полный номер телефона'); return; }
+
+  const btn=document.getElementById('check-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin-loader"></span>Проверяем...';
+  setErr('');
+
+  try{
+    const res=await fetch(`${API}/roulette/check`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({phoneNumber:raw})
+    });
+    const data=await res.json();
+
+    if(!data.eligible){
+      setErr(data.reason||'Абонемент не найден. Проверьте номер.');
+      btn.disabled=false; btn.textContent='Крутить рулетку →';
+      return;
+    }
+
+    if(data.alreadySpun){
+      closePhoneModal();
+      showPrizeModal(data.prize, true);
+      return;
+    }
+
+    // Eligible — spin
+    phone=raw;
+    closePhoneModal();
+    disableSpinBtn();
+    await spinWheel();
+
+  }catch(e){
+    setErr('Ошибка соединения. Попробуйте ещё раз.');
+    btn.disabled=false; btn.textContent='Крутить рулетку →';
+    console.error(e);
+  }
+}
+
+async function spinWheel(){
+  spinning=true;
+
+  // Placeholder spin while requesting
+  startIdleSpin();
+
+  let prize=null;
+  try{
+    const res=await fetch(`${API}/roulette/spin`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({phoneNumber:phone})
+    });
+    const data=await res.json();
+    if(!res.ok){
+      stopIdleSpin();
+      if(data.alreadySpun) showPrizeModal(data.prize,true);
+      else alert(data.message||'Ошибка. Попробуйте позже.');
+      spinning=false; return;
+    }
+    prize=data;
+  }catch(e){
+    stopIdleSpin();
+    spinning=false;
+    alert('Ошибка соединения. Попробуйте позже.');
+    console.error(e); return;
+  }
+
+  // Stop idle, do final spin to prize segment
+  stopIdleSpin();
+  await animateToPrize(prize.segmentIndex, prize.prizeName);
+}
+
+// Idle spin while waiting for server
+let idleRaf=null, idleSpeed=0;
+function startIdleSpin(){
+  idleSpeed=2;
+  function frame(){
+    rot=(rot+idleSpeed)%360;
+    drawWheel(rot);
+    if(idleRaf!==null) idleRaf=requestAnimationFrame(frame);
+  }
+  idleRaf=requestAnimationFrame(frame);
+}
+function stopIdleSpin(){
+  if(idleRaf){ cancelAnimationFrame(idleRaf); idleRaf=null; }
+}
+
+// Final animation to prize
+function animateToPrize(segIdx, prizeName){
+  return new Promise(resolve=>{
+    const N=SEGS.length;
+    const segDeg=360/N;
+    const targetFinal=((360-(segIdx*segDeg)%360)+360)%360;
+    const jitter=(Math.random()-.5)*segDeg*.38;
+    const currentNorm=rot%360;
+    const diff=((targetFinal-currentNorm)+360)%360;
+    const totalSpin=5*360+diff+jitter;
+    const startRot=rot;
+    const endRot=startRot+totalSpin;
+    const dur=5000;
+    const t0=performance.now();
+
+    function ease(t){return 1-Math.pow(1-t,3)}
+    function frame(now){
+      const p=Math.min((now-t0)/dur,1);
+      rot=startRot+(endRot-startRot)*ease(p);
+      drawWheel(rot);
+      if(p<1){ requestAnimationFrame(frame); }
+      else{
+        rot=endRot%360; spinning=false;
+        setTimeout(()=>{ showPrizeModal(prizeName,false); resolve(); },350);
+      }
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+function disableSpinBtn(){
+  const b=document.getElementById('spin-btn');
+  b.disabled=true;
+  b.innerHTML='<span class="spin-icon">⏳</span>Крутится...';
+}
+
+// ══ PRIZE MODAL ══
+function showPrizeModal(name,already){
+  document.getElementById('prize-name').textContent=name;
+  if(already){
+    document.getElementById('prize-icon').textContent='🎁';
+    document.getElementById('prize-label').textContent='Ваш приз';
+    document.getElementById('prize-heading').textContent='Вы уже участвовали';
+    document.getElementById('prize-msg').textContent='Ваш приз уже записан. Менеджер скоро свяжется с вами.';
+  }else{
+    document.getElementById('prize-icon').textContent='🎉';
+    document.getElementById('prize-label').textContent='Поздравляем!';
+    document.getElementById('prize-heading').textContent='Вы выиграли';
+    document.getElementById('prize-msg').innerHTML='Ваш номер сохранён.<br>Менеджер свяжется с вами в ближайшее время 🎊';
+    startConfetti();
+  }
+  document.getElementById('prize-modal').classList.remove('hidden');
+}
+
+// ══ CONFETTI ══
+let cfRaf=null;
+function startConfetti(){
+  const c=document.getElementById('confetti');
+  c.width=innerWidth; c.height=innerHeight;
+  const ctx=c.getContext('2d');
+  const cols=['#D4AF37','#F5D76E','#fff','#FF6B6B','#48C78E','#818CF8','#FB923C'];
+  const ps=Array.from({length:180},()=>({
+    x:Math.random()*c.width,
+    y:Math.random()*c.height-c.height*.7,
+    w:Math.random()*11+4, h:Math.random()*5+2,
+    col:cols[Math.floor(Math.random()*cols.length)],
+    vy:Math.random()*4+1.5, vx:(Math.random()-.5)*3,
+    rot:Math.random()*360, rv:(Math.random()-.5)*9,
+    shape:Math.random()>.35?'rect':'circle',
+  }));
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ps.forEach(p=>{
+      p.y+=p.vy; p.x+=p.vx; p.rot+=p.rv;
+      if(p.y>c.height+20){ p.y=-20; p.x=Math.random()*c.width; }
+      ctx.save();
+      ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.col; ctx.globalAlpha=.85;
+      if(p.shape==='circle'){ ctx.beginPath(); ctx.arc(0,0,p.w/2,0,Math.PI*2); ctx.fill(); }
+      else ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    cfRaf=requestAnimationFrame(draw);
+  }
+  cfRaf=requestAnimationFrame(draw);
+  setTimeout(stopConfetti,6000);
+}
+function stopConfetti(){
+  if(cfRaf){ cancelAnimationFrame(cfRaf); cfRaf=null; }
+  const c=document.getElementById('confetti');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+
+// ══ INIT ══
+initWheel();
+addEventListener('resize',()=>{ initWheel(); });
+</script>
+</body>
+</html>
