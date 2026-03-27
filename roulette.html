@@ -650,9 +650,9 @@ function drawWheel(deg){
     ctx.textAlign='right';
     ctx.fillStyle='rgba(255,255,255,.93)';
     ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=4;
-    const fs=Math.max(8,Math.round(WR*.057));
-    ctx.font=`700 ${fs}px 'Segoe UI',Arial`;
-    const tx=WR*.87, lh=fs+3;
+    const fs=Math.max(10,Math.round(WR*.075));
+    ctx.font=`800 ${fs}px 'Segoe UI',Arial`;
+    const tx=WR*.87, lh=fs+4;
     const lines=s.label.split('\n');
     if(lines.length===2){
       ctx.fillText(lines[0],tx,-lh*.5+1);
