@@ -399,12 +399,15 @@ let rot = 0;
 // ══ WHEEL ══
 const wheelCanvas = document.getElementById('wheel');
 let WS = 0, WR = 0;
+const DPR = window.devicePixelRatio || 1;
 
 function initWheel(){
   WS = Math.min(380, innerWidth - 48);
   WR = WS / 2 - 4;
-  wheelCanvas.width = WS;
-  wheelCanvas.height = WS;
+  wheelCanvas.width = WS * DPR;
+  wheelCanvas.height = WS * DPR;
+  wheelCanvas.style.width = WS + 'px';
+  wheelCanvas.style.height = WS + 'px';
   drawWheel(rot);
 }
 
@@ -414,8 +417,9 @@ function drawWheel(deg){
   const N = SEGS.length;
   const seg = Math.PI * 2 / N;
   const off = -Math.PI / 2 - seg / 2;
-  ctx.clearRect(0, 0, WS, WS);
+  ctx.clearRect(0, 0, c.width, c.height);
   ctx.save();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.translate(WS / 2, WS / 2);
   ctx.rotate(deg * Math.PI / 180);
 
@@ -667,8 +671,10 @@ function showPrizeModal(name, already){
 let cfRaf = null;
 function startConfetti(){
   const c = document.getElementById('confetti');
-  c.width = innerWidth; c.height = innerHeight;
+  c.width = innerWidth * DPR; c.height = innerHeight * DPR;
+  c.style.width = innerWidth + 'px'; c.style.height = innerHeight + 'px';
   const ctx = c.getContext('2d');
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const cols = ['#9456ff','#e85d9a','#ff7b54','#f5c842','#4ecdc4','#56b4ff','#a878f0','#ff6b8a'];
   const ps = Array.from({length: 160}, () => ({
     x: Math.random() * c.width,
