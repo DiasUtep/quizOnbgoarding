@@ -402,32 +402,41 @@ let WS = 0, WR = 0;
 const DPR = window.devicePixelRatio || 1;
 
 function initWheel(){
-  WS = Math.min(380, innerWidth - 48);
+  WS = Math.min(520, innerWidth - 32);
   WR = WS / 2 - 4;
-  wheelCanvas.width = WS * DPR;
-  wheelCanvas.height = WS * DPR;
+  // Always render at 2x minimum for crisp output
+  const scale = Math.max(DPR, 2);
+  wheelCanvas.width = WS * scale;
+  wheelCanvas.height = WS * scale;
   wheelCanvas.style.width = WS + 'px';
   wheelCanvas.style.height = WS + 'px';
+  wheelCanvas._scale = scale;
   drawWheel(rot);
 }
 
 function drawWheel(deg){
   const c = wheelCanvas;
   const ctx = c.getContext('2d');
+  const scale = c._scale || DPR;
   const N = SEGS.length;
   const seg = Math.PI * 2 / N;
   const off = -Math.PI / 2 - seg / 2;
+
   ctx.clearRect(0, 0, c.width, c.height);
   ctx.save();
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
   ctx.translate(WS / 2, WS / 2);
   ctx.rotate(deg * Math.PI / 180);
+
+  // Enable smooth rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
 
   for(let i = 0; i < N; i++){
     const sa = off + i * seg, ea = sa + seg, ma = sa + seg / 2;
     const s = SEGS[i];
 
-    // Fill
+    // Fill segment
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.arc(0, 0, WR, sa, ea);
@@ -435,9 +444,9 @@ function drawWheel(deg){
     ctx.fillStyle = s.color;
     ctx.fill();
 
-    // Subtle border
-    ctx.strokeStyle = 'rgba(255,255,255,.25)';
-    ctx.lineWidth = 1.5;
+    // White border between segments
+    ctx.strokeStyle = 'rgba(255,255,255,.3)';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     // Text
@@ -445,11 +454,11 @@ function drawWheel(deg){
     ctx.rotate(ma);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#fff';
-    ctx.shadowColor = 'rgba(0,0,0,.4)';
-    ctx.shadowBlur = 3;
-    const fs = Math.max(10, Math.round(WR * 0.072));
-    ctx.font = `700 ${fs}px 'Segoe UI',Arial`;
-    const tx = WR * 0.88, lh = fs + 3;
+    ctx.shadowColor = 'rgba(0,0,0,.5)';
+    ctx.shadowBlur = 4;
+    const fs = Math.max(12, Math.round(WR * 0.075));
+    ctx.font = `700 ${fs}px -apple-system,'Segoe UI',Arial,sans-serif`;
+    const tx = WR * 0.87, lh = fs + 4;
     const lines = s.label.split('\n');
     if(lines.length === 2){
       ctx.fillText(lines[0], tx, -lh * 0.42);
@@ -461,25 +470,28 @@ function drawWheel(deg){
   }
 
   // Outer ring
+  ctx.shadowBlur = 0;
   ctx.beginPath();
-  ctx.arc(0, 0, WR + 1, 0, Math.PI * 2);
+  ctx.arc(0, 0, WR + 2, 0, Math.PI * 2);
   ctx.strokeStyle = '#e0e0e0';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 5;
   ctx.stroke();
 
   // Center hub
-  const cr = WR * 0.16;
+  const cr = WR * 0.17;
   ctx.beginPath();
   ctx.arc(0, 0, cr, 0, Math.PI * 2);
   ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,.12)';
+  ctx.shadowBlur = 10;
   ctx.fill();
+  ctx.shadowBlur = 0;
   ctx.strokeStyle = '#e0e0e0';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.shadowBlur = 0;
   ctx.fillStyle = var_accent;
-  ctx.font = `900 ${Math.round(cr * 0.65)}px 'Segoe UI',Arial`;
+  ctx.font = `900 ${Math.round(cr * 0.6)}px -apple-system,'Segoe UI',Arial,sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('SPIN', 0, 1);
